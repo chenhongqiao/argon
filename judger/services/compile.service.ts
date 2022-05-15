@@ -1,4 +1,4 @@
-import type {CompileTask} from '../../common/interfaces/judger/compile.interface'
+import type {CompileTask} from '../../common/interfaces/judger/compile.interface';
 import * as path from 'path';
 import {promises as fs} from 'fs';
 

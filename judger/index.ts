@@ -1,24 +1,14 @@
-console.log('Try npm run lint/fix!');
+import {SandboxService} from './services/sandbox.service';
+import {CompileService} from './services/compile.service';
 
-const longString =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer ut aliquet diam.';
-
-const trailing = 'Semicolon';
-
-const why = 'am I tabbed?';
-
-export function doSomeStuff(
-  withThis: string,
-  andThat: string,
-  andThose: string[]
-) {
-  //function on one line
-  if (!andThose.length) {
-    return false;
-  }
-  console.log(withThis);
-  console.log(andThat);
-  console.dir(andThose);
-  return;
+async function run() {
+  await SandboxService.run(2, {
+    constrains: {processes: 10, time: 1000},
+    command: '/box/a.out',
+    env: 'PATH=/bin:/usr/local/bin:/usr/bin',
+    inputPath: '',
+    outputPath: '',
+  });
 }
-// TODO: more examples
+
+run();

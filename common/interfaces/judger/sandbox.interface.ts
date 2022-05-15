@@ -9,15 +9,15 @@ interface SandboxTask {
   command: string;
   inputPath?: string;
   outputPath?: string;
-  metaPath: string;
   constrains: Constraints;
+  env?: string;
 }
 
-interface ExecResult {
+interface SandboxTaskResult {
   status: string;
   message?: string;
-  memory: string;
-  time: string;
+  memory?: string;
+  time?: string;
 }
 
-export {SandboxTask, Constraints, ExecResult};
+export {SandboxTask, Constraints, SandboxTaskResult};
