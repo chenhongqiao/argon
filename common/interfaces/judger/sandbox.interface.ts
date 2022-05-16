@@ -1,6 +1,15 @@
+enum SandboxStatus {
+  Succeeded,
+  MemoryExceeded,
+  TimeExceeded,
+  RuntimeError,
+  SystemError,
+}
+
 interface Constraints {
   memory?: number;
   time?: number;
+  wallTime?: number;
   totalStorage?: number;
   processes?: number;
 }
@@ -14,10 +23,12 @@ interface SandboxTask {
 }
 
 interface SandboxTaskResult {
-  status: string;
-  message?: string;
-  memory?: string;
-  time?: string;
+  status: SandboxStatus;
+  message: string;
+  memory?: number;
+  time?: number;
+  wallTime?: number;
+  signal?: number;
 }
 
-export {SandboxTask, Constraints, SandboxTaskResult};
+export {SandboxTask, Constraints, SandboxTaskResult, SandboxStatus};

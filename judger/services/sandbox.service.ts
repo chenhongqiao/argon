@@ -1,9 +1,13 @@
 import {exec} from '../utils/system.util';
 import {promises as fs} from 'fs';
-import {ErrorCode, UseCaseError} from '../../common/interfaces/error.interface';
+import {
+  ServiceErrorCode,
+  ServiceError,
+} from '../../common/interfaces/error.interface';
 import {
   SandboxTask,
   SandboxTaskResult,
+  SandboxStatus,
 } from '../../common/interfaces/judger/sandbox.interface';
 
 class SandboxService {
@@ -25,13 +29,13 @@ class SandboxService {
 
   static async init(
     box: number
-  ): Promise<{workDir: string; box: number} | UseCaseError> {
+  ): Promise<{workDir: string; box: number} | ServiceError> {
     let workDir = '';
     try {
       workDir = (await exec(`isolate --box-id=${box} --cg --init`)).stdout;
     } catch (err: any) {
       if (err.message.startsWith('Box already exists')) {
-        return {status: ErrorCode.Conflict};
+        return {error: ServiceErrorCode.Conflict};
       } else {
         throw err;
       }
@@ -52,7 +56,12 @@ class SandboxService {
     }
     if (task.constrains.time) {
       command += ' ' + `--time=${task.constrains.time / 1000.0}`;
-      command += ' ' + `--wall-time=${(task.constrains.time / 1000.0) * 3}`;
+      if (!task.constrains.wallTime) {
+        command += ' ' + `--wall-time=${(task.constrains.time / 1000.0) * 3}`;
+      }
+    }
+    if (task.constrains.wallTime) {
+      command += ' ' + `--wall-time=${task.constrains.wallTime / 1000.0}`;
     }
     if (task.constrains.totalStorage) {
       command += ' ' + `--fsize=${task.constrains.totalStorage}`;
@@ -76,24 +85,60 @@ class SandboxService {
         ).toString();
       } catch (_) {
         console.error('Meta file does not exist');
-        return {status: 'XX'};
+        return {
+          status: SandboxStatus.SystemError,
+          message: 'Meta file does not exist on abnormal termination',
+        };
       }
+
       const result: any = await this.parseMeta(metaStr);
-      if (result['status'] === 'XX') {
-        console.log(metaStr);
-        return {status: 'XX'};
-      } else if (
-        result['status'] === 'RE' ||
-        result['status'] === 'CG' ||
-        result['status'] === 'TO'
-      ) {
-        const {status, message, time, memory} = result;
-        console.log({status, message, time, memory});
-        return {status, message, time, memory};
-      } else {
-        throw err;
+
+      switch (result['status']) {
+        case 'XX':
+          return {
+            status: SandboxStatus.SystemError,
+            message: result['message'] || 'Isolate threw system error',
+          };
+        case 'RE':
+          return {
+            status: SandboxStatus.RuntimeError,
+            message: result['message'] || 'Isolate threw runtime error',
+          };
+        case 'CG':
+          if (
+            task.constrains.memory &&
+            result['exitsig'] === '9' &&
+            result['memory'] &&
+            parseInt(result['memory']) > task.constrains.memory
+          ) {
+            return {
+              status: SandboxStatus.MemoryExceeded,
+              message: 'Memory limit exceeded',
+              memory: parseInt(result['memory']),
+            };
+          } else {
+            return {
+              status: SandboxStatus.RuntimeError,
+              message: result['message'] || 'Program exit on signal',
+            };
+          }
+        case 'TO':
+          return {
+            status: SandboxStatus.TimeExceeded,
+            message: result['message'] || 'Isolate reported timeout',
+            time: parseInt((parseFloat(result['time']) * 1000).toFixed()),
+            wallTime: parseInt(
+              (parseFloat(result['time-wall']) * 1000).toFixed()
+            ),
+          };
+        default:
+          return {
+            status: SandboxStatus.SystemError,
+            message: 'Unknown status on abnormal termination',
+          };
       }
     }
+
     let metaStr = '';
     try {
       metaStr = (
@@ -101,12 +146,20 @@ class SandboxService {
       ).toString();
     } catch (_) {
       console.error('Meta file does not exist');
-      return {status: 'XX'};
+      return {
+        status: SandboxStatus.SystemError,
+        message: 'Meta file does not exist on successful termination',
+      };
     }
+
     const result: any = await this.parseMeta(metaStr);
-    const {time, memory} = result;
-    console.log({status: 'OK', time, memory});
-    return {status: 'OK', time, memory};
+    return {
+      status: SandboxStatus.Succeeded,
+      time: parseInt((parseFloat(result['time']) * 1000).toFixed()),
+      wallTime: parseInt((parseFloat(result['time-wall']) * 1000).toFixed()),
+      memory: parseInt(result['memory']),
+      message: 'Task completed successfully',
+    };
   }
 }
 

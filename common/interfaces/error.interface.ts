@@ -1,11 +1,12 @@
-enum ErrorCode {
-  NotFound = -1,
-  Conflict = -2,
-  AccessDenied = -3,
+enum ServiceErrorCode {
+  NotFound,
+  Conflict,
+  AccessDenied,
 }
 
-interface UseCaseError {
-  status: ErrorCode;
+interface ServiceError {
+  error: ServiceErrorCode;
+  message?: string;
 }
 
-export {ErrorCode, UseCaseError};
+export {ServiceErrorCode, ServiceError};
