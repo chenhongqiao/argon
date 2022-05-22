@@ -1,16 +1,66 @@
 import {exec} from '../utils/system.util';
-import {promises as fs} from 'fs';
-import {
-  ServiceErrorCode,
-  ServiceError,
-} from '../../common/interfaces/error.interface';
-import {
-  SandboxTask,
-  SandboxTaskResult,
-  SandboxStatus,
-} from '../../common/interfaces/judger/sandbox.interface';
 
-class SandboxService {
+import {ConflictError, NotFoundError} from '../classes/error.class';
+
+import {FileSystem} from '../infras/fileSystem';
+
+export enum SandboxStatus {
+  Succeeded,
+  MemoryExceeded,
+  TimeExceeded,
+  RuntimeError,
+  SystemError,
+}
+
+export interface Constraints {
+  memory?: number;
+  time?: number;
+  wallTime?: number;
+  totalStorage?: number;
+  processes?: number;
+}
+
+export interface SandboxTask {
+  command: string;
+  inputPath?: string;
+  outputPath?: string;
+  stderrPath?: string;
+  constrains: Constraints;
+  env?: string;
+}
+
+interface TaskSucceeded {
+  status: SandboxStatus.Succeeded;
+  message: string;
+  memory: number;
+  time: number;
+  wallTime: number;
+}
+
+interface TaskMemoryExceeded {
+  status: SandboxStatus.MemoryExceeded;
+  message: string;
+  memory: number;
+}
+
+interface TaskTimeExceeded {
+  status: SandboxStatus.TimeExceeded;
+  message: string;
+  time: number;
+  wallTime: number;
+}
+
+interface TaskRuntimeError {
+  status: SandboxStatus.RuntimeError;
+  message: string;
+}
+
+interface TaskSystemError {
+  status: SandboxStatus.SystemError;
+  message: string;
+}
+
+export class SandboxService {
   private static async parseMeta(metaStr: string) {
     const meta = metaStr.split('\n');
     const result: any = {};
@@ -27,15 +77,13 @@ class SandboxService {
     return result;
   }
 
-  static async init(
-    box: number
-  ): Promise<{workDir: string; box: number} | ServiceError> {
+  static async init(box: number): Promise<{workDir: string; box: number}> {
     let workDir = '';
     try {
       workDir = (await exec(`isolate --box-id=${box} --cg --init`)).stdout;
     } catch (err: any) {
       if (err.message.startsWith('Box already exists')) {
-        return {error: ServiceErrorCode.Conflict};
+        throw new ConflictError('Box already exists', `sandbox ${box}`);
       } else {
         throw err;
       }
@@ -48,7 +96,16 @@ class SandboxService {
     return {box};
   }
 
-  static async run(box: number, task: SandboxTask): Promise<SandboxTaskResult> {
+  static async run(
+    box: number,
+    task: SandboxTask
+  ): Promise<
+    | TaskSucceeded
+    | TaskMemoryExceeded
+    | TaskSystemError
+    | TaskTimeExceeded
+    | TaskRuntimeError
+  > {
     let command = `isolate --run --cg --box-id=${box} --meta=/var/local/lib/isolate/${box}/meta.txt`;
 
     if (task.constrains.memory) {
@@ -72,26 +129,36 @@ class SandboxService {
     if (task.env) {
       command += ' ' + `--env=${task.env}`;
     }
+    if (task.outputPath) {
+      command += ' ' + `--stdout=${task.outputPath}`;
+    }
+    if (task.stderrPath) {
+      command += ' ' + `--stderr=${task.stderrPath}`;
+    }
+    command += ' -- ' + task.command;
 
-    command += ' ' + task.command;
+    console.log(command);
 
     try {
       await exec(command);
     } catch (err) {
-      let metaStr = '';
+      let meta = '';
       try {
-        metaStr = (
-          await fs.readFile(`/var/local/lib/isolate/${box}/meta.txt`)
+        meta = (
+          await FileSystem.read(`/var/local/lib/isolate/${box}/meta.txt`)
         ).toString();
-      } catch (_) {
-        console.error('Meta file does not exist');
-        return {
-          status: SandboxStatus.SystemError,
-          message: 'Meta file does not exist on abnormal termination',
-        };
+      } catch (err) {
+        if (err instanceof NotFoundError) {
+          return {
+            status: SandboxStatus.SystemError,
+            message: 'Meta file does not exist on abnormal termination',
+          };
+        } else {
+          throw err;
+        }
       }
 
-      const result: any = await this.parseMeta(metaStr);
+      const result: any = await this.parseMeta(meta);
 
       switch (result['status']) {
         case 'XX':
@@ -139,20 +206,23 @@ class SandboxService {
       }
     }
 
-    let metaStr = '';
+    let meta = '';
     try {
-      metaStr = (
-        await fs.readFile(`/var/local/lib/isolate/${box}/meta.txt`)
+      meta = (
+        await FileSystem.read(`/var/local/lib/isolate/${box}/meta.txt`)
       ).toString();
-    } catch (_) {
-      console.error('Meta file does not exist');
-      return {
-        status: SandboxStatus.SystemError,
-        message: 'Meta file does not exist on successful termination',
-      };
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        return {
+          status: SandboxStatus.SystemError,
+          message: 'Meta file does not exist on abnormal termination',
+        };
+      } else {
+        throw err;
+      }
     }
 
-    const result: any = await this.parseMeta(metaStr);
+    const result: any = await this.parseMeta(meta);
     return {
       status: SandboxStatus.Succeeded,
       time: parseInt((parseFloat(result['time']) * 1000).toFixed()),
@@ -162,5 +232,3 @@ class SandboxService {
     };
   }
 }
-
-export {SandboxService};

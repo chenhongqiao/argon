@@ -5,13 +5,9 @@
     "outDir": "build",
     "lib": [
       "es2021"
-    ]
+    ],
+    "composite": true
   },
-  "references": [
-    {
-      "path": "../common/"
-    }
-  ],
   "exclude": [
     "build"
   ]
