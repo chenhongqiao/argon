@@ -2,14 +2,14 @@ import {exec} from '../utils/system.util';
 
 import {ConflictError, NotFoundError} from '../classes/error.class';
 
-import {FileSystem} from '../infras/fileSystem';
+import {FileSystem} from '../infras/fileSystem.infra';
 
 export enum SandboxStatus {
-  Succeeded,
-  MemoryExceeded,
-  TimeExceeded,
-  RuntimeError,
-  SystemError,
+  Succeeded = 'OK',
+  MemoryExceeded = 'MLE',
+  TimeExceeded = 'TLE',
+  RuntimeError = 'RE',
+  SystemError = 'SE',
 }
 
 export interface Constraints {
@@ -29,7 +29,7 @@ export interface SandboxTask {
   env?: string;
 }
 
-interface TaskSucceeded {
+interface SandboxSucceeded {
   status: SandboxStatus.Succeeded;
   message: string;
   memory: number;
@@ -37,25 +37,25 @@ interface TaskSucceeded {
   wallTime: number;
 }
 
-interface TaskMemoryExceeded {
+export interface SandboxMemoryExceeded {
   status: SandboxStatus.MemoryExceeded;
   message: string;
   memory: number;
 }
 
-interface TaskTimeExceeded {
+export interface SandboxTimeExceeded {
   status: SandboxStatus.TimeExceeded;
   message: string;
   time: number;
   wallTime: number;
 }
 
-interface TaskRuntimeError {
+export interface SandboxRuntimeError {
   status: SandboxStatus.RuntimeError;
   message: string;
 }
 
-interface TaskSystemError {
+export interface SandboxSystemError {
   status: SandboxStatus.SystemError;
   message: string;
 }
@@ -97,14 +97,14 @@ export class SandboxService {
   }
 
   static async run(
-    box: number,
-    task: SandboxTask
+    task: SandboxTask,
+    box: number
   ): Promise<
-    | TaskSucceeded
-    | TaskMemoryExceeded
-    | TaskSystemError
-    | TaskTimeExceeded
-    | TaskRuntimeError
+    | SandboxSucceeded
+    | SandboxMemoryExceeded
+    | SandboxSystemError
+    | SandboxTimeExceeded
+    | SandboxRuntimeError
   > {
     let command = `isolate --run --cg --box-id=${box} --meta=/var/local/lib/isolate/${box}/meta.txt`;
 
@@ -142,11 +142,11 @@ export class SandboxService {
     try {
       await exec(command);
     } catch (err) {
-      let meta = '';
+      let meta: string;
       try {
         meta = (
           await FileSystem.read(`/var/local/lib/isolate/${box}/meta.txt`)
-        ).toString();
+        ).data.toString();
       } catch (err) {
         if (err instanceof NotFoundError) {
           return {
@@ -206,11 +206,11 @@ export class SandboxService {
       }
     }
 
-    let meta = '';
+    let meta: string;
     try {
       meta = (
         await FileSystem.read(`/var/local/lib/isolate/${box}/meta.txt`)
-      ).toString();
+      ).data.toString();
     } catch (err) {
       if (err instanceof NotFoundError) {
         return {

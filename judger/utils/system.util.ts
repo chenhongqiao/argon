@@ -1,6 +1,8 @@
 import cp = require('child_process');
 import util = require('util');
 
-const exec = util.promisify(cp.exec);
+export const exec = util.promisify(cp.exec);
 
-export {exec};
+export async function chmodx(path: string) {
+  await exec(`chmod +x ${path}`);
+}

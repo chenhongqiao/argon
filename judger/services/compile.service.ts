@@ -1,17 +1,20 @@
-import {languageConfigs} from '../configs/languages';
+import {languageConfigs} from '../configs/languages.config';
 import * as path from 'path';
 import {promises as fs} from 'fs';
 
 import {SandboxService} from './sandbox.service';
 import {Constraints, SandboxStatus} from './sandbox.service';
 
-import {SubmissionLang} from '../configs/languages';
+import {SubmissionLang} from '../configs/languages.config';
 
-import {BlobStorage} from '../infras/blobStorage';
+import {BlobStorage} from '../infras/blobStorage.infra';
 
-import {FileSystem} from '../infras/fileSystem';
+import {FileSystem} from '../infras/fileSystem.infra';
+
+import {TaskType} from '../main';
 
 export interface CompileTask {
+  type: TaskType.Compile;
   source: string;
   constrains: Constraints;
   language: SubmissionLang;
@@ -36,12 +39,15 @@ export class CompileService {
     command = command.replaceAll('{src_path}', config.srcFile);
     command = command.replaceAll('{binary_path}', config.binaryFile);
     console.log(command);
-    const result = await SandboxService.run(box, {
-      constrains: task.constrains,
-      command,
-      stderrPath: 'log.txt',
-      env: 'PATH=/bin:/usr/local/bin:/usr/bin',
-    });
+    const result = await SandboxService.run(
+      {
+        constrains: task.constrains,
+        command,
+        stderrPath: 'log.txt',
+        env: 'PATH=/bin:/usr/local/bin:/usr/bin',
+      },
+      box
+    );
     if (result.status === SandboxStatus.Succeeded) {
       await BlobStorage.uploadFromDisk(
         binaryPath,

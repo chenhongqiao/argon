@@ -1,10 +1,19 @@
 import {promises as fs} from 'fs';
 import {NotFoundError} from '../classes/error.class';
 
+interface ReadFileResult {
+  data: Buffer;
+}
+
+interface WriteFileResult {
+  path: string;
+}
+
 export class FileSystem {
-  static async read(path: string): Promise<Buffer> {
+  static async read(path: string): Promise<ReadFileResult> {
     try {
-      return fs.readFile(path);
+      const data = await fs.readFile(path);
+      return {data};
     } catch (err: any) {
       const {code} = err;
       if (code === 'ENONET') {
@@ -15,10 +24,10 @@ export class FileSystem {
     }
   }
 
-  static async write(path: string, data: Buffer): Promise<string> {
+  static async write(path: string, data: Buffer): Promise<WriteFileResult> {
     try {
       await fs.writeFile(path, data);
-      return path;
+      return {path};
     } catch (err: any) {
       const {code} = err;
       if (code === 'ENONET') {
