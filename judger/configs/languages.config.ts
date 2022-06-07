@@ -1,4 +1,4 @@
-enum SubmissionLang {
+export enum SubmissionLang {
   C,
   CPP,
 }
@@ -11,7 +11,7 @@ interface SubmissionConfig {
   executeCommand: string;
 }
 
-const languageConfigs: Record<SubmissionLang, SubmissionConfig> = {
+export const languageConfigs: Record<SubmissionLang, SubmissionConfig> = {
   [SubmissionLang.CPP]: {
     srcFile: 'program.cpp',
     binaryFile: 'a.out',
@@ -29,5 +29,3 @@ const languageConfigs: Record<SubmissionLang, SubmissionConfig> = {
     executeCommand: '{exe_path}',
   },
 };
-
-export {SubmissionLang, languageConfigs};

@@ -3,17 +3,9 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
-    "lib": [
-      "es2021"
-    ],
     "composite": true
   },
   "exclude": [
     "build"
-  ],
-  "references": [
-    {
-      "path": "../common"
-    }
   ]
 }

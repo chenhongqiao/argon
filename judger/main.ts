@@ -1,10 +1,8 @@
-import {SandboxService} from './services/sandbox.service';
-import {CompileService} from './services/compile.service';
+import * as SandboxService from './services/sandbox.service';
+import * as CompileService from './services/compile.service';
+import * as JudgeService from './services/judge.service';
 
 import {ServiceBusClient} from '@azure/service-bus';
-
-import {JudgeService, JudgeTask} from './services/judge.service';
-import {CompileTask} from './services/compile.service';
 
 import os = require('os');
 
@@ -15,7 +13,7 @@ export enum TaskType {
   Judge = 'Judge',
 }
 
-async function handleJudgeTask(task: JudgeTask, box: number) {
+async function handleJudgeTask(task: JudgeService.Task, box: number) {
   await SandboxService.init(box);
   const result = await JudgeService.judge(task, box);
   console.log(result);
@@ -23,7 +21,7 @@ async function handleJudgeTask(task: JudgeTask, box: number) {
   sandboxes.add(box);
 }
 
-async function handleCompileTask(task: CompileTask, box: number) {
+async function handleCompileTask(task: CompileService.Task, box: number) {
   await SandboxService.init(box);
   const result = await CompileService.compile(task, box);
   console.log(result);
@@ -48,7 +46,7 @@ async function start() {
   while (true) {
     const messages = await receiver.receiveMessages(sandboxes.size);
     console.log('received some');
-    const tasks: Array<JudgeTask | CompileTask> = messages.map(
+    const tasks: Array<JudgeService.Task | CompileService.Task> = messages.map(
       message => message.body
     );
     tasks.forEach(task => {
