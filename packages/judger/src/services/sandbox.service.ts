@@ -20,7 +20,7 @@ async function parseMeta(metaStr: string) {
   return result;
 }
 
-export async function init(
+export async function initSandbox(
   box: number
 ): Promise<{ workDir: string; box: number }> {
   let workDir = '';
@@ -36,12 +36,12 @@ export async function init(
   return { workDir, box };
 }
 
-export async function destroy(box: number): Promise<{ box: number }> {
+export async function destroySandbox(box: number): Promise<{ box: number }> {
   await exec(`isolate --box-id=${box} --cleanup`);
   return { box };
 }
 
-export enum Status {
+export enum SandboxStatus {
   Succeeded = 'OK',
   MemoryExceeded = 'MLE',
   TimeExceeded = 'TLE',
@@ -57,7 +57,7 @@ export interface Constraints {
   processes?: number;
 }
 
-export interface Task {
+export interface SandboxTask {
   command: string;
   inputPath?: string;
   outputPath?: string;
@@ -66,42 +66,42 @@ export interface Task {
   env?: string;
 }
 
-interface Succeeded {
-  status: Status.Succeeded;
+interface SandboxSucceeded {
+  status: SandboxStatus.Succeeded;
   message: string;
   memory: number;
   time: number;
   wallTime: number;
 }
 
-export interface MemoryExceeded {
-  status: Status.MemoryExceeded;
+export interface SandboxMemoryExceeded {
+  status: SandboxStatus.MemoryExceeded;
   message: string;
   memory: number;
 }
 
-export interface TimeExceeded {
-  status: Status.TimeExceeded;
+export interface SandboxTimeExceeded {
+  status: SandboxStatus.TimeExceeded;
   message: string;
   time: number;
   wallTime: number;
 }
 
-export interface RuntimeError {
-  status: Status.RuntimeError;
+export interface SandboxRuntimeError {
+  status: SandboxStatus.RuntimeError;
   message: string;
 }
 
-export interface SystemError {
-  status: Status.SystemError;
+export interface SandboxSystemError {
+  status: SandboxStatus.SystemError;
   message: string;
 }
 
-export async function run(
-  task: Task,
+export async function runInSandbox(
+  task: SandboxTask,
   box: number
 ): Promise<
-  Succeeded | MemoryExceeded | SystemError | TimeExceeded | RuntimeError
+  SandboxSucceeded | SandboxMemoryExceeded | SandboxSystemError | SandboxTimeExceeded | SandboxRuntimeError
 > {
   let command = `isolate --run --cg --box-id=${box} --meta=/var/local/lib/isolate/${box}/meta.txt`;
 
@@ -147,7 +147,7 @@ export async function run(
     } catch (err) {
       if (err instanceof NotFoundError) {
         return {
-          status: Status.SystemError,
+          status: SandboxStatus.SystemError,
           message: 'Meta file does not exist on abnormal termination',
         };
       } else {
@@ -160,12 +160,12 @@ export async function run(
     switch (result['status']) {
       case 'XX':
         return {
-          status: Status.SystemError,
+          status: SandboxStatus.SystemError,
           message: result['message'] || 'Isolate threw system error',
         };
       case 'RE':
         return {
-          status: Status.RuntimeError,
+          status: SandboxStatus.RuntimeError,
           message: result['message'] || 'Isolate threw runtime error',
         };
       case 'CG':
@@ -176,19 +176,19 @@ export async function run(
           parseInt(result['memory']) > task.constrains.memory
         ) {
           return {
-            status: Status.MemoryExceeded,
+            status: SandboxStatus.MemoryExceeded,
             message: 'Memory limit exceeded',
             memory: parseInt(result['memory']),
           };
         } else {
           return {
-            status: Status.RuntimeError,
+            status: SandboxStatus.RuntimeError,
             message: result['message'] || 'Program exit on signal',
           };
         }
       case 'TO':
         return {
-          status: Status.TimeExceeded,
+          status: SandboxStatus.TimeExceeded,
           message: result['message'] || 'Isolate reported timeout',
           time: parseInt((parseFloat(result['time']) * 1000).toFixed()),
           wallTime: parseInt(
@@ -197,7 +197,7 @@ export async function run(
         };
       default:
         return {
-          status: Status.SystemError,
+          status: SandboxStatus.SystemError,
           message: 'Unknown status on abnormal termination',
         };
     }
@@ -211,7 +211,7 @@ export async function run(
   } catch (err) {
     if (err instanceof NotFoundError) {
       return {
-        status: Status.SystemError,
+        status: SandboxStatus.SystemError,
         message: 'Meta file does not exist on abnormal termination',
       };
     } else {
@@ -221,7 +221,7 @@ export async function run(
 
   const result: any = await parseMeta(meta);
   return {
-    status: Status.Succeeded,
+    status: SandboxStatus.Succeeded,
     time: parseInt((parseFloat(result['time']) * 1000).toFixed()),
     wallTime: parseInt((parseFloat(result['time-wall']) * 1000).toFixed()),
     memory: parseInt(result['memory']),
