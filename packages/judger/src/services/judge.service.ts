@@ -5,50 +5,57 @@ import { BlobStorage } from '@project-carbon/common';
 import * as path from 'path';
 
 import { exec } from '../utils/system.util';
+import { runInSandbox } from './sandbox.service';
 
-import { TaskType } from '../start';
+import { GraderTaskType } from '../start';
+import {
+  Constraints,
+  SandboxMemoryExceeded,
+  SandboxRuntimeError,
+  SandboxTimeExceeded,
+  SandboxSystemError,
+  SandboxStatus
+} from './sandbox.service';
 
-import * as SandboxService from './sandbox.service';
-
-export enum Status {
+export enum JudgeStatus {
   Accepted = 'AC',
   WrongAnswer = 'WA',
 }
 
-interface Accepted {
-  status: Status.Accepted;
+interface SubmissionAccepted {
+  status: JudgeStatus.Accepted;
   message: string;
   memory: number;
   time: number;
   wallTime: number;
 }
 
-interface WrongAnswer {
-  status: Status.WrongAnswer;
+interface SubmissionWrongAnswer {
+  status: JudgeStatus.WrongAnswer;
   message: string;
   memory: number;
   time: number;
   wallTime: number;
 }
 
-export interface Task {
-  type: TaskType.Judge;
+export interface JudgeTask {
+  type: GraderTaskType.Judge;
   submissionID: string;
   problemID: string;
-  constraints: SandboxService.Constraints;
+  constraints: Constraints;
   language: SubmissionLang;
 }
 
-export async function judge(
-  task: Task,
+export async function judgeSubmission(
+  task: JudgeTask,
   box: number
 ): Promise<
-  | Accepted
-  | WrongAnswer
-  | SandboxService.MemoryExceeded
-  | SandboxService.RuntimeError
-  | SandboxService.TimeExceeded
-  | SandboxService.SystemError
+  | SubmissionAccepted
+  | SubmissionWrongAnswer
+  | SandboxMemoryExceeded
+  | SandboxRuntimeError
+  | SandboxTimeExceeded
+  | SandboxSystemError
 > {
   const workDir = `/var/local/lib/isolate/${box}/box`;
   const config = languageConfigs[task.language];
@@ -66,7 +73,7 @@ export async function judge(
 
   let command = config.compileCommand;
   command = command.replaceAll('{binary_path}', config.binaryFile);
-  const sandboxResult = await SandboxService.run(
+  const sandboxResult = await runInSandbox(
     {
       command,
       constrains: task.constraints,
@@ -75,7 +82,7 @@ export async function judge(
     },
     box
   );
-  if (sandboxResult.status === SandboxService.Status.Succeeded) {
+  if (sandboxResult.status === SandboxStatus.Succeeded) {
     const correctHash = await BlobStorage.getBlobHash(
       'testcases',
       `${task.submissionID}.out`
@@ -91,7 +98,7 @@ export async function judge(
     const { time, wallTime, memory } = sandboxResult;
     if (md5sum.stdout.trimEnd() === correctHash.md5) {
       return {
-        status: Status.Accepted,
+        status: JudgeStatus.Accepted,
         time,
         wallTime,
         memory,
@@ -99,7 +106,7 @@ export async function judge(
       };
     } else {
       return {
-        status: Status.WrongAnswer,
+        status: JudgeStatus.WrongAnswer,
         time,
         wallTime,
         memory,

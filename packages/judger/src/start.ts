@@ -1,40 +1,46 @@
-import * as SandboxService from './services/sandbox.service';
-import * as CompileService from './services/compile.service';
-import * as JudgeService from './services/judge.service';
+import { initSandbox, destroySandbox } from './services/sandbox.service';
+import { judgeSubmission } from './services/judge.service';
+import { compileSubmission } from './services/compile.service';
 
-import {ServiceBusClient} from '@azure/service-bus';
+import { JudgeTask } from './services/judge.service';
+import { CompileTask } from './services/compile.service'
+
+
+import { ServiceBusClient } from '@azure/service-bus';
 
 import os = require('os');
 
 const sandboxes = new Set();
 
-export enum TaskType {
+export enum GraderTaskType {
   Compile = 'Compile',
   Judge = 'Judge',
 }
 
-async function handleJudgeTask(task: JudgeService.Task, box: number) {
-  await SandboxService.init(box);
-  const result = await JudgeService.judge(task, box);
+async function handleJudgeTask(task: JudgeTask, box: number) {
+  await initSandbox(box);
+  const result = await judgeSubmission(task, box);
   console.log(result);
-  await SandboxService.destroy(box);
+  await destroySandbox(box);
   sandboxes.add(box);
 }
 
-async function handleCompileTask(task: CompileService.Task, box: number) {
-  await SandboxService.init(box);
-  const result = await CompileService.compile(task, box);
+async function handleCompileTask(task: CompileTask, box: number) {
+  await initSandbox(box);
+  const result = await compileSubmission(task, box);
   console.log(result);
-  await SandboxService.destroy(box);
+  await destroySandbox(box);
   sandboxes.add(box);
 }
 
-async function start() {
+export async function startJudger() {
   const cores = os.cpus().length;
+  const destroyQueue = [];
   for (let id = 1; id <= cores; id += 1) {
-    SandboxService.destroy(1);
+    destroyQueue.push(destroySandbox(id));
     sandboxes.add(id);
   }
+  await Promise.all(destroyQueue);
   const messageClient = new ServiceBusClient(
     'Endpoint=sb://carbondev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=hX1nsR8WuiqrQEC2q2a/ce3PBMiT7MmvJ2AS02XQOc0='
   );
@@ -46,19 +52,17 @@ async function start() {
   while (true) {
     const messages = await receiver.receiveMessages(sandboxes.size);
     console.log('received some');
-    const tasks: Array<JudgeService.Task | CompileService.Task> = messages.map(
+    const tasks: Array<JudgeTask | CompileTask> = messages.map(
       message => message.body
     );
     tasks.forEach(task => {
       const box = sandboxes.values().next().value;
       sandboxes.delete(box);
-      if (task.type === TaskType.Judge) {
+      if (task.type === GraderTaskType.Judge) {
         handleJudgeTask(task, box);
-      } else if (task.type === TaskType.Compile) {
+      } else if (task.type === GraderTaskType.Compile) {
         handleCompileTask(task, box);
       }
     });
   }
 }
-
-start();
