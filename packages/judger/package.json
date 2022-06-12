@@ -8,9 +8,6 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
-    "@azure/service-bus": "^7.5.1",
-    "@azure/storage-blob": "^12.10.0",
-    "@project-carbon/common": "1.0.0",
-    "ts-node": "^10.7.0"
+    "@project-carbon/common": "1.0.0"
   }
 }

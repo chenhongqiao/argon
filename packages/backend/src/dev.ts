@@ -1,3 +1,3 @@
-import { startServer } from "./start";
+import { startServer } from './index'
 
-startServer()
+startServer().then(() => console.log('Server started')).catch((err) => { throw err })

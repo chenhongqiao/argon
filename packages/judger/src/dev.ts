@@ -1,2 +1,2 @@
-import { startJudger } from './start';
-startJudger();
+import { startJudger } from './start'
+void startJudger()
