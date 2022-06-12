@@ -1,8 +1,8 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyPluginCallback } from 'fastify'
 
-import * as TestcasesService from '../services/testcases.service';
+import { uploadTestcase } from '../services/testcases.service'
 
-export async function routes(app: FastifyInstance) {
+export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
   app.post(
     '/',
     {
@@ -10,25 +10,26 @@ export async function routes(app: FastifyInstance) {
         response: {
           200: {
             type: 'array',
-            items: { type: 'object', properties: { id: { type: 'string' } } },
+            items: { type: 'object', properties: { id: { type: 'string' } } }
           },
-          500: { type: 'object', properties: { message: { type: 'string' } } },
-        },
-      },
+          500: { type: 'object', properties: { message: { type: 'string' } } }
+        }
+      }
     },
     async (request, reply) => {
-      const testcases = request.parts();
-      const queue = [];
+      const testcases = request.parts()
+      const queue: Array<Promise<{id: string}>> = []
       try {
         for await (const file of testcases) {
-          queue.push(TestcasesService.upload(file));
+          queue.push(uploadTestcase(file))
         }
-        const results = await Promise.all(queue);
-        reply.status(200).send(results);
+        const results = await Promise.all(queue)
+        await reply.status(200).send(results)
       } catch (err) {
-        console.error(err);
-        reply.status(500).send({ message: 'Server error' });
+        console.error(err)
+        await reply.status(500).send({ message: 'Server error' })
       }
     }
-  );
+  )
+  done()
 }

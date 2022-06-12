@@ -1,10 +1,12 @@
-import { workerData, parentPort } from 'node:worker_threads';
+import { workerData, parentPort } from 'node:worker_threads'
 
-import { cleanTestcase, BlobStorage } from '@project-carbon/common';
+import { cleanTestcase, BlobStorage } from '@project-carbon/common'
 
-const data = workerData.data;
-const cleaned = cleanTestcase(data);
+const { data } = workerData
+const cleaned = cleanTestcase(data)
 
-BlobStorage.uploadBuffer(cleaned, 'testcases', workerData.id).then(result => {
-  parentPort?.postMessage({ id: result.blobName });
-});
+BlobStorage.uploadBuffer(cleaned, 'testcases', workerData.id).then((result) => {
+  parentPort?.postMessage({ id: result.blobName })
+}).catch((err) => {
+  throw err
+})
