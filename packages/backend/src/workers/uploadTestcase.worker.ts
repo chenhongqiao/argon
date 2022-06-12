@@ -1,6 +1,6 @@
-import { workerData, parentPort } from 'node:worker_threads'
+import { parentPort, workerData } from 'node:worker_threads'
 
-import { cleanTestcase, BlobStorage } from '@project-carbon/common'
+import { BlobStorage, cleanTestcase } from '@project-carbon/common'
 
 const { data } = workerData
 const cleaned = cleanTestcase(data)

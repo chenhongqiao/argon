@@ -5,14 +5,13 @@ import { Type } from '@sinclair/typebox'
 import {
   createProblem,
   deleteProblem,
-  fetchProblem,
   fetchAllProblems,
-  updateProblem,
-
-  NewProblemSchema,
+  fetchProblem,
   NewProblem,
+  NewProblemSchema,
+  Problem,
   ProblemSchema,
-  Problem
+  updateProblem
 } from '../services/problems.service'
 
 export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {

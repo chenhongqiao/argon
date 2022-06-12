@@ -1,6 +1,6 @@
 import { exec } from '../utils/system.util'
 
-import { ConflictError, NotFoundError, FileSystem } from '@project-carbon/common'
+import { ConflictError, FileSystem, NotFoundError } from '@project-carbon/common'
 
 async function parseMeta (metaStr: string): Promise<any> {
   const meta = metaStr.split('\n')

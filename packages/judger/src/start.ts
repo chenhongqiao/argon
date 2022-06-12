@@ -1,9 +1,8 @@
-import { initSandbox, destroySandbox } from './services/sandbox.service'
+import { destroySandbox, initSandbox } from './services/sandbox.service'
 import { judgeSubmission, JudgeTask } from './services/judge.service'
 import { compileSubmission, CompileTask } from './services/compile.service'
 
 import { ServiceBus } from '@project-carbon/common'
-
 import os = require('os')
 
 const sandboxes = new Set()

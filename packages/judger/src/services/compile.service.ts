@@ -3,7 +3,7 @@ import { promises as fs } from 'fs'
 
 import { languageConfigs, SubmissionLang } from '../configs/languages.config'
 
-import { runInSandbox, Constraints, SandboxStatus } from './sandbox.service'
+import { Constraints, runInSandbox, SandboxStatus } from './sandbox.service'
 
 import { BlobStorage, FileSystem } from '@project-carbon/common'
 

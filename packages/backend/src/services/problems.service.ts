@@ -1,4 +1,4 @@
-import { CosmosDB, AzureError, NotFoundError } from '@project-carbon/common'
+import { AzureError, CosmosDB, NotFoundError } from '@project-carbon/common'
 
 import { Static, Type } from '@sinclair/typebox'
 
