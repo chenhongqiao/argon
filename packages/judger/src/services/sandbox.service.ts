@@ -1,6 +1,16 @@
 import { exec } from '../utils/system.util'
 
-import { ConflictError, FileSystem, NotFoundError } from '@project-carbon/common'
+import {
+  ConflictError,
+  NotFoundError,
+  readFile,
+  Constraints,
+  SandboxStatus,
+  SandboxRuntimeError,
+  SandboxSystemError,
+  SandboxTimeExceeded,
+  SandboxMemoryExceeded
+} from '@project-carbon/shared'
 
 async function parseMeta (metaStr: string): Promise<any> {
   const meta = metaStr.split('\n')
@@ -39,22 +49,6 @@ export async function destroySandbox (box: number): Promise<{ box: number }> {
   return { box }
 }
 
-export enum SandboxStatus {
-  Succeeded = 'OK',
-  MemoryExceeded = 'MLE',
-  TimeExceeded = 'TLE',
-  RuntimeError = 'RE',
-  SystemError = 'SE',
-}
-
-export interface Constraints {
-  memory?: number
-  time?: number
-  wallTime?: number
-  totalStorage?: number
-  processes?: number
-}
-
 export interface SandboxTask {
   command: string
   inputPath?: string
@@ -70,29 +64,6 @@ interface SandboxSucceeded {
   memory: number
   time: number
   wallTime: number
-}
-
-export interface SandboxMemoryExceeded {
-  status: SandboxStatus.MemoryExceeded
-  message: string
-  memory: number
-}
-
-export interface SandboxTimeExceeded {
-  status: SandboxStatus.TimeExceeded
-  message: string
-  time: number
-  wallTime: number
-}
-
-export interface SandboxRuntimeError {
-  status: SandboxStatus.RuntimeError
-  message: string
-}
-
-export interface SandboxSystemError {
-  status: SandboxStatus.SystemError
-  message: string
 }
 
 export async function runInSandbox (
@@ -140,7 +111,7 @@ export async function runInSandbox (
     let meta: string
     try {
       meta = (
-        await FileSystem.read(`/var/local/lib/isolate/${box}/meta.txt`)
+        await readFile(`/var/local/lib/isolate/${box}/meta.txt`)
       ).data.toString()
     } catch (err) {
       if (err instanceof NotFoundError) {
@@ -204,7 +175,7 @@ export async function runInSandbox (
   let meta: string
   try {
     meta = (
-      await FileSystem.read(`/var/local/lib/isolate/${box}/meta.txt`)
+      await readFile(`/var/local/lib/isolate/${box}/meta.txt`)
     ).data.toString()
   } catch (err) {
     if (err instanceof NotFoundError) {

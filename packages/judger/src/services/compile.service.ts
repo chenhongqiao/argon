@@ -1,29 +1,11 @@
 import * as path from 'path'
 import { promises as fs } from 'fs'
 
-import { languageConfigs, SubmissionLang } from '../configs/languages.config'
+import { runInSandbox } from './sandbox.service'
 
-import { Constraints, runInSandbox, SandboxStatus } from './sandbox.service'
+import { uploadFromDisk, readFile, languageConfigs, CompileTask, SandboxStatus, CompileSucceeded, CompileFailed, CompileStatus } from '@project-carbon/shared'
 
-import { BlobStorage, FileSystem } from '@project-carbon/common'
-
-import { GraderTaskType } from '../start'
-
-export interface CompileTask {
-  type: GraderTaskType.Compile
-  source: string
-  constrains: Constraints
-  language: SubmissionLang
-  submissionID: string
-}
-
-interface CompileResult {
-  success: boolean
-  submissionID: string
-  log?: string
-}
-
-export async function compileSubmission (task: CompileTask, box: number): Promise<CompileResult> {
+export async function compileSubmission (task: CompileTask, box: number): Promise<CompileSucceeded|CompileFailed> {
   const workDir = `/var/local/lib/isolate/${box}/box`
   const config = languageConfigs[task.language]
   const srcPath = path.join(workDir, config.srcFile)
@@ -44,16 +26,16 @@ export async function compileSubmission (task: CompileTask, box: number): Promis
     box
   )
   if (result.status === SandboxStatus.Succeeded) {
-    await BlobStorage.uploadFromDisk(binaryPath, 'binaries', task.submissionID)
+    await uploadFromDisk(binaryPath, { containerName: 'binaries', blobName: task.submissionID })
     return {
-      success: true,
+      status: CompileStatus.Succeeded,
       submissionID: task.submissionID
     }
   } else {
-    const log = (await FileSystem.read(logPath)).data.toString()
+    const log = (await readFile(logPath)).data.toString()
     console.log(logPath)
     return {
-      success: false,
+      status: CompileStatus.Failed,
       submissionID: task.submissionID,
       log
     }

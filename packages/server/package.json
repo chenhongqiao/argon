@@ -1,0 +1,26 @@
+{
+  "name": "@project-carbon/server",
+  "version": "1.0.0",
+  "description": "Project Carbon Server",
+  "author": "TeamsCode",
+  "license": "UNLICENSED",
+  "types": "./dist/src/index.d.ts",
+  "main": "./dist/src/index.js",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.41"
+  },
+  "dependencies": {
+    "@fastify/multipart": "^6.0.0",
+    "@project-carbon/judger": "^1.0.0",
+    "@project-carbon/shared": "^1.0.0",
+    "@sinclair/typebox": "^0.23.5",
+    "fastify": "^3.29.0",
+    "ts-json-schema-generator": "^1.0.0"
+  }
+}
