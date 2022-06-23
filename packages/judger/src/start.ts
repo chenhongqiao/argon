@@ -1,18 +1,13 @@
 import { destroySandbox, initSandbox } from './services/sandbox.service'
-import { judgeSubmission, JudgeTask } from './services/judge.service'
-import { compileSubmission, CompileTask } from './services/compile.service'
+import { judgeSubmission } from './services/grade.service'
+import { compileSubmission } from './services/compile.service'
 
-import { ServiceBus } from '@project-carbon/common'
+import { messageReceiver, GradeTask, CompileTask, JudgerTaskType } from '@project-carbon/shared'
 import os = require('os')
 
 const sandboxes = new Set()
 
-export enum GraderTaskType {
-  Compile = 'Compile',
-  Judge = 'Judge',
-}
-
-async function handleJudgeTask (task: JudgeTask, box: number): Promise<void> {
+async function handleGradeTask (task: GradeTask, box: number): Promise<void> {
   await initSandbox(box)
   const result = await judgeSubmission(task, box)
   console.log(result)
@@ -37,20 +32,18 @@ export async function startJudger (): Promise<void> {
   }
   await Promise.all(destroyQueue)
 
-  console.log('listening')
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const messages = await ServiceBus.receiver.receiveMessages(sandboxes.size)
-    console.log('received some')
-    const tasks: Array<JudgeTask | CompileTask> = messages.map(
+    const messages = await messageReceiver.receiveMessages(sandboxes.size)
+    const tasks: Array<GradeTask | CompileTask> = messages.map(
       message => message.body
     )
     tasks.forEach(task => {
       const box = sandboxes.values().next().value
       sandboxes.delete(box)
-      if (task.type === GraderTaskType.Judge) {
-        void handleJudgeTask(task, box)
-      } else if (task.type === GraderTaskType.Compile) {
+      if (task.type === JudgerTaskType.Grade) {
+        void handleGradeTask(task, box)
+      } else if (task.type === JudgerTaskType.Compile) {
         void handleCompileTask(task, box)
       }
     })
