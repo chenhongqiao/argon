@@ -12,7 +12,7 @@ export const NewProblemSchema = Type.Object({
     Type.Object({ input: Type.String(), output: Type.String() })
   ),
   testcases: Type.Array(
-    Type.Object({ input: Type.String(), output: Type.String() })
+    Type.Object({ input: Type.String(), output: Type.String(), points: Type.Number() })
   )
 })
 
@@ -31,7 +31,7 @@ export const ProblemSchema = Type.Object({
     Type.Object({ input: Type.String(), output: Type.String() })
   ),
   testcases: Type.Array(
-    Type.Object({ input: Type.String(), output: Type.String() })
+    Type.Object({ input: Type.String(), output: Type.String(), points: Type.Number() })
   )
 })
 
