@@ -1,11 +1,14 @@
 import {
-  CompileTask, Submission, NewSubmission,
+  CompileTask, CompilingSubmission, NewSubmission,
   cosmosDB,
   AzureError, NotFoundError, DataError, JudgerTaskType,
   languageConfigs, messageSender,
   CompileSucceeded, CompileFailed, CompileStatus,
   Problem,
   GradeTask
+  , GradingSubmission
+  , SubmissionStatus
+  , FailedSubmission
 } from '@project-carbon/shared'
 
 const submissionsContainer = cosmosDB.container('submissions')
@@ -21,7 +24,7 @@ export async function createSubmission (submission: NewSubmission): Promise<{ su
 
 export async function compileSubmission (submissionID: string): Promise<void> {
   const submissionItem = submissionsContainer.item(submissionID, submissionID)
-  const submissionFetchResult = await submissionItem.read<Submission>()
+  const submissionFetchResult = await submissionItem.read<CompilingSubmission>()
   if (submissionFetchResult.resource == null) {
     if (submissionFetchResult.statusCode === 404) {
       throw new NotFoundError('Submission not found', submissionID)
@@ -48,7 +51,7 @@ export async function compileSubmission (submissionID: string): Promise<void> {
 export async function handleCompileResult (compileResult: CompileSucceeded|CompileFailed): Promise<void> {
   const submissionID = compileResult.submissionID
   const submissionItem = submissionsContainer.item(submissionID, submissionID)
-  const submissionFetchResult = await submissionItem.read<Submission>()
+  const submissionFetchResult = await submissionItem.read<CompilingSubmission>()
   if (submissionFetchResult.resource == null) {
     if (submissionFetchResult.statusCode === 404) {
       throw new NotFoundError('Submission not found', submissionID)
@@ -57,7 +60,6 @@ export async function handleCompileResult (compileResult: CompileSucceeded|Compi
     }
   }
   const submission = submissionFetchResult.resource
-  submission.status = compileResult
   if (compileResult.status === CompileStatus.Succeeded) {
     const batch = await messageSender.createMessageBatch()
     const problemItem = problemsContainer.item(submission.problemID, submission.problemID)
@@ -70,7 +72,8 @@ export async function handleCompileResult (compileResult: CompileSucceeded|Compi
       }
     }
     const problem: Problem = problemFetchResult.resource
-    problem.testcases.forEach((testcase) => {
+    const submissionTestcases: Array<{points: number}> = []
+    problem.testcases.forEach((testcase, index) => {
       const task: GradeTask = {
         constraints: problem.constraints,
         type: JudgerTaskType.Grade,
@@ -79,14 +82,34 @@ export async function handleCompileResult (compileResult: CompileSucceeded|Compi
           input: testcase.input,
           output: testcase.output
         },
+        testcaseIndex: index,
         language: submission.language
       }
       if (!(Boolean(batch.tryAddMessage({ body: task })))) {
         throw new DataError('Task too big to fit in the queue', JSON.stringify(task))
       }
+      submissionTestcases.push({ points: testcase.points })
     })
     await messageSender.sendMessages(batch)
     await messageSender.close()
+    const gradingSubmission: GradingSubmission = {
+      status: SubmissionStatus.Grading,
+      language: submission.language,
+      source: submission.source,
+      submissionID: submission.submissionID,
+      problemID: submission.problemID,
+      gradedCases: 0,
+      testcases: submissionTestcases
+    }
+    await submissionItem.replace(gradingSubmission)
+  } else {
+    const failedSubmission: FailedSubmission = {
+      status: SubmissionStatus.CompileFailed,
+      language: submission.language,
+      source: submission.source,
+      submissionID: submission.submissionID,
+      problemID: submission.problemID
+    }
+    await submissionItem.replace(failedSubmission)
   }
-  await submissionItem.replace(submission)
 }
