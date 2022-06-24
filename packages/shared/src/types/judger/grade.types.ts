@@ -14,6 +14,7 @@ export interface GradeTask {
     input: string
     output: string
   }
+  testcaseIndex: number
   constraints: Constraints
   language: SubmissionLang
 }
