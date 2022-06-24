@@ -2,7 +2,6 @@ import { Static, Type } from '@sinclair/typebox'
 
 import { SubmissionLang } from '../../configs/languages.config'
 
-import { CompileFailed, CompileSucceeded } from '../judger/compile.types'
 import { SubmissionAccepted, SubmissionWrongAnswer } from '../judger/grade.types'
 import { SandboxSystemError, SandboxTimeExceeded, SandboxRuntimeError, SandboxMemoryExceeded } from '../judger/general.types'
 
@@ -14,17 +13,63 @@ export const NewSubmissionSchema = Type.Object({
 
 export type NewSubmission = Static<typeof NewSubmissionSchema>
 
-export interface Submission {
+export enum SubmissionStatus {
+  Compiling = 'Compiling',
+  Grading = 'Grading',
+  CompileFailed = 'CompileFailed',
+  Graded = 'Graded',
+  Terminated = 'Terminated'
+}
+
+export interface CompilingSubmission {
   language: SubmissionLang
   source: string
   problemID: string
   submissionID: string
-  status: CompileFailed
-  |CompileSucceeded
-  |SubmissionAccepted
-  |SubmissionWrongAnswer
-  |SandboxSystemError
-  |SandboxTimeExceeded
-  |SandboxRuntimeError
-  |SandboxMemoryExceeded
+  status: SubmissionStatus.Compiling
+}
+
+export interface GradingSubmission {
+  language: SubmissionLang
+  source: string
+  problemID: string
+  submissionID: string
+  status: SubmissionStatus.Grading
+  gradedCases: number
+  testcases: Array<{
+    points: number
+    status?: SubmissionAccepted
+    |SubmissionWrongAnswer
+    |SandboxSystemError
+    |SandboxTimeExceeded
+    |SandboxRuntimeError
+    |SandboxMemoryExceeded
+  }>
+}
+
+export interface FailedSubmission {
+  language: SubmissionLang
+  source: string
+  problemID: string
+  submissionID: string
+  status: SubmissionStatus.CompileFailed | SubmissionStatus.Terminated
+}
+
+export interface GradedSubmission {
+  language: SubmissionLang
+  source: string
+  problemID: string
+  submissionID: string
+  status: SubmissionStatus.Graded
+  score: number
+  testcases: Array<{
+    testcaseID: string
+    points: number
+    status: SubmissionAccepted
+    |SubmissionWrongAnswer
+    |SandboxSystemError
+    |SandboxTimeExceeded
+    |SandboxRuntimeError
+    |SandboxMemoryExceeded
+  }>
 }
