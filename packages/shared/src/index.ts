@@ -15,4 +15,4 @@ export { CompileStatus, CompileSucceeded, CompileFailed, CompileTask } from './t
 export { GradeStatus, GradeTask, SubmissionAccepted, SubmissionWrongAnswer } from './types/judger/grade.types'
 
 export { Problem, ProblemSchema, NewProblem, NewProblemSchema } from './types/server/problem.types'
-export { NewSubmission, NewSubmissionSchema, Submission } from './types/server/submission.types'
+export { NewSubmission, NewSubmissionSchema, CompilingSubmission, GradingSubmission, GradedSubmission, FailedSubmission, SubmissionStatus } from './types/server/submission.types'
