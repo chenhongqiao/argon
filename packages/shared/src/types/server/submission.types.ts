@@ -38,7 +38,7 @@ export interface GradingSubmission {
   gradedCases: number
   testcases: Array<{
     points: number
-    status?: SubmissionAccepted
+    result?: SubmissionAccepted
     |SubmissionWrongAnswer
     |SandboxSystemError
     |SandboxTimeExceeded
@@ -52,6 +52,7 @@ export interface FailedSubmission {
   source: string
   problemID: string
   submissionID: string
+  log?: string
   status: SubmissionStatus.CompileFailed | SubmissionStatus.Terminated
 }
 
@@ -65,7 +66,7 @@ export interface GradedSubmission {
   testcases: Array<{
     testcaseID: string
     points: number
-    status: SubmissionAccepted
+    result: SubmissionAccepted
     |SubmissionWrongAnswer
     |SandboxSystemError
     |SandboxTimeExceeded
