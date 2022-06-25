@@ -16,11 +16,9 @@ export enum CompileStatus {
 
 export interface CompileSucceeded {
   status: CompileStatus.Succeeded
-  submissionID: string
 }
 
 export interface CompileFailed {
   status: CompileStatus.Failed
-  submissionID: string
   log: string
 }
