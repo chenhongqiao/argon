@@ -1,14 +1,15 @@
-import { languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradeStatus, GradeTask, SubmissionAccepted, SubmissionWrongAnswer } from '@project-carbon/shared'
+import {
+  languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradeStatus, GradeTask, SubmissionAccepted, SubmissionWrongAnswer, SandboxRuntimeError,
+  SandboxSystemError,
+  SandboxTimeExceeded,
+  SandboxMemoryExceeded
+} from '@project-carbon/shared'
 
 import * as path from 'path'
 
 import { exec } from '../utils/system.util'
 import {
-  runInSandbox,
-  SandboxMemoryExceeded,
-  SandboxRuntimeError,
-  SandboxSystemError,
-  SandboxTimeExceeded
+  runInSandbox
 } from './sandbox.service'
 
 export async function judgeSubmission (

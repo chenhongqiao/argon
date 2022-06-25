@@ -28,15 +28,13 @@ export async function compileSubmission (task: CompileTask, box: number): Promis
   if (result.status === SandboxStatus.Succeeded) {
     await uploadFromDisk(binaryPath, { containerName: 'binaries', blobName: task.submissionID })
     return {
-      status: CompileStatus.Succeeded,
-      submissionID: task.submissionID
+      status: CompileStatus.Succeeded
     }
   } else {
     const log = (await readFile(logPath)).data.toString()
     console.log(logPath)
     return {
       status: CompileStatus.Failed,
-      submissionID: task.submissionID,
       log
     }
   }
