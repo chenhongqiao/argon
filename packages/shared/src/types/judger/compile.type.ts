@@ -1,7 +1,7 @@
-import { Constraints, JudgerTaskType } from './general.types'
+import { Constraints, JudgerTaskType } from './general.type'
 import { SubmissionLang } from '../../configs/languages.config'
 
-import { Type, Static } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 
 export interface CompileTask {
   type: JudgerTaskType.Compile

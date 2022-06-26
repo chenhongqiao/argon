@@ -2,9 +2,7 @@ import { Static, Type } from '@sinclair/typebox'
 
 import { SubmissionLang } from '../../configs/languages.config'
 
-import {
-  GradingResultSchema
-} from '../judger/grade.types'
+import { GradingResultSchema } from '../judger/grade.type'
 
 export const NewSubmissionSchema = Type.Object({
   language: Type.Enum(SubmissionLang),
