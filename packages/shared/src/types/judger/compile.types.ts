@@ -1,6 +1,8 @@
 import { Constraints, JudgerTaskType } from './general.types'
 import { SubmissionLang } from '../../configs/languages.config'
 
+import { Type, Static } from '@sinclair/typebox'
+
 export interface CompileTask {
   type: JudgerTaskType.Compile
   source: string
@@ -14,11 +16,16 @@ export enum CompileStatus {
   Failed = 'CF'
 }
 
-export interface CompileSucceeded {
-  status: CompileStatus.Succeeded
-}
+export const CompileSucceededSchema = Type.Object({
+  status: Type.Literal(CompileStatus.Succeeded)
+}, { additionalProperties: false })
+export type CompileSucceeded = Static<typeof CompileSucceededSchema>
 
-export interface CompileFailed {
-  status: CompileStatus.Failed
-  log: string
-}
+export const CompileFailedSchema = Type.Object({
+  status: Type.Literal(CompileStatus.Failed),
+  log: Type.String()
+}, { additionalProperties: false })
+export type CompileFailed = Static<typeof CompileFailedSchema>
+
+export const CompileResultSchema = Type.Union([CompileSucceededSchema, CompileFailedSchema])
+export type CompileResult = Static<typeof CompileResultSchema>

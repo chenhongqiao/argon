@@ -14,9 +14,7 @@ export const NewProblemSchema = Type.Object({
   testcases: Type.Array(
     Type.Object({ input: Type.String(), output: Type.String(), points: Type.Number() })
   )
-})
-
-NewProblemSchema.additionalProperties = false
+}, { additionalProperties: false })
 
 export type NewProblem = Static<typeof NewProblemSchema>
 
@@ -33,8 +31,6 @@ export const ProblemSchema = Type.Object({
   testcases: Type.Array(
     Type.Object({ input: Type.String(), output: Type.String(), points: Type.Number() })
   )
-})
-
-ProblemSchema.additionalProperties = false
+}, { additionalProperties: false })
 
 export type Problem = Static<typeof ProblemSchema>

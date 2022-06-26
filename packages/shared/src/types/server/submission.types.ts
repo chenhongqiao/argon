@@ -2,8 +2,9 @@ import { Static, Type } from '@sinclair/typebox'
 
 import { SubmissionLang } from '../../configs/languages.config'
 
-import { SubmissionAccepted, SubmissionWrongAnswer } from '../judger/grade.types'
-import { SandboxSystemError, SandboxTimeExceeded, SandboxRuntimeError, SandboxMemoryExceeded } from '../judger/general.types'
+import {
+  GradingResultSchema
+} from '../judger/grade.types'
 
 export const NewSubmissionSchema = Type.Object({
   language: Type.Enum(SubmissionLang),
@@ -21,56 +22,53 @@ export enum SubmissionStatus {
   Terminated = 'Terminated'
 }
 
-export interface CompilingSubmission {
-  language: SubmissionLang
-  source: string
-  problemID: string
-  submissionID: string
-  status: SubmissionStatus.Compiling
-}
+export const CompilingSubmissionSchema = Type.Object({
+  status: Type.Literal(SubmissionStatus.Compiling),
+  language: Type.Enum(SubmissionLang),
+  source: Type.String(),
+  problemID: Type.String(),
+  id: Type.String()
+}, { additionalProperties: false })
+export type CompilingSubmission = Static<typeof CompilingSubmissionSchema>
 
-export interface GradingSubmission {
-  language: SubmissionLang
-  source: string
-  problemID: string
-  submissionID: string
-  status: SubmissionStatus.Grading
-  gradedCases: number
-  testcases: Array<{
-    points: number
-    result?: SubmissionAccepted
-    |SubmissionWrongAnswer
-    |SandboxSystemError
-    |SandboxTimeExceeded
-    |SandboxRuntimeError
-    |SandboxMemoryExceeded
-  }>
-}
+export const GradingSubmissionSchema = Type.Object({
+  status: Type.Literal(SubmissionStatus.Grading),
+  language: Type.Enum(SubmissionLang),
+  source: Type.String(),
+  problemID: Type.String(),
+  id: Type.String(),
+  gradedCases: Type.Number(),
+  testcases: Type.Array(Type.Object({
+    input: Type.String(),
+    output: Type.String(),
+    points: Type.Number(),
+    result: Type.Optional(GradingResultSchema)
+  }))
+}, { additionalProperties: false })
+export type GradingSubmission = Static<typeof GradingSubmissionSchema>
 
-export interface FailedSubmission {
-  language: SubmissionLang
-  source: string
-  problemID: string
-  submissionID: string
-  log?: string
-  status: SubmissionStatus.CompileFailed | SubmissionStatus.Terminated
-}
+export const FailedSubmissionSchema = Type.Object({
+  status: Type.Union([Type.Literal(SubmissionStatus.CompileFailed), Type.Literal(SubmissionStatus.Terminated)]),
+  language: Type.Enum(SubmissionLang),
+  source: Type.String(),
+  problemID: Type.String(),
+  id: Type.String(),
+  log: Type.Optional(Type.String())
+}, { additionalProperties: false })
+export type FailedSubmission = Static<typeof FailedSubmissionSchema>
 
-export interface GradedSubmission {
-  language: SubmissionLang
-  source: string
-  problemID: string
-  submissionID: string
-  status: SubmissionStatus.Graded
-  score: number
-  testcases: Array<{
-    testcaseID: string
-    points: number
-    result: SubmissionAccepted
-    |SubmissionWrongAnswer
-    |SandboxSystemError
-    |SandboxTimeExceeded
-    |SandboxRuntimeError
-    |SandboxMemoryExceeded
-  }>
-}
+export const GradedSubmissionSchema = Type.Object({
+  status: Type.Literal(SubmissionStatus.Graded),
+  language: Type.Enum(SubmissionLang),
+  source: Type.String(),
+  problemID: Type.String(),
+  id: Type.String(),
+  score: Type.Number(),
+  testcases: Type.Array(Type.Object({
+    input: Type.String(),
+    output: Type.String(),
+    points: Type.Number(),
+    result: GradingResultSchema
+  }))
+}, { additionalProperties: false })
+export type GradedSubmission = Static<typeof GradedSubmissionSchema>
