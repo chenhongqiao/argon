@@ -4,9 +4,7 @@ import { FileInfo, readFile, writeFile } from './fileSystem.infra'
 
 import { AzureError, NotFoundError } from '../classes/error.class'
 
-const client = BlobServiceClient.fromConnectionString(
-  'DefaultEndpointsProtocol=https;AccountName=tcprojectcarbondev;AccountKey=oDxdOJE/10uDti7ru//wQjQYIFku0vAAowHGM5itT9Q4EskCHuz5XYwvQw/JUw3R0Nr6YhbFETvjnPCP6o1dUw==;EndpointSuffix=core.windows.net'
-)
+const client = BlobServiceClient.fromConnectionString(process.env.BLOB_STORAGE_STRING ?? '')
 
 export interface BlobInfo {
   containerName: string
