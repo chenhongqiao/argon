@@ -18,8 +18,7 @@
   "dependencies": {
     "@fastify/multipart": "^6.0.0",
     "@fastify/type-provider-typebox": "^1.0.0",
-    "@project-carbon/judger": "^1.0.0",
-    "@project-carbon/shared": "^1.0.0",
+    "@project-carbon/shared": "workspace:*",
     "@sinclair/typebox": "^0.23.5",
     "fastify": "^4.1.0",
     "ts-json-schema-generator": "^1.0.0"
