@@ -10,9 +10,12 @@ export { NotFoundError, ConflictError, AzureError, DataError } from './classes/e
 
 export { SandboxStatus, Constraints, ConstraintsSchema, SandboxMemoryExceeded, SandboxTimeExceeded, SandboxRuntimeError, SandboxSystemError, JudgerTaskType } from './types/judger/general.types'
 
-export { CompileStatus, CompileSucceeded, CompileFailed, CompileTask } from './types/judger/compile.types'
+export { CompileStatus, CompileSucceeded, CompileFailed, CompileTask, CompileFailedSchema, CompileResultSchema, CompileSucceededSchema, CompileResult } from './types/judger/compile.types'
 
-export { GradeStatus, GradeTask, SubmissionAccepted, SubmissionWrongAnswer } from './types/judger/grade.types'
+export { GradeStatus, GradeTask, SolutionAccepted, SolutionAcceptedSchema, SolutionWrongAnswerSchema, SolutionWrongAnswer, GradingResultSchema, GradingResult } from './types/judger/grade.types'
 
 export { Problem, ProblemSchema, NewProblem, NewProblemSchema } from './types/server/problem.types'
-export { NewSubmission, NewSubmissionSchema, CompilingSubmission, GradingSubmission, GradedSubmission, FailedSubmission, SubmissionStatus } from './types/server/submission.types'
+export {
+  NewSubmission, NewSubmissionSchema, CompilingSubmission, GradingSubmission, GradedSubmission, FailedSubmission, SubmissionStatus,
+  CompilingSubmissionSchema, GradedSubmissionSchema, FailedSubmissionSchema, GradingSubmissionSchema
+} from './types/server/submission.types'
