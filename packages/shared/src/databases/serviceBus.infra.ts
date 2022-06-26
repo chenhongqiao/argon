@@ -1,8 +1,6 @@
 import { ServiceBusClient } from '@azure/service-bus'
 
-export const messageClient = new ServiceBusClient(
-  'Endpoint=sb://carbondev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=hX1nsR8WuiqrQEC2q2a/ce3PBMiT7MmvJ2AS02XQOc0='
-)
+export const messageClient = new ServiceBusClient(process.env.SERVICE_BUS_STRING ?? '')
 export const messageReceiver = messageClient.createReceiver('tasks', {
   receiveMode: 'receiveAndDelete'
 })
