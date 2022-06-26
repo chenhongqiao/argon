@@ -1,10 +1,16 @@
 import Fastify from 'fastify'
 import multipart from '@fastify/multipart'
+import { ajvTypeBoxPlugin, TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { problemsRoutes } from './routes/problems.route'
 import { testcasesRoutes } from './routes/testcases.route'
 
-const app = Fastify({ logger: true })
+const app = Fastify({
+  logger: true,
+  ajv: {
+    plugins: [ajvTypeBoxPlugin]
+  }
+}).withTypeProvider<TypeBoxTypeProvider>()
 
 export async function startServer (): Promise<void> {
   await app.register(multipart, {
@@ -17,7 +23,7 @@ export async function startServer (): Promise<void> {
   await app.register(testcasesRoutes, { prefix: '/testcases' })
 
   try {
-    await app.listen(3000)
+    await app.listen({ port: 3000 })
   } catch (err) {
     app.log.error(err)
     throw err
