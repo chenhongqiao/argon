@@ -1,4 +1,10 @@
-import { AzureError, cosmosDB, NotFoundError, Problem, NewProblem } from '@project-carbon/shared'
+import {
+  AzureError,
+  cosmosDB,
+  NewProblem,
+  NotFoundError,
+  Problem
+} from '@project-carbon/shared'
 
 const problemsContainer = cosmosDB.container('problems')
 
