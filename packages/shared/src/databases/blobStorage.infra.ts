@@ -1,6 +1,6 @@
 import { BlobServiceClient } from '@azure/storage-blob'
 
-import { readFile, writeFile, FileInfo } from './fileSystem.infra'
+import { FileInfo, readFile, writeFile } from './fileSystem.infra'
 
 import { AzureError, NotFoundError } from '../classes/error.class'
 
