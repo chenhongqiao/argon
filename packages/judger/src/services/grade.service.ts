@@ -1,8 +1,5 @@
 import {
-  languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradeStatus, GradeTask, SubmissionAccepted, SubmissionWrongAnswer, SandboxRuntimeError,
-  SandboxSystemError,
-  SandboxTimeExceeded,
-  SandboxMemoryExceeded
+  languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradeStatus, GradeTask, GradingResult
 } from '@project-carbon/shared'
 
 import * as path from 'path'
@@ -12,17 +9,10 @@ import {
   runInSandbox
 } from './sandbox.service'
 
-export async function judgeSubmission (
+export async function gradeSubmission (
   task: GradeTask,
   box: number
-): Promise<
-  | SubmissionAccepted
-  | SubmissionWrongAnswer
-  | SandboxMemoryExceeded
-  | SandboxRuntimeError
-  | SandboxTimeExceeded
-  | SandboxSystemError
-  > {
+): Promise<GradingResult> {
   const workDir = `/var/local/lib/isolate/${box}/box`
   const config = languageConfigs[task.language]
   await downloadToDisk(
