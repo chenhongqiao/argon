@@ -1,12 +1,13 @@
 import { SubmissionLang } from '../../configs/languages.config'
 
 import {
-  JudgerTaskType,
   Constraints,
+  JudgerTaskType,
+  SandboxMemoryExceededSchema,
+  SandboxRuntimeErrorSchema,
   SandboxSystemErrorSchema,
-  SandboxTimeExceededSchema,
-  SandboxRuntimeErrorSchema, SandboxMemoryExceededSchema
-} from './general.types'
+  SandboxTimeExceededSchema
+} from './general.type'
 
 import { Static, Type } from '@sinclair/typebox'
 

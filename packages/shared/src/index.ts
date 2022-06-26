@@ -8,14 +8,14 @@ export { SubmissionLang, languageConfigs } from './configs/languages.config'
 
 export { NotFoundError, ConflictError, AzureError, DataError } from './classes/error.class'
 
-export { SandboxStatus, Constraints, ConstraintsSchema, SandboxMemoryExceeded, SandboxTimeExceeded, SandboxRuntimeError, SandboxSystemError, JudgerTaskType } from './types/judger/general.types'
+export { SandboxStatus, Constraints, ConstraintsSchema, SandboxMemoryExceeded, SandboxTimeExceeded, SandboxRuntimeError, SandboxSystemError, JudgerTaskType } from './types/judger/general.type'
 
-export { CompileStatus, CompileSucceeded, CompileFailed, CompileTask, CompileFailedSchema, CompileResultSchema, CompileSucceededSchema, CompileResult } from './types/judger/compile.types'
+export { CompileStatus, CompileSucceeded, CompileFailed, CompileTask, CompileFailedSchema, CompileResultSchema, CompileSucceededSchema, CompileResult } from './types/judger/compile.type'
 
-export { GradeStatus, GradeTask, SolutionAccepted, SolutionAcceptedSchema, SolutionWrongAnswerSchema, SolutionWrongAnswer, GradingResultSchema, GradingResult } from './types/judger/grade.types'
+export { GradeStatus, GradeTask, SolutionAccepted, SolutionAcceptedSchema, SolutionWrongAnswerSchema, SolutionWrongAnswer, GradingResultSchema, GradingResult } from './types/judger/grade.type'
 
-export { Problem, ProblemSchema, NewProblem, NewProblemSchema } from './types/server/problem.types'
+export { Problem, ProblemSchema, NewProblem, NewProblemSchema } from './types/server/problem.type'
 export {
   NewSubmission, NewSubmissionSchema, CompilingSubmission, GradingSubmission, GradedSubmission, FailedSubmission, SubmissionStatus,
   CompilingSubmissionSchema, GradedSubmissionSchema, FailedSubmissionSchema, GradingSubmissionSchema
-} from './types/server/submission.types'
+} from './types/server/submission.type'
