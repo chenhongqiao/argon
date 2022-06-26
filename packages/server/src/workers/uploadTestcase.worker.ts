@@ -1,6 +1,6 @@
 import { parentPort, workerData } from 'node:worker_threads'
 
-import { uploadBuffer, cleanTestcase } from '@project-carbon/shared'
+import { cleanTestcase, uploadBuffer } from '@project-carbon/shared'
 
 const { data } = workerData
 const cleaned = cleanTestcase(data)
