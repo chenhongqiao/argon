@@ -1,6 +1,14 @@
 import { SubmissionLang } from '../../configs/languages.config'
 
-import { JudgerTaskType, Constraints } from './general.types'
+import {
+  JudgerTaskType,
+  Constraints,
+  SandboxSystemErrorSchema,
+  SandboxTimeExceededSchema,
+  SandboxRuntimeErrorSchema, SandboxMemoryExceededSchema
+} from './general.types'
+
+import { Static, Type } from '@sinclair/typebox'
 
 export enum GradeStatus {
   Accepted = 'AC',
@@ -19,18 +27,30 @@ export interface GradeTask {
   language: SubmissionLang
 }
 
-export interface SubmissionAccepted {
-  status: GradeStatus.Accepted
-  message: string
-  memory: number
-  time: number
-  wallTime: number
-}
+export const SolutionAcceptedSchema = Type.Object({
+  status: Type.Literal(GradeStatus.Accepted),
+  message: Type.String(),
+  memory: Type.Number(),
+  time: Type.Number(),
+  wallTime: Type.Number()
+}, { additionalProperties: false })
+export type SolutionAccepted = Static<typeof SolutionAcceptedSchema>
 
-export interface SubmissionWrongAnswer {
-  status: GradeStatus.WrongAnswer
-  message: string
-  memory: number
-  time: number
-  wallTime: number
-}
+export const SolutionWrongAnswerSchema = Type.Object({
+  status: Type.Literal(GradeStatus.WrongAnswer),
+  message: Type.String(),
+  memory: Type.Number(),
+  time: Type.Number(),
+  wallTime: Type.Number()
+}, { additionalProperties: false })
+export type SolutionWrongAnswer = Static<typeof SolutionWrongAnswerSchema>
+
+export const GradingResultSchema = Type.Union([
+  SolutionAcceptedSchema,
+  SolutionWrongAnswerSchema,
+  SandboxSystemErrorSchema,
+  SandboxTimeExceededSchema,
+  SandboxRuntimeErrorSchema,
+  SandboxMemoryExceededSchema
+])
+export type GradingResult = Static<typeof GradingResultSchema>
