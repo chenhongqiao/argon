@@ -6,7 +6,7 @@ const { data } = workerData
 const cleaned = cleanTestcase(data)
 
 uploadBuffer(cleaned, { containerName: 'testcases', blobName: workerData.id }).then((result) => {
-  parentPort?.postMessage({ id: result.blobName })
+  parentPort?.postMessage({ testcaseID: result.blobName })
 }).catch((err) => {
   throw err
 })
