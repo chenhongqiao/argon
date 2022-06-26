@@ -1,5 +1,5 @@
 import { destroySandbox, initSandbox } from './services/sandbox.service'
-import { judgeSubmission } from './services/grade.service'
+import { gradeSubmission } from './services/grade.service'
 import { compileSubmission } from './services/compile.service'
 
 import { messageReceiver, GradeTask, CompileTask, JudgerTaskType } from '@project-carbon/shared'
@@ -9,7 +9,7 @@ const sandboxes = new Set()
 
 async function handleGradeTask (task: GradeTask, box: number): Promise<void> {
   await initSandbox(box)
-  const result = await judgeSubmission(task, box)
+  const result = await gradeSubmission(task, box)
   console.log(result)
   await destroySandbox(box)
   sandboxes.add(box)
