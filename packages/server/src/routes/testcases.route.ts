@@ -1,50 +1,49 @@
 import { FastifyPluginCallback } from 'fastify'
 
-import { uploadTestcase, deleteTestcase } from '../services/testcases.service'
+import { deleteTestcase, uploadTestcase } from '../services/testcases.service'
 import { NotFoundError } from '@project-carbon/shared/dist/src'
 
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+
+import { Type } from '@sinclair/typebox'
+
 export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
-  app.post(
+  const route = app.withTypeProvider<TypeBoxTypeProvider>()
+  route.post(
     '/',
     {
       schema: {
         response: {
-          200: {
-            type: 'array',
-            items: { type: 'object', properties: { testcaseID: { type: 'string' } } }
-          },
-          500: { type: 'object', properties: { message: { type: 'string' } } }
+          201: Type.Array(Type.Object({ testcaseID: Type.String() })),
+          500: Type.Object({ message: Type.String() })
         }
       }
     },
     async (request, reply) => {
       const testcases = request.parts()
-      const queue: Array<Promise<{id: string}>> = []
+      const queue: Array<Promise<{testcaseID: string}>> = []
       try {
         for await (const file of testcases) {
           queue.push(uploadTestcase(file))
         }
         const results = await Promise.all(queue)
-        void reply.status(200).send(results)
+        console.log(results)
+        void reply.status(201).send(results)
       } catch (err) {
         void reply.status(500).send({ message: 'Server error' })
       }
     }
   )
 
-  app.delete<{ Params: { testcaseID: string } }>(
+  route.delete(
     '/:testcaseID',
     {
       schema: {
-        params: {
-          testcaseID: {
-            type: 'string'
-          }
-        },
+        params: Type.Object({ testcaseID: Type.String() }),
         response: {
-          200: { type: 'object', properties: { testcaseID: { type: 'string' } } },
-          404: { type: 'object', properties: { message: { type: 'string' } } },
-          500: { type: 'object', properties: { message: { type: 'string' } } }
+          200: Type.Object({ testcaseID: Type.String() }),
+          404: Type.Object({ message: Type.String() }),
+          500: Type.Object({ message: Type.String() })
         }
       }
     },

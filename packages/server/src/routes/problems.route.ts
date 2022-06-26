@@ -1,12 +1,10 @@
 import { FastifyPluginCallback } from 'fastify'
 
 import {
-  NotFoundError, NewProblem,
   NewProblemSchema,
-  Problem,
+  NotFoundError,
   ProblemSchema
 } from '@project-carbon/shared'
-import { Type } from '@sinclair/typebox'
 import {
   createProblem,
   deleteProblem,
@@ -15,15 +13,19 @@ import {
   updateProblem
 } from '../services/problems.service'
 
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { Type } from '@sinclair/typebox'
+
 export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
-  app.post<{ Body: NewProblem }>(
+  const route = app.withTypeProvider<TypeBoxTypeProvider>()
+  route.post(
     '/',
     {
       schema: {
         body: NewProblemSchema,
         response: {
-          200: { type: 'object', properties: { problemID: { type: 'string' } } },
-          500: { type: 'object', properties: { message: { type: 'string' } } }
+          201: Type.Object({ problemID: Type.String() }),
+          500: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -31,24 +33,22 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
       const problem = request.body
       try {
         const result = await createProblem(problem)
-        void reply.status(200).send(result)
+        void reply.status(201).send(result)
       } catch (err) {
         void reply.status(500).send({ message: 'Server error' })
       }
     }
   )
 
-  app.get<{ Params: { problemID: string } }>(
+  route.get(
     '/:problemID',
     {
       schema: {
-        params: {
-          problemID: { type: 'string' }
-        },
+        params: Type.Object({ problemID: Type.String() }),
         response: {
           200: ProblemSchema,
-          404: { type: 'object', properties: { message: { type: 'string' } } },
-          500: { type: 'object', properties: { message: { type: 'string' } } }
+          404: Type.Object({ message: Type.String() }),
+          500: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -67,13 +67,13 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
     }
   )
 
-  app.get<{ Params: { problemID: string } }>(
+  route.get(
     '/',
     {
       schema: {
         response: {
           200: Type.Array(ProblemSchema),
-          500: { type: 'object', properties: { message: { type: 'string' } } }
+          500: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -82,20 +82,21 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
         const problems = await fetchAllProblems()
         void reply.status(200).send(problems)
       } catch (err) {
+        console.log(err)
         void reply.status(500).send({ message: 'Server error' })
       }
     }
   )
 
-  app.put<{ Body: Problem }>(
+  route.put(
     '/',
     {
       schema: {
         body: ProblemSchema,
         response: {
-          200: { type: 'object', properties: { problemID: { type: 'string' } } },
-          400: { type: 'object', properties: { message: { type: 'string' } } },
-          500: { type: 'object', properties: { message: { type: 'string' } } }
+          200: Type.Object({ problemID: Type.String() }),
+          404: Type.Object({ message: Type.String() }),
+          500: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -114,17 +115,15 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
     }
   )
 
-  app.delete<{ Params: { problemID: string } }>(
+  route.delete(
     '/:problemID',
     {
       schema: {
-        params: {
-          problemID: { type: 'string' }
-        },
+        params: Type.Object({ problemID: Type.String() }),
         response: {
-          200: { type: 'object', properties: { problemID: { type: 'string' } } },
-          404: { type: 'object', properties: { message: { type: 'string' } } },
-          500: { type: 'object', properties: { message: { type: 'string' } } }
+          200: Type.Object({ problemID: Type.String() }),
+          404: Type.Object({ message: Type.String() }),
+          500: Type.Object({ message: Type.String() })
         }
       }
     },
