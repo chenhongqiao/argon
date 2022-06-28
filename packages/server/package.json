@@ -20,6 +20,7 @@
     "@fastify/type-provider-typebox": "^1.0.0",
     "@project-carbon/shared": "workspace:*",
     "@sinclair/typebox": "^0.23.5",
+    "@types/long": "^4.0.2",
     "fastify": "^4.1.0"
   }
 }
