@@ -1,4 +1,6 @@
 node_modules
-.yarn
+.yarn/cache
+.yarn/sdks
+.yarn/install-state.gz
 .env
 .DS_Store
