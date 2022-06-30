@@ -1,11 +1,11 @@
 {
   "name": "@project-carbon/judger",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "description": "Project Carbon Judger",
   "author": "TeamsCode",
-  "license": "UNLICENSED",
+  "license": "GPL-3.0",
   "engines": {
     "node": ">=14.0.0"
   },
