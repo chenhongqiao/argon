@@ -4,6 +4,8 @@ import { ajvTypeBoxPlugin, TypeBoxTypeProvider } from '@fastify/type-provider-ty
 
 import { problemsRoutes } from './routes/problems.route'
 import { testcasesRoutes } from './routes/testcases.route'
+import { heartbeatRoutes } from './routes/heartbeat.route'
+import { submissionsRoutes } from './routes/submissions.route'
 
 const app = Fastify({
   logger: true,
@@ -21,9 +23,13 @@ export async function startServer (): Promise<void> {
   })
   await app.register(problemsRoutes, { prefix: '/problems' })
   await app.register(testcasesRoutes, { prefix: '/testcases' })
+  await app.register(submissionsRoutes, { prefix: '/submissions' })
+  await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
 
   try {
-    await app.listen({ port: 3000 })
+    const port: number = parseInt(process.env.SERVER_PORT ?? '3000')
+    await app.listen({ port })
+    console.log(`Server started on port ${port}.`)
   } catch (err) {
     app.log.error(err)
     throw err
