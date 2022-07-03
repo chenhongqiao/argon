@@ -16,7 +16,7 @@ export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
         }
       }
     },
-    async (request, reply) => {
+    (request, reply) => {
       void reply.status(200).send({ version, ready: true })
     }
   )

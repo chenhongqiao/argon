@@ -62,9 +62,9 @@ export async function startJudger (): Promise<void> {
       const boxID = availableBoxes.values().next().value
       availableBoxes.delete(boxID)
       if (task.type === JudgerTaskType.Grading) {
-        void handleGradingTask(task, boxID)
+        await handleGradingTask(task, boxID)
       } else if (task.type === JudgerTaskType.Compiling) {
-        void handleCompilingTask(task, boxID)
+        await handleCompilingTask(task, boxID)
       }
     },
     processError: async (error): Promise<void> => {
