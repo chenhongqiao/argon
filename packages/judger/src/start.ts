@@ -2,7 +2,7 @@ import { destroySandbox, initSandbox } from './services/sandbox.service'
 import { gradeSubmission } from './services/grade.service'
 import { compileSubmission } from './services/compile.service'
 
-import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType } from '@project-carbon/shared'
+import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } from '@project-carbon/shared'
 
 import * as os from 'os'
 import { randomUUID } from 'crypto'
@@ -56,21 +56,27 @@ export async function startJudger (): Promise<void> {
 
   console.log('All sandboxes initialized.')
 
-  messageReceiver.subscribe({
-    processMessage: async (message): Promise<void> => {
-      const task = message.body
-      const boxID = availableBoxes.values().next().value
-      availableBoxes.delete(boxID)
-      if (task.type === JudgerTaskType.Grading) {
-        await handleGradingTask(task, boxID)
-      } else if (task.type === JudgerTaskType.Compiling) {
-        await handleCompilingTask(task, boxID)
-      }
-    },
-    processError: async (error): Promise<void> => {
-      console.error(error)
-    }
-  })
+  console.log('Start receiving tasks.')
 
-  console.log('Subscribed to Service Bus. Receiving tasks.')
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    if (availableBoxes.size > 0) {
+      const messages = await messageReceiver.receiveMessages(availableBoxes.size)
+      const tasks: Array<GradingTask | CompilingTask> = messages.map(
+        message => message.body
+      )
+      console.log(tasks.length)
+      tasks.forEach(task => {
+        const boxID = availableBoxes.values().next().value
+        availableBoxes.delete(boxID)
+        if (task.type === JudgerTaskType.Grading) {
+          void handleGradingTask(task, boxID)
+        } else if (task.type === JudgerTaskType.Compiling) {
+          void handleCompilingTask(task, boxID)
+        }
+      })
+    } else {
+      await delay(200)
+    }
+  }
 }
