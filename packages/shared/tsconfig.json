@@ -12,6 +12,8 @@
     "lib": [
       "es2021"
     ],
+    "target": "ES6",
+    "moduleResolution": "node"
   },
   "include": [
     "./src"
