@@ -51,7 +51,7 @@ export async function compileSubmission (submissionID: string): Promise<void> {
     constraints: languageConfigs[submission.language].constraints
   }
   const batch = await messageSender.createMessageBatch()
-  if (!(Boolean(batch.tryAddMessage({ body: task })))) {
+  if (!batch.tryAddMessage({ body: task })) {
     throw new DataError('Task too big to fit in the queue', JSON.stringify(submission))
   }
   await messageSender.sendMessages(batch)
@@ -94,7 +94,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
         testcaseIndex: index,
         language: submission.language
       }
-      if (!(Boolean(batch.tryAddMessage({ body: task })))) {
+      if (!batch.tryAddMessage({ body: task })) {
         throw new DataError('Task too big to fit in the queue', JSON.stringify(task))
       }
       submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
@@ -163,6 +163,7 @@ export async function completeGrading (submissionID: string, log?: string): Prom
       problemID: submission.problemID,
       id: submission.id,
       // @ts-expect-error
+      // Since we've previously checked that the number of graded testcase is equal to the number of total testcases, we can assume that all testcases have a result property.
       testcases: submission.testcases,
       score
     }
@@ -185,8 +186,10 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
     if (submission.testcases[testcaseIndex] == null) {
       throw new NotFoundError('Testcase not found', testcaseIndex)
     }
+    if (submission.testcases[testcaseIndex].result == null) {
+      submission.gradedCases += 1
+    }
     submission.testcases[testcaseIndex].result = gradingResult
-    submission.gradedCases += 1
     await submissionItem.replace(submission)
     if (submission.gradedCases === submission.testcases.length) {
       await completeGrading(submissionID)
