@@ -162,8 +162,7 @@ export async function completeGrading (submissionID: string, log?: string): Prom
       source: submission.source,
       problemID: submission.problemID,
       id: submission.id,
-      // @ts-expect-error
-      // Since we've previously checked that the number of graded testcase is equal to the number of total testcases, we can assume that all testcases have a result property.
+      // @ts-expect-error Since we've previously checked that the number of graded testcase is equal to the number of total testcases, we can assume that all testcases have a result property.
       testcases: submission.testcases,
       score
     }
