@@ -50,7 +50,7 @@ export async function downloadToDisk (
   let data: Buffer
   try {
     data = await blob.downloadToBuffer()
-  } catch (err: any) {
+  } catch (err) {
     if (err.statusCode === 404) {
       throw new NotFoundError('Blob not found', err.request.url)
     } else {
@@ -72,7 +72,7 @@ export async function getBlobHash (blobInfo: BlobInfo): Promise<{ md5: string }>
     } else {
       return { md5: '!' }
     }
-  } catch (err: any) {
+  } catch (err) {
     if (err.statusCode === 404) {
       throw new NotFoundError('Blob not found', err.request.url)
     } else {
@@ -88,7 +88,7 @@ export async function downloadBuffer (blobInfo: BlobInfo): Promise<{ data: Buffe
   let data: Buffer
   try {
     data = await blob.downloadToBuffer()
-  } catch (err: any) {
+  } catch (err) {
     if (err.statusCode === 404) {
       throw new NotFoundError('Blob not found', err.request.url)
     } else {
@@ -104,7 +104,7 @@ export async function deleteBlob (blobInfo: BlobInfo): Promise<BlobInfo> {
   let result
   try {
     result = await container.deleteBlob(blobName)
-  } catch (err: any) {
+  } catch (err) {
     if (err.statusCode === 404) {
       throw new NotFoundError('Blob not found', err.request.url)
     } else {
