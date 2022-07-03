@@ -12,19 +12,36 @@ import {
   SandboxMemoryExceeded
 } from '@project-carbon/shared'
 
-async function parseMeta (metaStr: string): Promise<any> {
-  const meta = metaStr.split('\n')
-  const result: any = {}
-  meta.forEach(row => {
+interface SandboxMeta {
+  status?: string
+  memory?: number
+  time?: number
+  'wall-time'?: number
+  exitsig?: number
+  message?: string
+}
+
+function parseMeta (metaStr: string): SandboxMeta {
+  const result: SandboxMeta = {}
+  metaStr.split('\n').forEach(row => {
     const pair = row.split(':')
-    if (pair.length === 2) {
-      if (pair[0] !== 'cg-mem') {
-        result[pair[0]] = pair[1]
-      } else {
-        result.memory = pair[1]
-      }
+    const key = pair[0]
+    const value = pair[1]
+    if (key === 'status') {
+      result.status = value
+    } else if (key === 'cg-mem') {
+      result.memory = parseInt(value)
+    } else if (key === 'time') {
+      result.time = parseInt((parseFloat(value) * 1000).toFixed())
+    } else if (key === 'wall-time') {
+      result['wall-time'] = parseInt((parseFloat(value) * 1000).toFixed())
+    } else if (key === 'exitsig') {
+      result.exitsig = parseInt(value)
+    } else if (key === 'message') {
+      result.message = value
     }
   })
+
   return result
 }
 
@@ -103,80 +120,16 @@ export async function runInSandbox (
   }
   command += ' -- ' + task.command
 
-  console.log(command)
-
+  let abnormalTermination = false
   try {
     await exec(command)
   } catch (err) {
-    let meta: string
-    try {
-      meta = (
-        await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)
-      ).data.toString()
-    } catch (err) {
-      if (err instanceof NotFoundError) {
-        return {
-          status: SandboxStatus.SystemError,
-          message: 'Meta file does not exist on abnormal termination'
-        }
-      } else {
-        throw err
-      }
-    }
-
-    const result: any = await parseMeta(meta)
-
-    switch (result.status) {
-      case 'XX':
-        return {
-          status: SandboxStatus.SystemError,
-          message: result.message ?? 'Isolate threw system error'
-        }
-      case 'RE':
-        return {
-          status: SandboxStatus.RuntimeError,
-          message: result.message ?? 'Isolate threw runtime error'
-        }
-      case 'CG':
-        if (
-          (task.constraints.memory != null) &&
-          result.exitsig === '9' &&
-          (Boolean(result.memory)) &&
-          parseInt(result.memory) > task.constraints.memory
-        ) {
-          return {
-            status: SandboxStatus.MemoryExceeded,
-            message: 'Memory limit exceeded',
-            memory: parseInt(result.memory)
-          }
-        } else {
-          return {
-            status: SandboxStatus.RuntimeError,
-            message: result.message ?? 'Program exit on signal'
-          }
-        }
-      case 'TO':
-        return {
-          status: SandboxStatus.TimeExceeded,
-          message: result.message ?? 'Isolate reported timeout',
-          time: parseInt((parseFloat(result.time) * 1000).toFixed()),
-          wallTime: parseInt(
-            (parseFloat(result['time-wall']) * 1000).toFixed()
-          )
-        }
-      default:
-        return {
-          status: SandboxStatus.SystemError,
-          message: 'Unknown status on abnormal termination'
-        }
-    }
+    abnormalTermination = true
   }
 
   let meta: string
   try {
-    meta = (
-      await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)
-    ).data.toString()
+    meta = (await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)).data.toString()
   } catch (err) {
     if (err instanceof NotFoundError) {
       return {
@@ -188,12 +141,68 @@ export async function runInSandbox (
     }
   }
 
-  const result: any = await parseMeta(meta)
-  return {
-    status: SandboxStatus.Succeeded,
-    time: parseInt((parseFloat(result.time) * 1000).toFixed()),
-    wallTime: parseInt((parseFloat(result['time-wall']) * 1000).toFixed()),
-    memory: parseInt(result.memory),
-    message: 'Task completed successfully'
+  const result = parseMeta(meta)
+
+  switch (result.status) {
+    case 'XX':
+      return {
+        status: SandboxStatus.SystemError,
+        message: result.message ?? 'Isolate threw system error.'
+      }
+    case 'RE':
+      return {
+        status: SandboxStatus.RuntimeError,
+        message: result.message ?? 'Isolate threw runtime error.'
+      }
+    case 'CG':
+      if (
+        (task.constraints.memory != null) &&
+        result.exitsig === 9 &&
+        result.memory != null &&
+        result.memory > task.constraints.memory
+      ) {
+        return {
+          status: SandboxStatus.MemoryExceeded,
+          message: 'Memory limit exceeded.',
+          memory: result.memory
+        }
+      } else {
+        return {
+          status: SandboxStatus.RuntimeError,
+          message: result.message ?? 'Program exit on signal.'
+        }
+      }
+    case 'TO':
+      if (result.time == null || result['time-wall'] == null) {
+        return {
+          status: SandboxStatus.SystemError,
+          message: 'Isolate reported timeout but no time info found in meta.'
+        }
+      }
+      return {
+        status: SandboxStatus.TimeExceeded,
+        message: result.message ?? 'Isolate reported timeout',
+        time: result.time,
+        wallTime: result['time-wall']
+      }
+    case 'OK':
+      if (result.time == null || result['time-wall'] == null || result.memory == null) {
+        return {
+          status: SandboxStatus.SystemError,
+          message: 'Isolate reported OK but no time info or memory info found in meta.'
+        }
+      }
+      return {
+        status: SandboxStatus.Succeeded,
+        time: result.time,
+        wallTime: result['time-wall'],
+        memory: result.memory,
+        message: 'Task completed successfully.'
+      }
+    default:
+      return {
+        status: SandboxStatus.SystemError,
+        message: `Unknown status on ${abnormalTermination ? 'abnormal' : 'normal'} termination.`
+      }
   }
 }
