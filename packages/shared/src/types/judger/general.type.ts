@@ -1,8 +1,8 @@
 import { Static, Type } from '@sinclair/typebox'
 
 export enum JudgerTaskType {
-  Compile = 'Compile',
-  Grade = 'Grade',
+  Compiling = 'Compiling',
+  Grading = 'Grading',
 }
 
 export enum SandboxStatus {

@@ -3,29 +3,29 @@ import { SubmissionLang } from '../../configs/languages.config'
 
 import { Static, Type } from '@sinclair/typebox'
 
-export interface CompileTask {
-  type: JudgerTaskType.Compile
+export interface CompilingTask {
+  type: JudgerTaskType.Compiling
   source: string
-  constrains: Constraints
+  constraints: Constraints
   language: SubmissionLang
   submissionID: string
 }
 
-export enum CompileStatus {
+export enum CompilingStatus {
   Succeeded = 'CS',
   Failed = 'CF'
 }
 
 export const CompileSucceededSchema = Type.Object({
-  status: Type.Literal(CompileStatus.Succeeded)
+  status: Type.Literal(CompilingStatus.Succeeded)
 }, { additionalProperties: false })
 export type CompileSucceeded = Static<typeof CompileSucceededSchema>
 
 export const CompileFailedSchema = Type.Object({
-  status: Type.Literal(CompileStatus.Failed),
+  status: Type.Literal(CompilingStatus.Failed),
   log: Type.String()
 }, { additionalProperties: false })
 export type CompileFailed = Static<typeof CompileFailedSchema>
 
-export const CompileResultSchema = Type.Union([CompileSucceededSchema, CompileFailedSchema])
-export type CompileResult = Static<typeof CompileResultSchema>
+export const CompilingResultSchema = Type.Union([CompileSucceededSchema, CompileFailedSchema])
+export type CompilingResult = Static<typeof CompilingResultSchema>

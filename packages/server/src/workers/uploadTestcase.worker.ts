@@ -5,7 +5,7 @@ import { cleanTestcase, uploadBuffer } from '@project-carbon/shared'
 const { data } = workerData
 const cleaned = cleanTestcase(data)
 
-uploadBuffer(cleaned, { containerName: 'testcases', blobName: workerData.id }).then((result) => {
+uploadBuffer(cleaned, { containerName: 'testcases', blobName: workerData.testcaseID }).then((result) => {
   parentPort?.postMessage({ testcaseID: result.blobName })
 }).catch((err) => {
   throw err

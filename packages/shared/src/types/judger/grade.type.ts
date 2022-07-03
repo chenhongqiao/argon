@@ -11,15 +11,15 @@ import {
 
 import { Static, Type } from '@sinclair/typebox'
 
-export enum GradeStatus {
+export enum GradingStatus {
   Accepted = 'AC',
   WrongAnswer = 'WA',
 }
 
-export interface GradeTask {
-  type: JudgerTaskType.Grade
+export interface GradingTask {
+  type: JudgerTaskType.Grading
   submissionID: string
-  testcaseID: {
+  testcase: {
     input: string
     output: string
   }
@@ -29,7 +29,7 @@ export interface GradeTask {
 }
 
 export const SolutionAcceptedSchema = Type.Object({
-  status: Type.Literal(GradeStatus.Accepted),
+  status: Type.Literal(GradingStatus.Accepted),
   message: Type.String(),
   memory: Type.Number(),
   time: Type.Number(),
@@ -38,7 +38,7 @@ export const SolutionAcceptedSchema = Type.Object({
 export type SolutionAccepted = Static<typeof SolutionAcceptedSchema>
 
 export const SolutionWrongAnswerSchema = Type.Object({
-  status: Type.Literal(GradeStatus.WrongAnswer),
+  status: Type.Literal(GradingStatus.WrongAnswer),
   message: Type.String(),
   memory: Type.Number(),
   time: Type.Number(),

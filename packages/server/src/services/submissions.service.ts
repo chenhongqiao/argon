@@ -1,15 +1,15 @@
 import {
   AzureError,
-  CompileResult,
-  CompileStatus,
-  CompileTask,
+  CompilingResult,
+  CompilingStatus,
+  CompilingTask,
   CompilingSubmission,
   cosmosDB,
   DataError,
   FailedSubmission,
   GradedSubmission,
-  GradeStatus,
-  GradeTask,
+  GradingStatus,
+  GradingTask,
   GradingResult,
   GradingSubmission,
   JudgerTaskType,
@@ -43,12 +43,12 @@ export async function compileSubmission (submissionID: string): Promise<void> {
     }
   }
   const submission = submissionFetchResult.resource
-  const task: CompileTask = {
+  const task: CompilingTask = {
     submissionID: submission.id,
     source: submission.source,
-    type: JudgerTaskType.Compile,
+    type: JudgerTaskType.Compiling,
     language: submission.language,
-    constrains: languageConfigs[submission.language].constrains
+    constraints: languageConfigs[submission.language].constraints
   }
   const batch = await messageSender.createMessageBatch()
   if (!(Boolean(batch.tryAddMessage({ body: task })))) {
@@ -58,7 +58,7 @@ export async function compileSubmission (submissionID: string): Promise<void> {
   await messageSender.close()
 }
 
-export async function handleCompileResult (compileResult: CompileResult, submissionID: string): Promise<void> {
+export async function handleCompileResult (compileResult: CompilingResult, submissionID: string): Promise<void> {
   const submissionItem = submissionsContainer.item(submissionID, submissionID)
   const submissionFetchResult = await submissionItem.read<CompilingSubmission>()
   if (submissionFetchResult.resource == null) {
@@ -69,7 +69,7 @@ export async function handleCompileResult (compileResult: CompileResult, submiss
     }
   }
   const submission = submissionFetchResult.resource
-  if (compileResult.status === CompileStatus.Succeeded) {
+  if (compileResult.status === CompilingStatus.Succeeded) {
     const batch = await messageSender.createMessageBatch()
     const problemItem = problemsContainer.item(submission.problemID, submission.problemID)
     const problemFetchResult = await problemItem.read<Problem>()
@@ -83,11 +83,11 @@ export async function handleCompileResult (compileResult: CompileResult, submiss
     const problem: Problem = problemFetchResult.resource
     const submissionTestcases: Array<{points: number, input: string, output: string}> = []
     problem.testcases.forEach((testcase, index) => {
-      const task: GradeTask = {
+      const task: GradingTask = {
         constraints: problem.constraints,
-        type: JudgerTaskType.Grade,
+        type: JudgerTaskType.Grading,
         submissionID,
-        testcaseID: {
+        testcase: {
           input: testcase.input,
           output: testcase.output
         },
@@ -152,7 +152,7 @@ export async function completeGrading (submissionID: string, log?: string): Prom
   } else {
     let score = 0
     submission.testcases.forEach(testcase => {
-      if (testcase.result != null && testcase.result.status === GradeStatus.Accepted) {
+      if (testcase.result != null && testcase.result.status === GradingStatus.Accepted) {
         score += testcase.points
       }
     })

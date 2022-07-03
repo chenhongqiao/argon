@@ -1,5 +1,5 @@
 import {
-  languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradeStatus, GradeTask, GradingResult
+  languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradingStatus, GradingTask, GradingResult
 } from '@project-carbon/shared'
 
 import * as path from 'path'
@@ -10,10 +10,10 @@ import {
 } from './sandbox.service'
 
 export async function gradeSubmission (
-  task: GradeTask,
-  box: number
+  task: GradingTask,
+  boxID: number
 ): Promise<GradingResult> {
-  const workDir = `/var/local/lib/isolate/${box}/box`
+  const workDir = `/var/local/lib/isolate/${boxID}/box`
   const config = languageConfigs[task.language]
   await downloadToDisk(
     path.join(workDir, config.binaryFile),
@@ -27,7 +27,7 @@ export async function gradeSubmission (
     path.join(workDir, 'in.txt'),
     {
       containerName: 'testcases',
-      blobName: task.testcaseID.input
+      blobName: task.testcase.input
     }
   )
 
@@ -36,17 +36,17 @@ export async function gradeSubmission (
   const sandboxResult = await runInSandbox(
     {
       command,
-      constrains: task.constraints,
+      constraints: task.constraints,
       inputPath: 'in.txt',
       outputPath: 'out.txt'
     },
-    box
+    boxID
   )
   if (sandboxResult.status === SandboxStatus.Succeeded) {
     const correctHash = await getBlobHash(
       {
         containerName: 'testcases',
-        blobName: task.testcaseID.output
+        blobName: task.testcase.output
       }
     )
     await exec(`sed 's/[ \t]*$//' -i ${path.join(workDir, 'out.txt')}`)
@@ -60,7 +60,7 @@ export async function gradeSubmission (
     const { time, wallTime, memory } = sandboxResult
     if (md5sum.stdout.trimEnd() === correctHash.md5) {
       return {
-        status: GradeStatus.Accepted,
+        status: GradingStatus.Accepted,
         time,
         wallTime,
         memory,
@@ -68,7 +68,7 @@ export async function gradeSubmission (
       }
     } else {
       return {
-        status: GradeStatus.WrongAnswer,
+        status: GradingStatus.WrongAnswer,
         time,
         wallTime,
         memory,

@@ -9,7 +9,7 @@ import {
   handleGradingResult
 } from '../services/submissions.service'
 import {
-  CompileResultSchema,
+  CompilingResultSchema,
   CompilingSubmissionSchema,
   FailedSubmissionSchema,
   GradedSubmissionSchema,
@@ -47,12 +47,12 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  route.post(
-    '/:submissionID/compileResult',
+  route.put(
+    '/:submissionID/compilingResult',
     {
       schema: {
         params: Type.Object({ submissionID: Type.String() }),
-        body: CompileResultSchema
+        body: CompilingResultSchema
       }
     }, async (request, reply) => {
       const { submissionID } = request.params
@@ -66,7 +66,7 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  route.post(
+  route.put(
     '/:submissionID/gradingResult/:testcaseIndex',
     {
       schema: {

@@ -3,10 +3,10 @@ import { promises as fs } from 'fs'
 
 import { runInSandbox } from './sandbox.service'
 
-import { uploadFromDisk, readFile, languageConfigs, CompileTask, SandboxStatus, CompileSucceeded, CompileFailed, CompileStatus } from '@project-carbon/shared'
+import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus } from '@project-carbon/shared'
 
-export async function compileSubmission (task: CompileTask, box: number): Promise<CompileSucceeded|CompileFailed> {
-  const workDir = `/var/local/lib/isolate/${box}/box`
+export async function compileSubmission (task: CompilingTask, boxID: number): Promise<CompileSucceeded|CompileFailed> {
+  const workDir = `/var/local/lib/isolate/${boxID}/box`
   const config = languageConfigs[task.language]
   const srcPath = path.join(workDir, config.srcFile)
   const binaryPath = path.join(workDir, config.binaryFile)
@@ -18,23 +18,23 @@ export async function compileSubmission (task: CompileTask, box: number): Promis
   console.log(command)
   const result = await runInSandbox(
     {
-      constrains: task.constrains,
+      constraints: task.constraints,
       command,
       stderrPath: 'log.txt',
       env: 'PATH=/bin:/usr/local/bin:/usr/bin'
     },
-    box
+    boxID
   )
   if (result.status === SandboxStatus.Succeeded) {
     await uploadFromDisk(binaryPath, { containerName: 'binaries', blobName: task.submissionID })
     return {
-      status: CompileStatus.Succeeded
+      status: CompilingStatus.Succeeded
     }
   } else {
     const log = (await readFile(logPath)).data.toString()
     console.log(logPath)
     return {
-      status: CompileStatus.Failed,
+      status: CompilingStatus.Failed,
       log
     }
   }

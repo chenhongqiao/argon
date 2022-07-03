@@ -29,24 +29,24 @@ async function parseMeta (metaStr: string): Promise<any> {
 }
 
 export async function initSandbox (
-  box: number
-): Promise<{ workDir: string, box: number }> {
+  boxID: number
+): Promise<{ workDir: string, boxID: number }> {
   let workDir = ''
   try {
-    workDir = (await exec(`isolate --box-id=${box} --cg --init`)).stdout
+    workDir = (await exec(`isolate --box-id=${boxID} --cg --init`)).stdout
   } catch (err: any) {
     if (Boolean((err.message?.startsWith('Box already exists')))) {
-      throw new ConflictError('Box already exists', `sandbox ${box}`)
+      throw new ConflictError('Box already exists', `sandbox ${boxID}`)
     } else {
       throw err
     }
   }
-  return { workDir, box }
+  return { workDir, boxID }
 }
 
-export async function destroySandbox (box: number): Promise<{ box: number }> {
-  await exec(`isolate --box-id=${box} --cleanup`)
-  return { box }
+export async function destroySandbox (boxID: number): Promise<{ boxID: number }> {
+  await exec(`isolate --box-id=${boxID} --cleanup`)
+  return { boxID }
 }
 
 export interface SandboxTask {
@@ -54,7 +54,7 @@ export interface SandboxTask {
   inputPath?: string
   outputPath?: string
   stderrPath?: string
-  constrains: Constraints
+  constraints: Constraints
   env?: string
 }
 
@@ -68,29 +68,29 @@ interface SandboxSucceeded {
 
 export async function runInSandbox (
   task: SandboxTask,
-  box: number
+  boxID: number
 ): Promise<
   SandboxSucceeded | SandboxMemoryExceeded | SandboxSystemError | SandboxTimeExceeded | SandboxRuntimeError
   > {
-  let command = `isolate --run --cg --box-id=${box} --meta=/var/local/lib/isolate/${box}/meta.txt`
+  let command = `isolate --run --cg --box-id=${boxID} --meta=/var/local/lib/isolate/${boxID}/meta.txt`
 
-  if (task.constrains.memory != null) {
-    command += ' ' + `--cg-mem=${task.constrains.memory}`
+  if (task.constraints.memory != null) {
+    command += ' ' + `--cg-mem=${task.constraints.memory}`
   }
-  if (task.constrains.time != null) {
-    command += ' ' + `--time=${task.constrains.time / 1000.0}`
-    if (task.constrains.wallTime == null) {
-      command += ' ' + `--wall-time=${(task.constrains.time / 1000.0) * 3}`
+  if (task.constraints.time != null) {
+    command += ' ' + `--time=${task.constraints.time / 1000.0}`
+    if (task.constraints.wallTime == null) {
+      command += ' ' + `--wall-time=${(task.constraints.time / 1000.0) * 3}`
     }
   }
-  if (task.constrains.wallTime != null) {
-    command += ' ' + `--wall-time=${task.constrains.wallTime / 1000.0}`
+  if (task.constraints.wallTime != null) {
+    command += ' ' + `--wall-time=${task.constraints.wallTime / 1000.0}`
   }
-  if (task.constrains.totalStorage != null) {
-    command += ' ' + `--fsize=${task.constrains.totalStorage}`
+  if (task.constraints.totalStorage != null) {
+    command += ' ' + `--fsize=${task.constraints.totalStorage}`
   }
-  if (task.constrains.processes != null) {
-    command += ' ' + `--processes=${task.constrains.processes}`
+  if (task.constraints.processes != null) {
+    command += ' ' + `--processes=${task.constraints.processes}`
   }
   if (task.env != null) {
     command += ' ' + `--env=${task.env}`
@@ -111,7 +111,7 @@ export async function runInSandbox (
     let meta: string
     try {
       meta = (
-        await readFile(`/var/local/lib/isolate/${box}/meta.txt`)
+        await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)
       ).data.toString()
     } catch (err) {
       if (err instanceof NotFoundError) {
@@ -139,10 +139,10 @@ export async function runInSandbox (
         }
       case 'CG':
         if (
-          (task.constrains.memory != null) &&
+          (task.constraints.memory != null) &&
           result.exitsig === '9' &&
           (Boolean(result.memory)) &&
-          parseInt(result.memory) > task.constrains.memory
+          parseInt(result.memory) > task.constraints.memory
         ) {
           return {
             status: SandboxStatus.MemoryExceeded,
@@ -175,7 +175,7 @@ export async function runInSandbox (
   let meta: string
   try {
     meta = (
-      await readFile(`/var/local/lib/isolate/${box}/meta.txt`)
+      await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)
     ).data.toString()
   } catch (err) {
     if (err instanceof NotFoundError) {

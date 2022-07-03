@@ -12,7 +12,7 @@ export async function uploadTestcase (testcase: MultipartFile): Promise<{testcas
   const data = (await testcase.toBuffer()).toString()
   return await new Promise((resolve, reject) => {
     const worker = new Worker(path.join(__dirname, '../workers/uploadTestcase.worker.js'), {
-      workerData: { data, id: testcaseID }
+      workerData: { data, testcaseID }
     })
     worker.on('message', resolve)
     worker.on('error', reject)
