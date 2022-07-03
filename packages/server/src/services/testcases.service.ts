@@ -5,7 +5,7 @@ import { MultipartFile } from '@fastify/multipart'
 
 import { deleteBlob } from '@project-carbon/shared'
 
-import * as path from 'path'
+import path = require('path')
 
 export async function uploadTestcase (testcase: MultipartFile): Promise<{testcaseID: string}> {
   const testcaseID = randomUUID()

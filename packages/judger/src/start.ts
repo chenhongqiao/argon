@@ -4,7 +4,7 @@ import { compileSubmission } from './services/compile.service'
 
 import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } from '@project-carbon/shared'
 
-import * as os from 'os'
+import os = require('os')
 import { randomUUID } from 'crypto'
 import got from 'got'
 

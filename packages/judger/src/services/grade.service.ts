@@ -2,7 +2,7 @@ import {
   languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradingStatus, GradingTask, GradingResult
 } from '@project-carbon/shared'
 
-import * as path from 'path'
+import path = require('path')
 
 import { exec } from '../utils/system.util'
 import {
