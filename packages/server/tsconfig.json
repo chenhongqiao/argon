@@ -12,11 +12,11 @@
     "lib": [
       "es2021"
     ],
-    "target": "ES6",
-    "moduleResolution": "node"
+    "resolveJsonModule": true
   },
   "include": [
-    "./src"
+    "./src",
+    "./package.json"
   ],
   "references": [
     {
