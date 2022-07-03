@@ -1,6 +1,6 @@
 {
   "name": "@project-carbon/judger",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "description": "Project Carbon Judger",
