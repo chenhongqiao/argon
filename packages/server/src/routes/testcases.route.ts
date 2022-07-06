@@ -20,17 +20,18 @@ export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
       }
     },
     async (request, reply) => {
-      const testcases = request.parts()
       const queue: Array<Promise<{testcaseID: string}>> = []
       try {
-        for await (const file of testcases) {
-          queue.push(uploadTestcase(file))
-        }
+        const files = await request.saveRequestFiles()
+        files.forEach(testcase => {
+          queue.push(uploadTestcase(testcase.filepath))
+        })
         const results = await Promise.all(queue)
         console.log(results)
         void reply.status(201).send(results)
       } catch (err) {
-        void reply.status(500).send({ message: 'Server error' })
+        console.error(err)
+        void reply.status(500).send({ message: 'Server error.' })
       }
     }
   )
