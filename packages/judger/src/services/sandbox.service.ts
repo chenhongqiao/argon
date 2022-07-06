@@ -16,7 +16,7 @@ interface SandboxMeta {
   status?: string
   memory?: number
   time?: number
-  'wall-time'?: number
+  'time-wall'?: number
   exitsig?: number
   message?: string
 }
@@ -33,8 +33,8 @@ function parseMeta (metaStr: string): SandboxMeta {
       result.memory = parseInt(value)
     } else if (key === 'time') {
       result.time = parseInt((parseFloat(value) * 1000).toFixed())
-    } else if (key === 'wall-time') {
-      result['wall-time'] = parseInt((parseFloat(value) * 1000).toFixed())
+    } else if (key === 'time-wall') {
+      result['time-wall'] = parseInt((parseFloat(value) * 1000).toFixed())
     } else if (key === 'exitsig') {
       result.exitsig = parseInt(value)
     } else if (key === 'message') {
@@ -115,94 +115,105 @@ export async function runInSandbox (
   if (task.outputPath != null) {
     command += ' ' + `--stdout=${task.outputPath}`
   }
+  if (task.inputPath != null) {
+    command += ' ' + `--stdin=${task.inputPath}`
+  }
   if (task.stderrPath != null) {
     command += ' ' + `--stderr=${task.stderrPath}`
   }
   command += ' -- ' + task.command
 
-  let abnormalTermination = false
   try {
     await exec(command)
   } catch (err) {
-    abnormalTermination = true
+    try {
+      const meta = (await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)).data.toString()
+      const result = parseMeta(meta)
+
+      switch (result.status) {
+        case 'XX':
+          return {
+            status: SandboxStatus.SystemError,
+            message: result.message ?? 'Isolate threw system error.'
+          }
+        case 'RE':
+          return {
+            status: SandboxStatus.RuntimeError,
+            message: result.message ?? 'Isolate threw runtime error.'
+          }
+        case 'CG':
+          if (
+            (task.constraints.memory != null) &&
+        result.exitsig === 9 &&
+        result.memory != null &&
+        result.memory > task.constraints.memory
+          ) {
+            return {
+              status: SandboxStatus.MemoryExceeded,
+              message: 'Memory limit exceeded.',
+              memory: result.memory
+            }
+          } else {
+            return {
+              status: SandboxStatus.RuntimeError,
+              message: result.message ?? 'Program exit on signal.'
+            }
+          }
+        case 'TO':
+          if (result.time == null || result['time-wall'] == null) {
+            return {
+              status: SandboxStatus.SystemError,
+              message: 'Isolate reported timeout but no time info found in meta.'
+            }
+          }
+          return {
+            status: SandboxStatus.TimeExceeded,
+            message: result.message ?? 'Isolate reported timeout',
+            time: result.time,
+            wallTime: result['time-wall']
+          }
+        default:
+          return {
+            status: SandboxStatus.SystemError,
+            message: 'Unknown status on abnormal termination.'
+          }
+      }
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        return {
+          status: SandboxStatus.SystemError,
+          message: 'Meta file does not exist on abnormal termination.'
+        }
+      } else {
+        throw err
+      }
+    }
   }
 
-  let meta: string
   try {
-    meta = (await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)).data.toString()
+    const meta = (await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)).data.toString()
+    const result = parseMeta(meta)
+    if (result.time == null || result['time-wall'] == null || result.memory == null) {
+      return {
+        status: SandboxStatus.SystemError,
+        message: 'Isolate reported OK but no time info or memory info found in meta.'
+      }
+    }
+    return {
+      status: SandboxStatus.Succeeded,
+      time: result.time,
+      wallTime: result['time-wall'],
+      memory: result.memory,
+      message: 'Task completed successfully.'
+    }
   } catch (err) {
     if (err instanceof NotFoundError) {
       return {
         status: SandboxStatus.SystemError,
-        message: 'Meta file does not exist on abnormal termination'
+        message: 'Meta file does not exist on abnormal termination.'
       }
     } else {
       throw err
     }
-  }
-
-  const result = parseMeta(meta)
-
-  switch (result.status) {
-    case 'XX':
-      return {
-        status: SandboxStatus.SystemError,
-        message: result.message ?? 'Isolate threw system error.'
-      }
-    case 'RE':
-      return {
-        status: SandboxStatus.RuntimeError,
-        message: result.message ?? 'Isolate threw runtime error.'
-      }
-    case 'CG':
-      if (
-        (task.constraints.memory != null) &&
-        result.exitsig === 9 &&
-        result.memory != null &&
-        result.memory > task.constraints.memory
-      ) {
-        return {
-          status: SandboxStatus.MemoryExceeded,
-          message: 'Memory limit exceeded.',
-          memory: result.memory
-        }
-      } else {
-        return {
-          status: SandboxStatus.RuntimeError,
-          message: result.message ?? 'Program exit on signal.'
-        }
-      }
-    case 'TO':
-      if (result.time == null || result['time-wall'] == null) {
-        return {
-          status: SandboxStatus.SystemError,
-          message: 'Isolate reported timeout but no time info found in meta.'
-        }
-      }
-      return {
-        status: SandboxStatus.TimeExceeded,
-        message: result.message ?? 'Isolate reported timeout',
-        time: result.time,
-        wallTime: result['time-wall']
-      }
-    case 'OK':
-      if (result.time == null || result['time-wall'] == null || result.memory == null) {
-        return {
-          status: SandboxStatus.SystemError,
-          message: 'Isolate reported OK but no time info or memory info found in meta.'
-        }
-      }
-      return {
-        status: SandboxStatus.Succeeded,
-        time: result.time,
-        wallTime: result['time-wall'],
-        memory: result.memory,
-        message: 'Task completed successfully.'
-      }
-    default:
-      return {
-        status: SandboxStatus.SystemError,
-        message: `Unknown status on ${abnormalTermination ? 'abnormal' : 'normal'} termination.`
-      }
   }
 }
