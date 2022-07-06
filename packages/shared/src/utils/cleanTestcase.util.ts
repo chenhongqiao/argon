@@ -1,7 +1,7 @@
 // This function should be called only from a worker thread
 // Since testcases can be very big and can take a long time to trim
 export function cleanTestcase (testcase: Buffer): Buffer {
-  const data = testcase.toString('base64').trimEnd()
+  const data = testcase.toString().trimEnd()
 
   const cleaned = data
     .split(/\r?\n/)
