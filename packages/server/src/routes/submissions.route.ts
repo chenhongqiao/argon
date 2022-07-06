@@ -10,13 +10,10 @@ import {
 } from '../services/submissions.service'
 import {
   CompilingResultSchema,
-  CompilingSubmissionSchema,
-  FailedSubmissionSchema,
-  GradedSubmissionSchema,
   GradingResultSchema,
-  GradingSubmissionSchema,
   NewSubmissionSchema,
-  NotFoundError
+  NotFoundError,
+  SubmissionResultSchema
 } from '@project-carbon/shared'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
@@ -91,7 +88,7 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         params: Type.Object({ submissionID: Type.String() }),
         response: {
-          200: Type.Union([CompilingSubmissionSchema, GradedSubmissionSchema, GradingSubmissionSchema, FailedSubmissionSchema]),
+          200: SubmissionResultSchema,
           404: Type.Object({ message: Type.String() }),
           500: Type.Object({ message: Type.String() })
         }
