@@ -22,10 +22,11 @@ import {
 } from '@project-carbon/shared'
 
 const submissionsContainer = cosmosDB.container('submissions')
-const problemsContainer = cosmosDB.container('submissions')
+const problemsContainer = cosmosDB.container('problems')
 
 export async function createSubmission (submission: NewSubmission): Promise<{ submissionID: string }> {
-  const result = await submissionsContainer.items.create(submission)
+  const newSubmission = { ...submission, status: SubmissionStatus.Compiling }
+  const result = await submissionsContainer.items.create(newSubmission)
   if (result.resource != null) {
     return { submissionID: result.resource.id }
   }
@@ -55,7 +56,6 @@ export async function compileSubmission (submissionID: string): Promise<void> {
     throw new DataError('Task too big to fit in the queue', JSON.stringify(submission))
   }
   await messageSender.sendMessages(batch)
-  await messageSender.close()
 }
 
 export async function handleCompileResult (compileResult: CompilingResult, submissionID: string): Promise<void> {
@@ -99,8 +99,6 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       }
       submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
     })
-    await messageSender.sendMessages(batch)
-    await messageSender.close()
     const gradingSubmission: GradingSubmission = {
       status: SubmissionStatus.Grading,
       language: submission.language,
@@ -111,6 +109,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       testcases: submissionTestcases
     }
     await submissionItem.replace(gradingSubmission)
+    await messageSender.sendMessages(batch)
   } else {
     const failedSubmission: FailedSubmission = {
       status: SubmissionStatus.CompileFailed,
