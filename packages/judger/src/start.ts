@@ -10,7 +10,7 @@ import got from 'got'
 
 const availableBoxes = new Set()
 const judgerID = randomUUID()
-const serverBaseURL = process.env.SERVER_BASE_URL ?? '127.0.0.1:3000'
+const serverBaseURL = process.env.SERVER_BASE_URL ?? 'http://127.0.0.1:3000'
 
 async function handleGradingTask (task: GradingTask, boxID: number): Promise<void> {
   await initSandbox(boxID)
@@ -61,7 +61,7 @@ export async function startJudger (): Promise<void> {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (availableBoxes.size > 0) {
-      const messages = await messageReceiver.receiveMessages(availableBoxes.size)
+      const messages = await messageReceiver.receiveMessages(availableBoxes.size, { maxWaitTimeInMs: 200 })
       const tasks: Array<GradingTask | CompilingTask> = messages.map(
         message => message.body
       )
