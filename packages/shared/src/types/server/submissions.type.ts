@@ -26,7 +26,7 @@ export const CompilingSubmissionSchema = Type.Object({
   source: Type.String(),
   problemID: Type.String(),
   id: Type.String()
-}, { additionalProperties: false })
+})
 export type CompilingSubmission = Static<typeof CompilingSubmissionSchema>
 
 export const GradingSubmissionSchema = Type.Object({
@@ -42,7 +42,7 @@ export const GradingSubmissionSchema = Type.Object({
     points: Type.Number(),
     result: Type.Optional(GradingResultSchema)
   }))
-}, { additionalProperties: false })
+})
 export type GradingSubmission = Static<typeof GradingSubmissionSchema>
 
 export const FailedSubmissionSchema = Type.Object({
@@ -52,7 +52,7 @@ export const FailedSubmissionSchema = Type.Object({
   problemID: Type.String(),
   id: Type.String(),
   log: Type.Optional(Type.String())
-}, { additionalProperties: false })
+})
 export type FailedSubmission = Static<typeof FailedSubmissionSchema>
 
 export const GradedSubmissionSchema = Type.Object({
@@ -68,5 +68,8 @@ export const GradedSubmissionSchema = Type.Object({
     points: Type.Number(),
     result: GradingResultSchema
   }))
-}, { additionalProperties: false })
+})
 export type GradedSubmission = Static<typeof GradedSubmissionSchema>
+
+export const SubmissionResultSchema = Type.Union([CompilingSubmissionSchema, GradedSubmissionSchema, GradingSubmissionSchema, FailedSubmissionSchema])
+export type SubmissionResult = Static<typeof SubmissionResultSchema>

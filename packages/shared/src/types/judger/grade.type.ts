@@ -34,7 +34,7 @@ export const SolutionAcceptedSchema = Type.Object({
   memory: Type.Number(),
   time: Type.Number(),
   wallTime: Type.Number()
-}, { additionalProperties: false })
+})
 export type SolutionAccepted = Static<typeof SolutionAcceptedSchema>
 
 export const SolutionWrongAnswerSchema = Type.Object({
@@ -43,9 +43,10 @@ export const SolutionWrongAnswerSchema = Type.Object({
   memory: Type.Number(),
   time: Type.Number(),
   wallTime: Type.Number()
-}, { additionalProperties: false })
+})
 export type SolutionWrongAnswer = Static<typeof SolutionWrongAnswerSchema>
 
+// When using Type.Union, all children should not have addtionalProperties: false set to avoid an ajv issue
 export const GradingResultSchema = Type.Union([
   SolutionAcceptedSchema,
   SolutionWrongAnswerSchema,

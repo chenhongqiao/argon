@@ -18,14 +18,15 @@ export enum CompilingStatus {
 
 export const CompileSucceededSchema = Type.Object({
   status: Type.Literal(CompilingStatus.Succeeded)
-}, { additionalProperties: false })
+})
 export type CompileSucceeded = Static<typeof CompileSucceededSchema>
 
 export const CompileFailedSchema = Type.Object({
   status: Type.Literal(CompilingStatus.Failed),
   log: Type.String()
-}, { additionalProperties: false })
+})
 export type CompileFailed = Static<typeof CompileFailedSchema>
 
+// When using Type.Union, all children should not have addtionalProperties: false set to avoid an ajv issue
 export const CompilingResultSchema = Type.Union([CompileSucceededSchema, CompileFailedSchema])
 export type CompilingResult = Static<typeof CompilingResultSchema>

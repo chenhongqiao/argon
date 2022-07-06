@@ -26,7 +26,7 @@ export const SandboxMemoryExceededSchema = Type.Object({
   status: Type.Literal(SandboxStatus.MemoryExceeded),
   message: Type.String(),
   memory: Type.Number()
-}, { additionalProperties: false })
+})
 export type SandboxMemoryExceeded = Static<typeof SandboxMemoryExceededSchema>
 
 export const SandboxTimeExceededSchema = Type.Object({
@@ -34,17 +34,17 @@ export const SandboxTimeExceededSchema = Type.Object({
   message: Type.String(),
   time: Type.Number(),
   wallTime: Type.Number()
-}, { additionalProperties: false })
+})
 export type SandboxTimeExceeded = Static<typeof SandboxTimeExceededSchema>
 
 export const SandboxRuntimeErrorSchema = Type.Object({
   status: Type.Literal(SandboxStatus.RuntimeError),
   message: Type.String()
-}, { additionalProperties: false })
+})
 export type SandboxRuntimeError = Static<typeof SandboxRuntimeErrorSchema>
 
 export const SandboxSystemErrorSchema = Type.Object({
   status: Type.Literal(SandboxStatus.SystemError),
   message: Type.String()
-}, { additionalProperties: false })
+})
 export type SandboxSystemError = Static<typeof SandboxSystemErrorSchema>
