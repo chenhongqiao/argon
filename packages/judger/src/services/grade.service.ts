@@ -4,7 +4,9 @@ import {
 
 import path = require('path')
 
-import { exec } from '../utils/system.util'
+import { Worker } from 'worker_threads'
+
+import { makeExecutable } from '../utils/system.util'
 import {
   runInSandbox
 } from './sandbox.service'
@@ -31,7 +33,9 @@ export async function gradeSubmission (
     }
   )
 
-  let command = config.compileCommand
+  await makeExecutable(path.join(workDir, config.binaryFile))
+
+  let command = config.executeCommand
   command = command.replaceAll('{binary_path}', config.binaryFile)
   const sandboxResult = await runInSandbox(
     {
@@ -49,22 +53,26 @@ export async function gradeSubmission (
         blobName: task.testcase.output
       }
     )
-    await exec(`sed 's/[ \t]*$//' -i ${path.join(workDir, 'out.txt')}`)
-    await exec(
-      `sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba' -i ${path.join(
-        workDir,
-        'out.txt'
-      )}`
-    )
-    const md5sum = await exec(`md5sum ${path.join(workDir, 'out.txt')}`)
+    const outputHash: {md5: string} = await new Promise((resolve, reject) => {
+      const worker = new Worker(path.join(__dirname, '../workers/calculateTestcaseHash.worker.js'), {
+        workerData: { testcasePath: path.join(workDir, 'out.txt') }
+      })
+      worker.on('message', resolve)
+      worker.on('error', reject)
+      worker.on('exit', (code) => {
+        if (code !== 0) {
+          reject(new Error(`Worker stopped with exit code ${code}`))
+        }
+      })
+    })
     const { time, wallTime, memory } = sandboxResult
-    if (md5sum.stdout.trimEnd() === correctHash.md5) {
+    if (outputHash.md5 === correctHash.md5) {
       return {
         status: GradingStatus.Accepted,
         time,
         wallTime,
         memory,
-        message: 'Submission accepted'
+        message: 'Submission Accepted.'
       }
     } else {
       return {
@@ -72,7 +80,7 @@ export async function gradeSubmission (
         time,
         wallTime,
         memory,
-        message: 'Wrong answer'
+        message: 'Wrong Answer.'
       }
     }
   } else {
