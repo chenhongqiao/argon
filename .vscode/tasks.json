@@ -2,42 +2,38 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "typescript",
-      "tsconfig": "packages/server/tsconfig.json",
-      "option": "watch",
-      "problemMatcher": [
-        "$tsc-watch"
-      ],
-      "group": "build",
-      "label": "Watch Server",
-      "runOptions": {
-        "runOn": "folderOpen",
-      }
-    },
-    {
+      "label": "Build Common Modules",
       "type": "typescript",
       "tsconfig": "packages/common/tsconfig.json",
-      "option": "watch",
       "problemMatcher": [
-        "$tsc-watch"
+        "$tsc"
       ],
-      "group": "build",
-      "label": "Watch Common",
-      "runOptions": {
-        "runOn": "folderOpen",
+      "group": {
+        "kind": "build",
       }
     },
     {
+      "label": "Build Server",
+      "type": "typescript",
+      "tsconfig": "packages/server/tsconfig.json",
+      "dependsOn": "Build Common Modules",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": {
+        "kind": "build",
+      }
+    },
+    {
+      "label": "Build Judger",
       "type": "typescript",
       "tsconfig": "packages/judger/tsconfig.json",
-      "option": "watch",
+      "dependsOn": "Build Common Modules",
       "problemMatcher": [
-        "$tsc-watch"
+        "$tsc"
       ],
-      "group": "build",
-      "label": "Watch Judger",
-      "runOptions": {
-        "runOn": "folderOpen",
+      "group": {
+        "kind": "build",
       }
     }
   ],

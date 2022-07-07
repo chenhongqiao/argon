@@ -15,7 +15,8 @@
       "outFiles": [
         "${workspaceFolder}/packages/server/dist/**/*.js"
       ],
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "preLaunchTask": "Build Server"
     },
     {
       "type": "pwa-node",
@@ -28,7 +29,8 @@
       "outFiles": [
         "${workspaceFolder}/packages/judger/dist/**/*.js"
       ],
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "preLaunchTask": "Build Judger"
     }
   ]
 }

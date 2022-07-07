@@ -14,7 +14,10 @@ Sentry.init({
 })
 
 const app = Fastify({
-  logger: true,
+  logger: {
+    enabled: true,
+    prettyPrint: true
+  },
   ajv: {
     plugins: [ajvTypeBoxPlugin]
   }
