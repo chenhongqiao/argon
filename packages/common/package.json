@@ -1,11 +1,19 @@
 {
-  "name": "@project-carbon/shared",
+  "name": "@chenhongqiao/carbon-common",
   "version": "1.0.0",
   "description": "Project Carbon Shared Modules",
   "author": "TeamsCode",
   "license": "GPL-3.0",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@github.com/chenhongqiao/project-carbon.git",
+    "directory": "packages/common"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "engines": {
     "node": ">=14.0.0"
   },
