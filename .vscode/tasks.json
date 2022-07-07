@@ -16,13 +16,13 @@
     },
     {
       "type": "typescript",
-      "tsconfig": "packages/shared/tsconfig.json",
+      "tsconfig": "packages/common/tsconfig.json",
       "option": "watch",
       "problemMatcher": [
         "$tsc-watch"
       ],
       "group": "build",
-      "label": "Watch Shared",
+      "label": "Watch Common",
       "runOptions": {
         "runOn": "folderOpen",
       }

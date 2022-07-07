@@ -18,7 +18,7 @@
   ],
   "references": [
     {
-      "path": "../shared"
+      "path": "../common"
     }
   ]
 }

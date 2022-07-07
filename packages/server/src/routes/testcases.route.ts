@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 
 import { deleteTestcase, uploadTestcase } from '../services/testcases.service'
-import { NotFoundError } from '@chenhongqiao/carbon-common/dist/src'
+import { NotFoundError } from '@chenhongqiao/carbon-common'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
