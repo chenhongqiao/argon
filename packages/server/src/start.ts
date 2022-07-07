@@ -7,6 +7,12 @@ import { testcasesRoutes } from './routes/testcases.route'
 import { heartbeatRoutes } from './routes/heartbeat.route'
 import { submissionsRoutes } from './routes/submissions.route'
 
+import Sentry = require('@sentry/node')
+
+Sentry.init({
+  dsn: 'https://7e6e404e57024a01819d0fb4cb215538@o1044666.ingest.sentry.io/6554031'
+})
+
 const app = Fastify({
   logger: true,
   ajv: {
@@ -15,6 +21,11 @@ const app = Fastify({
 }).withTypeProvider<TypeBoxTypeProvider>()
 
 export async function startServer (): Promise<void> {
+  app.setErrorHandler((err, request, reply) => {
+    Sentry.captureException(err)
+    app.log.error(err)
+    void reply.status(500).send({ message: 'Server error.' })
+  })
   await app.register(multipart, {
     prefix: '/testcases',
     limits: {
@@ -31,6 +42,7 @@ export async function startServer (): Promise<void> {
     await app.listen({ port })
     console.log(`Server started on port ${port}.`)
   } catch (err) {
+    Sentry.captureException(err)
     app.log.error(err)
     throw err
   }

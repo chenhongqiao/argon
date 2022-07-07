@@ -24,19 +24,14 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
       schema: {
         body: NewProblemSchema,
         response: {
-          201: Type.Object({ problemID: Type.String() }),
-          500: Type.Object({ message: Type.String() })
+          201: Type.Object({ problemID: Type.String() })
         }
       }
     },
     async (request, reply) => {
       const problem = request.body
-      try {
-        const result = await createProblem(problem)
-        void reply.status(201).send(result)
-      } catch (err) {
-        void reply.status(500).send({ message: 'Server error' })
-      }
+      const result = await createProblem(problem)
+      void reply.status(201).send(result)
     }
   )
 
@@ -47,8 +42,7 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
         params: Type.Object({ problemID: Type.String() }),
         response: {
           200: ProblemSchema,
-          404: Type.Object({ message: Type.String() }),
-          500: Type.Object({ message: Type.String() })
+          404: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -59,9 +53,9 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
         void reply.status(200).send(problem)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          void reply.status(404).send({ message: 'Problem not found' })
+          void reply.status(404).send({ message: 'Problem not found.' })
         } else {
-          void reply.status(500).send({ message: 'Server error' })
+          throw err
         }
       }
     }
@@ -72,19 +66,13 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         response: {
-          200: Type.Array(ProblemSchema),
-          500: Type.Object({ message: Type.String() })
+          200: Type.Array(ProblemSchema)
         }
       }
     },
     async (request, reply) => {
-      try {
-        const problems = await fetchAllProblems()
-        void reply.status(200).send(problems)
-      } catch (err) {
-        console.log(err)
-        void reply.status(500).send({ message: 'Server error' })
-      }
+      const problems = await fetchAllProblems()
+      void reply.status(200).send(problems)
     }
   )
 
@@ -95,8 +83,7 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
         body: ProblemSchema,
         response: {
           200: Type.Object({ problemID: Type.String() }),
-          404: Type.Object({ message: Type.String() }),
-          500: Type.Object({ message: Type.String() })
+          404: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -107,9 +94,9 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
         void reply.status(200).send(result)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          void reply.status(404).send({ message: 'Problem not found' })
+          void reply.status(404).send({ message: 'Problem not found.' })
         } else {
-          void reply.status(500).send({ message: 'Server error' })
+          throw err
         }
       }
     }
@@ -122,8 +109,7 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
         params: Type.Object({ problemID: Type.String() }),
         response: {
           200: Type.Object({ problemID: Type.String() }),
-          404: Type.Object({ message: Type.String() }),
-          500: Type.Object({ message: Type.String() })
+          404: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -134,9 +120,9 @@ export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
         void reply.status(200).send(result)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          void reply.status(404).send({ message: 'Problem not found' })
+          void reply.status(404).send({ message: 'Problem not found.' })
         } else {
-          void reply.status(500).send({ message: 'Server error' })
+          throw err
         }
       }
     }

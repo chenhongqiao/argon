@@ -27,20 +27,15 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         body: NewSubmissionSchema,
         response: {
-          201: Type.Object({ submissionID: Type.String() }),
-          500: Type.Object({ message: Type.String() })
+          201: Type.Object({ submissionID: Type.String() })
         }
       }
     },
     async (request, reply) => {
       const submission = request.body
-      try {
-        const result = await createSubmission(submission)
-        await compileSubmission(result.submissionID)
-        void reply.status(201).send(result)
-      } catch (err) {
-        void reply.status(500).send({ message: 'Server error' })
-      }
+      const result = await createSubmission(submission)
+      await compileSubmission(result.submissionID)
+      void reply.status(201).send(result)
     }
   )
 
@@ -57,7 +52,7 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
       try {
         await handleCompileResult(compileResult, submissionID)
       } catch (err) {
-        await completeGrading(submissionID, err.message ?? 'Grading terminated due to an error')
+        await completeGrading(submissionID, err.message ?? 'Grading terminated due to an error.')
       }
       void reply.status(204).send()
     }
@@ -76,7 +71,7 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
       try {
         await handleGradingResult(gradingResult, submissionID, testcaseIndex)
       } catch (err) {
-        await completeGrading(submissionID, err.message ?? 'Grading terminated due to an error')
+        await completeGrading(submissionID, err.message ?? 'Grading terminated due to an error.')
       }
       void reply.status(204).send()
     }
@@ -89,8 +84,7 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
         params: Type.Object({ submissionID: Type.String() }),
         response: {
           200: SubmissionResultSchema,
-          404: Type.Object({ message: Type.String() }),
-          500: Type.Object({ message: Type.String() })
+          404: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -101,9 +95,9 @@ export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => 
         void reply.status(200).send(result)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          void reply.status(404).send({ message: 'Submission not found' })
+          void reply.status(404).send({ message: 'Submission not found.' })
         } else {
-          void reply.status(500).send({ message: 'Server error' })
+          throw err
         }
       }
     }

@@ -14,25 +14,19 @@ export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         response: {
-          201: Type.Array(Type.Object({ testcaseID: Type.String() })),
-          500: Type.Object({ message: Type.String() })
+          201: Type.Array(Type.Object({ testcaseID: Type.String() }))
         }
       }
     },
     async (request, reply) => {
       const queue: Array<Promise<{testcaseID: string}>> = []
-      try {
-        const files = await request.saveRequestFiles()
-        files.forEach(testcase => {
-          queue.push(uploadTestcase(testcase.filepath))
-        })
-        const results = await Promise.all(queue)
-        console.log(results)
-        void reply.status(201).send(results)
-      } catch (err) {
-        console.error(err)
-        void reply.status(500).send({ message: 'Server error.' })
-      }
+      const files = await request.saveRequestFiles()
+      files.forEach(testcase => {
+        queue.push(uploadTestcase(testcase.filepath))
+      })
+      const results = await Promise.all(queue)
+      console.log(results)
+      void reply.status(201).send(results)
     }
   )
 
@@ -43,8 +37,7 @@ export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
         params: Type.Object({ testcaseID: Type.String() }),
         response: {
           200: Type.Object({ testcaseID: Type.String() }),
-          404: Type.Object({ message: Type.String() }),
-          500: Type.Object({ message: Type.String() })
+          404: Type.Object({ message: Type.String() })
         }
       }
     },
@@ -55,9 +48,9 @@ export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
         void reply.status(200).send(result)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          void reply.status(404).send({ message: 'Testcase not found' })
+          void reply.status(404).send({ message: 'Testcase not found.' })
         } else {
-          void reply.status(500).send({ message: 'Server error' })
+          throw err
         }
       }
     }

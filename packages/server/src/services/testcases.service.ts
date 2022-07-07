@@ -15,7 +15,7 @@ export async function uploadTestcase (testcasePath: string): Promise<{testcaseID
     worker.on('error', reject)
     worker.on('exit', (code) => {
       if (code !== 0) {
-        reject(new Error(`Worker stopped with exit code ${code}`))
+        reject(new Error(`Worker stopped with exit code ${code}.`))
       }
     })
   })

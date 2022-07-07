@@ -11,8 +11,7 @@ export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         response: {
-          200: Type.Object({ version: Type.String(), ready: Type.Boolean() }),
-          500: Type.Object({ message: Type.String() })
+          200: Type.Object({ version: Type.String(), ready: Type.Boolean() })
         }
       }
     },

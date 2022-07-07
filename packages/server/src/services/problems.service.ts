@@ -13,7 +13,7 @@ export async function createProblem (problem: NewProblem): Promise<{ problemID: 
   if (result.resource != null) {
     return { problemID: result.resource.id }
   }
-  throw new AzureError('No resource ID returned', result)
+  throw new AzureError('No resource ID returned.', result)
 }
 
 export async function fetchProblem (problemID: string): Promise<Problem> {
@@ -22,9 +22,9 @@ export async function fetchProblem (problemID: string): Promise<Problem> {
   if (result.resource != null) {
     return result.resource
   } if (result.statusCode === 404) {
-    throw new NotFoundError('Problem not found', problemID)
+    throw new NotFoundError('Problem not found.', problemID)
   } else {
-    throw new AzureError('Unexpected CosmosDB return', result)
+    throw new AzureError('Unexpected CosmosDB return.', result)
   }
 }
 
@@ -34,9 +34,9 @@ export async function updateProblem (problem: Problem): Promise<{ problemID: str
   if (result.resource != null) {
     return { problemID: result.resource.id }
   } if (result.statusCode === 404) {
-    throw new NotFoundError('Problem not found', problem.id)
+    throw new NotFoundError('Problem not found.', problem.id)
   } else {
-    throw new AzureError('Unexpected CosmosDB return', result)
+    throw new AzureError('Unexpected CosmosDB return.', result)
   }
 }
 
@@ -46,9 +46,9 @@ export async function deleteProblem (problemID: string): Promise<{ problemID: st
   if (result.resource != null) {
     return { problemID: result.resource.id }
   } if (result.statusCode === 404) {
-    throw new NotFoundError('Problem not found', problemID)
+    throw new NotFoundError('Problem not found.', problemID)
   } else {
-    throw new AzureError('Unexpected CosmosDB return', result)
+    throw new AzureError('Unexpected CosmosDB return.', result)
   }
 }
 
