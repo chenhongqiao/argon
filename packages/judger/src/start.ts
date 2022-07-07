@@ -7,23 +7,39 @@ import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } fr
 import os = require('os')
 import { randomUUID } from 'crypto'
 import got from 'got'
+import { pino } from 'pino'
+import Sentry = require('@sentry/node')
+
+import { version } from '../package.json'
+
+const logger = pino()
 
 const availableBoxes = new Set()
 const judgerID = randomUUID()
 const serverBaseURL = process.env.SERVER_BASE_URL ?? 'http://127.0.0.1:3000'
+
+Sentry.init({
+  dsn: 'https://54ac76947d434e9a981b7e85191910cc@o1044666.ingest.sentry.io/65541781',
+  environment: process.env.NODE_ENV,
+  release: version
+})
 
 async function handleGradingTask (task: GradingTask, boxID: number): Promise<void> {
   await initSandbox(boxID)
   const result = await gradeSubmission(task, boxID)
   await destroySandbox(boxID)
   availableBoxes.add(boxID)
+  try {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  await got.put(new URL(`/submissions/${task.submissionID}/gradingResult/${task.testcaseIndex}`, serverBaseURL).href, {
-    json: result,
-    timeout: {
-      request: 20000
-    }
-  })
+    await got.put(new URL(`/submissions/${task.submissionID}/gradingResult/${task.testcaseIndex}`, serverBaseURL).href, {
+      json: result,
+      timeout: {
+        request: 30000
+      }
+    })
+  } catch (err) {
+    logger.error(err)
+  }
 }
 
 async function handleCompilingTask (task: CompilingTask, boxID: number): Promise<void> {
@@ -31,21 +47,23 @@ async function handleCompilingTask (task: CompilingTask, boxID: number): Promise
   const result = await compileSubmission(task, boxID)
   await destroySandbox(boxID)
   availableBoxes.add(boxID)
+  try {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  await got.put(new URL(`/submissions/${task.submissionID}/compilingResult`, serverBaseURL).href, {
-    json: result,
-    timeout: {
-      request: 20000
-    }
-  })
+    await got.put(new URL(`/submissions/${task.submissionID}/compilingResult`, serverBaseURL).href, {
+      json: result,
+      timeout: {
+        request: 30000
+      }
+    })
+  } catch (err) {
+    logger.error(err)
+  }
 }
 
 export async function startJudger (): Promise<void> {
-  console.log(`Starting Judger ${judgerID}.`)
-
   const cores = os.cpus().length
 
-  console.log(`${cores} CPU cores detected.`)
+  logger.info(`${cores} CPU cores detected.`)
 
   const destroyQueue: Array<Promise<{ boxID: number }>> = []
   for (let id = 1; id <= cores; id += 1) {
@@ -54,9 +72,7 @@ export async function startJudger (): Promise<void> {
   }
   await Promise.all(destroyQueue)
 
-  console.log('All sandboxes initialized.')
-
-  console.log('Start receiving tasks.')
+  logger.info(`Judger ${judgerID} start receiving tasks.`)
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -65,14 +81,23 @@ export async function startJudger (): Promise<void> {
       const tasks: Array<GradingTask | CompilingTask> = messages.map(
         message => message.body
       )
-      console.log(tasks.length)
       tasks.forEach(task => {
         const boxID = availableBoxes.values().next().value
         availableBoxes.delete(boxID)
         if (task.type === JudgerTaskType.Grading) {
-          void handleGradingTask(task, boxID)
+          try {
+            void handleGradingTask(task, boxID)
+          } catch (err) {
+            Sentry.captureException(err)
+            logger.error(err)
+          }
         } else if (task.type === JudgerTaskType.Compiling) {
-          void handleCompilingTask(task, boxID)
+          try {
+            void handleCompilingTask(task, boxID)
+          } catch (err) {
+            Sentry.captureException(err)
+            logger.error(err)
+          }
         }
       })
     } else {

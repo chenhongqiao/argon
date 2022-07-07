@@ -15,7 +15,6 @@ export async function compileSubmission (task: CompilingTask, boxID: number): Pr
   let command = config.compileCommand
   command = command.replaceAll('{src_path}', config.srcFile)
   command = command.replaceAll('{binary_path}', config.binaryFile)
-  console.log(command)
   const result = await runInSandbox(
     {
       constraints: task.constraints,
@@ -32,7 +31,6 @@ export async function compileSubmission (task: CompilingTask, boxID: number): Pr
     }
   } else {
     const log = (await readFile(logPath)).data.toString()
-    console.log(logPath)
     return {
       status: CompilingStatus.Failed,
       log

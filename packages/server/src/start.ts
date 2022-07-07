@@ -7,16 +7,19 @@ import { testcasesRoutes } from './routes/testcases.route'
 import { heartbeatRoutes } from './routes/heartbeat.route'
 import { submissionsRoutes } from './routes/submissions.route'
 
+import { version } from '../package.json'
+
 import Sentry = require('@sentry/node')
 
 Sentry.init({
-  dsn: 'https://7e6e404e57024a01819d0fb4cb215538@o1044666.ingest.sentry.io/6554031'
+  dsn: 'https://7e6e404e57024a01819d0fb4cb215538@o1044666.ingest.sentry.io/6554031',
+  environment: process.env.NODE_ENV,
+  release: version
 })
 
 const app = Fastify({
   logger: {
-    enabled: true,
-    prettyPrint: true
+    enabled: true
   },
   ajv: {
     plugins: [ajvTypeBoxPlugin]
@@ -41,9 +44,8 @@ export async function startServer (): Promise<void> {
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
 
   try {
-    const port: number = parseInt(process.env.SERVER_PORT ?? '3000')
+    const port: number = parseInt(process.env.SERVER_PORT ?? '8000')
     await app.listen({ port })
-    app.log.info(`Server started on port ${port}.`)
   } catch (err) {
     Sentry.captureException(err)
     app.log.error(err)

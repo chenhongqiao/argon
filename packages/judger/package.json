@@ -26,6 +26,8 @@
   },
   "dependencies": {
     "@chenhongqiao/carbon-common": "workspace:*",
-    "got": "^11.8.0"
+    "@sentry/node": "^7.5.1",
+    "got": "^11.8.0",
+    "pino": "^8.1.0"
   }
 }
