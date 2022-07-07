@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import { Worker } from 'node:worker_threads'
 
-import { deleteBlob } from '@project-carbon/shared'
+import { deleteBlob } from '@chenhongqiao/carbon-common'
 
 import path = require('path')
 

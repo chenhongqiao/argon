@@ -1,6 +1,6 @@
 import {
   languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradingStatus, GradingTask, GradingResult
-} from '@project-carbon/shared'
+} from '@chenhongqiao/carbon-common'
 
 import path = require('path')
 

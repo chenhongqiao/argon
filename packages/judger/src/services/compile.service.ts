@@ -3,7 +3,7 @@ import { promises as fs } from 'fs'
 
 import { runInSandbox } from './sandbox.service'
 
-import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus } from '@project-carbon/shared'
+import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus } from '@chenhongqiao/carbon-common'
 
 export async function compileSubmission (task: CompilingTask, boxID: number): Promise<CompileSucceeded|CompileFailed> {
   const workDir = `/var/local/lib/isolate/${boxID}/box`

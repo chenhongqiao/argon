@@ -40,7 +40,7 @@ export async function startServer (): Promise<void> {
   try {
     const port: number = parseInt(process.env.SERVER_PORT ?? '3000')
     await app.listen({ port })
-    console.log(`Server started on port ${port}.`)
+    app.log.info(`Server started on port ${port}.`)
   } catch (err) {
     Sentry.captureException(err)
     app.log.error(err)

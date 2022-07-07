@@ -1,11 +1,19 @@
 {
-  "name": "@project-carbon/judger",
+  "name": "@chenhongqiao/carbon-judger",
   "version": "1.0.0",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "description": "Project Carbon Judger",
   "author": "TeamsCode",
   "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@github.com/chenhongqiao/project-carbon.git",
+    "directory": "packages/judger"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "engines": {
     "node": ">=14.0.0"
   },
@@ -13,7 +21,7 @@
     "@types/node": "^17.0.41"
   },
   "dependencies": {
-    "@project-carbon/shared": "workspace:*",
+    "@chenhongqiao/carbon-common": "workspace:*",
     "got": "^11.8.0"
   }
 }

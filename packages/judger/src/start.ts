@@ -2,7 +2,7 @@ import { destroySandbox, initSandbox } from './services/sandbox.service'
 import { gradeSubmission } from './services/grade.service'
 import { compileSubmission } from './services/compile.service'
 
-import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } from '@project-carbon/shared'
+import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } from '@chenhongqiao/carbon-common'
 
 import os = require('os')
 import { randomUUID } from 'crypto'

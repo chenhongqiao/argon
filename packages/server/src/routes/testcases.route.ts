@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 
 import { deleteTestcase, uploadTestcase } from '../services/testcases.service'
-import { NotFoundError } from '@project-carbon/shared/dist/src'
+import { NotFoundError } from '@chenhongqiao/carbon-common/dist/src'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
@@ -25,7 +25,6 @@ export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
         queue.push(uploadTestcase(testcase.filepath))
       })
       const results = await Promise.all(queue)
-      console.log(results)
       void reply.status(201).send(results)
     }
   )
