@@ -3,15 +3,29 @@ import { promises as fs } from 'fs'
 
 import { runInSandbox } from './sandbox.service'
 
-import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus } from '@chenhongqiao/carbon-common'
+import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, cosmosDB, CompilingSubmission, NotFoundError, AzureError } from '@chenhongqiao/carbon-common'
+
+const submissionsContainer = cosmosDB.container('submissions')
 
 export async function compileSubmission (task: CompilingTask, boxID: number): Promise<CompileSucceeded|CompileFailed> {
+  const { submissionID } = task
+  const submissionItem = submissionsContainer.item(submissionID, submissionID)
+  const submissionFetchResult = await submissionItem.read<CompilingSubmission>()
+  if (submissionFetchResult.resource == null) {
+    if (submissionFetchResult.statusCode === 404) {
+      throw new NotFoundError('Submission not found.', submissionID)
+    } else {
+      throw new AzureError('Unexpected CosmosDB return.', submissionFetchResult)
+    }
+  }
+  const submission = submissionFetchResult.resource
+
   const workDir = `/var/local/lib/isolate/${boxID}/box`
   const config = languageConfigs[task.language]
   const srcPath = path.join(workDir, config.srcFile)
   const binaryPath = path.join(workDir, config.binaryFile)
   const logPath = path.join(workDir, 'log.txt')
-  await fs.writeFile(srcPath, task.source)
+  await fs.writeFile(srcPath, submission.source)
   let command = config.compileCommand
   command = command.replaceAll('{src_path}', config.srcFile)
   command = command.replaceAll('{binary_path}', config.binaryFile)

@@ -46,7 +46,6 @@ export async function compileSubmission (submissionID: string): Promise<void> {
   const submission = submissionFetchResult.resource
   const task: CompilingTask = {
     submissionID: submission.id,
-    source: submission.source,
     type: JudgerTaskType.Compiling,
     language: submission.language,
     constraints: languageConfigs[submission.language].constraints

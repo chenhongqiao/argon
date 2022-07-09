@@ -5,7 +5,6 @@ import { Static, Type } from '@sinclair/typebox'
 
 export interface CompilingTask {
   type: JudgerTaskType.Compiling
-  source: string
   constraints: Constraints
   language: SubmissionLang
   submissionID: string
