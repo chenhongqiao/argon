@@ -16,7 +16,7 @@ const logger = pino()
 
 const availableBoxes = new Set()
 const judgerID = randomUUID()
-const serverBaseURL = process.env.SERVER_BASE_URL ?? 'http://127.0.0.1:3000'
+const serverBaseURL = process.env.SERVER_BASE_URL ?? 'http://127.0.0.1:8000'
 
 Sentry.init({
   dsn: 'https://54ac76947d434e9a981b7e85191910cc@o1044666.ingest.sentry.io/65541781',
