@@ -4,7 +4,7 @@ import {
   CompilingStatus,
   CompilingTask,
   CompilingSubmission,
-  cosmosDB,
+  CosmosDB,
   DataError,
   FailedSubmission,
   GradedSubmission,
@@ -21,8 +21,8 @@ import {
   SubmissionStatus
 } from '@chenhongqiao/carbon-common'
 
-const submissionsContainer = cosmosDB.container('submissions')
-const problemsContainer = cosmosDB.container('problems')
+const submissionsContainer = CosmosDB.container('submissions')
+const problemsContainer = CosmosDB.container('problems')
 
 export async function createSubmission (submission: NewSubmission): Promise<{ submissionID: string }> {
   const newSubmission = { ...submission, status: SubmissionStatus.Compiling }

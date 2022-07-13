@@ -1,12 +1,12 @@
 import {
   AzureError,
-  cosmosDB,
+  CosmosDB,
   NewProblem,
   NotFoundError,
   Problem
 } from '@chenhongqiao/carbon-common'
 
-const problemsContainer = cosmosDB.container('problems')
+const problemsContainer = CosmosDB.container('problems')
 
 export async function createProblem (problem: NewProblem): Promise<{ problemID: string }> {
   const result = await problemsContainer.items.create(problem)
