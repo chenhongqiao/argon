@@ -1,5 +1,5 @@
 export { uploadBuffer, uploadFromDisk, downloadBuffer, downloadToDisk, getBlobHash, deleteBlob } from './databases/blobStorage.infra'
-export { cosmosDB } from './databases/cosmos.infra'
+export { CosmosDB } from './databases/cosmos.infra'
 export { writeFile, readFile } from './databases/fileSystem.infra'
 export { messageReceiver, messageClient, messageSender } from './databases/serviceBus.infra'
 

@@ -3,9 +3,9 @@ import { promises as fs } from 'fs'
 
 import { runInSandbox } from './sandbox.service'
 
-import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, cosmosDB, CompilingSubmission, NotFoundError, AzureError } from '@chenhongqiao/carbon-common'
+import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, CosmosDB, CompilingSubmission, NotFoundError, AzureError } from '@chenhongqiao/carbon-common'
 
-const submissionsContainer = cosmosDB.container('submissions')
+const submissionsContainer = CosmosDB.container('submissions')
 
 export async function compileSubmission (task: CompilingTask, boxID: number): Promise<CompileSucceeded|CompileFailed> {
   const { submissionID } = task

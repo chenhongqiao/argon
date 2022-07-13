@@ -7,7 +7,7 @@ import { testcasesRoutes } from './routes/testcases.route'
 import { heartbeatRoutes } from './routes/heartbeat.route'
 import { submissionsRoutes } from './routes/submissions.route'
 
-import { cosmosDB } from '@chenhongqiao/carbon-common'
+import { CosmosDB } from '@chenhongqiao/carbon-common'
 
 import { version } from '../package.json'
 
@@ -29,9 +29,9 @@ const app = Fastify({
 }).withTypeProvider<TypeBoxTypeProvider>()
 
 export async function startServer (): Promise<void> {
-  await cosmosDB.containers.createIfNotExists({ id: 'problems' })
-  await cosmosDB.containers.createIfNotExists({ id: 'submissions' })
-  await cosmosDB.containers.createIfNotExists({ id: 'users' })
+  await CosmosDB.containers.createIfNotExists({ id: 'problems' })
+  await CosmosDB.containers.createIfNotExists({ id: 'submissions' })
+  await CosmosDB.containers.createIfNotExists({ id: 'users' })
 
   app.setErrorHandler((err, request, reply) => {
     Sentry.captureException(err)
