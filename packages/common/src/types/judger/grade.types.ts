@@ -1,4 +1,4 @@
-import { SubmissionLang } from '../../configs/languages.config'
+import { SubmissionLang } from '../../configs/language.configs'
 
 import {
   Constraints,
@@ -7,7 +7,7 @@ import {
   SandboxRuntimeErrorSchema,
   SandboxSystemErrorSchema,
   SandboxTimeExceededSchema
-} from './general.type'
+} from './general.types'
 
 import { Static, Type } from '@sinclair/typebox'
 

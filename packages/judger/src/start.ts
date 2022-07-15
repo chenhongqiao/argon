@@ -1,6 +1,6 @@
-import { destroySandbox, initSandbox } from './services/sandbox.service'
-import { gradeSubmission } from './services/grade.service'
-import { compileSubmission } from './services/compile.service'
+import { destroySandbox, initSandbox } from './services/sandbox.services'
+import { gradeSubmission } from './services/grade.services'
+import { compileSubmission } from './services/compile.services'
 
 import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } from '@chenhongqiao/carbon-common'
 

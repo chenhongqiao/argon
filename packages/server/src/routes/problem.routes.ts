@@ -11,12 +11,12 @@ import {
   fetchAllProblems,
   fetchProblem,
   updateProblem
-} from '../services/problems.service'
+} from '../services/problem.services'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
-export const problemsRoutes: FastifyPluginCallback = (app, options, done) => {
+export const problemRoutes: FastifyPluginCallback = (app, options, done) => {
   const route = app.withTypeProvider<TypeBoxTypeProvider>()
   route.post(
     '/',

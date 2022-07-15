@@ -6,10 +6,10 @@ import path = require('node:path')
 
 import { Worker } from 'node:worker_threads'
 
-import { makeExecutable } from '../utils/system.util'
+import { makeExecutable } from '../utils/system.utils'
 import {
   runInSandbox
-} from './sandbox.service'
+} from './sandbox.services'
 
 export async function gradeSubmission (
   task: GradingTask,

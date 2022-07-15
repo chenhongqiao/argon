@@ -1,5 +1,5 @@
-import { Constraints, JudgerTaskType } from './general.type'
-import { SubmissionLang } from '../../configs/languages.config'
+import { Constraints, JudgerTaskType } from './general.types'
+import { SubmissionLang } from '../../configs/language.configs'
 
 import { Static, Type } from '@sinclair/typebox'
 

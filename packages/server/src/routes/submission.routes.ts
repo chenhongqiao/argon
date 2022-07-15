@@ -7,7 +7,7 @@ import {
   fetchSubmission,
   handleCompileResult,
   handleGradingResult
-} from '../services/submissions.service'
+} from '../services/submission.services'
 import {
   CompilingResultSchema,
   GradingResultSchema,
@@ -19,7 +19,7 @@ import {
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
-export const submissionsRoutes: FastifyPluginCallback = (app, options, done) => {
+export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
   const route = app.withTypeProvider<TypeBoxTypeProvider>()
   route.post(
     '/',

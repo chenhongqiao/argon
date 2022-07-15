@@ -1,13 +1,13 @@
 import { FastifyPluginCallback } from 'fastify'
 
-import { deleteTestcase, uploadTestcase } from '../services/testcases.service'
+import { deleteTestcase, uploadTestcase } from '../services/testcase.services'
 import { NotFoundError } from '@chenhongqiao/carbon-common'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
 
-export const testcasesRoutes: FastifyPluginCallback = (app, options, done) => {
+export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const route = app.withTypeProvider<TypeBoxTypeProvider>()
   route.post(
     '/',

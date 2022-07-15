@@ -1,13 +1,13 @@
 import { FastifyPluginCallback } from 'fastify'
 
-import { registerUser } from '../services/users.service'
+import { registerUser } from '../services/user.services'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
 import { ConflictError, NewUserSchema } from '@chenhongqiao/carbon-common'
 
-export const usersRoutes: FastifyPluginCallback = (app, options, done) => {
+export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   const route = app.withTypeProvider<TypeBoxTypeProvider>()
   route.post(
     '/',

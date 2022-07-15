@@ -1,19 +1,19 @@
-export * from './databases/blobStorage.infra'
-export * from './databases/cosmos.infra'
-export * from './databases/fileSystem.infra'
-export * from './databases/serviceBus.infra'
-export * from './utils/cleanTestcase.util'
+export * from './infras/blobStorage.infras'
+export * from './infras/cosmos.infras'
+export * from './infras/fileSystem.infras'
+export * from './infras/serviceBus.infras'
+export * from './utils/cleanTestcase.utils'
 
-export * from './configs/languages.config'
+export * from './configs/language.configs'
 
-export * from './classes/error.class'
+export * from './classes/error.classes'
 
-export * from './types/judger/general.type'
-export * from './types/judger/compile.type'
-export * from './types/judger/grade.type'
+export * from './types/judger/general.types'
+export * from './types/judger/compile.types'
+export * from './types/judger/grade.types'
 
-export * from './types/server/problems.type'
-export * from './types/server/submissions.type'
-export * from './types/server/users.type'
+export * from './types/server/problem.types'
+export * from './types/server/submission.types'
+export * from './types/server/user.types'
 
 export { delay } from '@azure/service-bus'

@@ -1,7 +1,7 @@
 import path = require('node:path')
 import { promises as fs } from 'node:fs'
 
-import { runInSandbox } from './sandbox.service'
+import { runInSandbox } from './sandbox.services'
 
 import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, CosmosDB, CompilingSubmission, NotFoundError, AzureError } from '@chenhongqiao/carbon-common'
 

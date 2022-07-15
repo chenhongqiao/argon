@@ -1,4 +1,4 @@
-import { Constraints } from '../types/judger/general.type'
+import { Constraints } from '../types/judger/general.types'
 
 export enum SubmissionLang {
   C='C',

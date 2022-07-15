@@ -1,4 +1,4 @@
-import { exec } from '../utils/system.util'
+import { exec } from '../utils/system.utils'
 
 import {
   ConflictError,
