@@ -1,5 +1,5 @@
-import cp = require('child_process')
-import util = require('util')
+import cp = require('node:child_process')
+import util = require('node:util')
 
 export const exec = util.promisify(cp.exec)
 

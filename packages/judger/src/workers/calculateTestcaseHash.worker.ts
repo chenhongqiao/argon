@@ -2,7 +2,7 @@ import { parentPort, workerData } from 'node:worker_threads'
 
 import { cleanTestcase, readFile } from '@chenhongqiao/carbon-common'
 
-import { createHash } from 'crypto'
+import { createHash } from 'node:crypto'
 
 const { testcasePath } = workerData
 readFile(testcasePath).then((result) => {

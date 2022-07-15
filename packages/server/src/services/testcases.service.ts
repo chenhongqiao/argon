@@ -1,9 +1,9 @@
-import { randomUUID } from 'crypto'
+import { randomUUID } from 'node:crypto'
 import { Worker } from 'node:worker_threads'
 
 import { deleteBlob } from '@chenhongqiao/carbon-common'
 
-import path = require('path')
+import path = require('node:path')
 
 export async function uploadTestcase (testcasePath: string): Promise<{testcaseID: string}> {
   const testcaseID = randomUUID()

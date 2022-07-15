@@ -1,5 +1,5 @@
-import path = require('path')
-import { promises as fs } from 'fs'
+import path = require('node:path')
+import { promises as fs } from 'node:fs'
 
 import { runInSandbox } from './sandbox.service'
 

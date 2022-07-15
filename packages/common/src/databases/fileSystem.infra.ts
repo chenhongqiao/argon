@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs'
+import { promises as fs } from 'node:fs'
 import { NotFoundError } from '../classes/error.class'
 
 interface FileData {

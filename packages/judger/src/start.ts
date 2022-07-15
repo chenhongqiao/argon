@@ -4,8 +4,8 @@ import { compileSubmission } from './services/compile.service'
 
 import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } from '@chenhongqiao/carbon-common'
 
-import os = require('os')
-import { randomUUID } from 'crypto'
+import os = require('node:os')
+import { randomUUID } from 'node:crypto'
 import got from 'got'
 import { pino } from 'pino'
 import Sentry = require('@sentry/node')

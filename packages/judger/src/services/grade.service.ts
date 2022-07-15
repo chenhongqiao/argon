@@ -2,9 +2,9 @@ import {
   languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradingStatus, GradingTask, GradingResult
 } from '@chenhongqiao/carbon-common'
 
-import path = require('path')
+import path = require('node:path')
 
-import { Worker } from 'worker_threads'
+import { Worker } from 'node:worker_threads'
 
 import { makeExecutable } from '../utils/system.util'
 import {
