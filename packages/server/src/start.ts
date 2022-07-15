@@ -42,9 +42,13 @@ export async function startServer (): Promise<void> {
   await Promise.all(DBInitQueue)
 
   app.setErrorHandler((err, request, reply) => {
-    Sentry.captureException(err)
-    app.log.error(err)
-    void reply.status(500).send({ message: 'Server error.' })
+    if (err.statusCode != null && err.statusCode < 500) {
+      void reply.status(err.statusCode).send({ message: err.message })
+    } else {
+      Sentry.captureException(err)
+      app.log.error(err)
+      void reply.status(500).send({ message: 'Server error.' })
+    }
   })
 
   await app.register(multipart, {
