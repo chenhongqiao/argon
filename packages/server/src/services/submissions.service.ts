@@ -151,6 +151,7 @@ export async function completeGrading (submissionID: string, log?: string): Prom
     let score = 0
     submission.testcases.forEach(testcase => {
       if (testcase.result != null && testcase.result.status === GradingStatus.Accepted) {
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         score += testcase.points
       }
     })
@@ -184,6 +185,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
       throw new NotFoundError('Testcase not found.', testcaseIndex)
     }
     if (submission.testcases[testcaseIndex].result == null) {
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       submission.gradedCases += 1
     }
     submission.testcases[testcaseIndex].result = gradingResult
