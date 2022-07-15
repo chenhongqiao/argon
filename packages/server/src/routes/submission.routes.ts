@@ -40,7 +40,7 @@ export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
   )
 
   route.put(
-    '/:submissionID/compilingResult',
+    '/:submissionID/compiling-result',
     {
       schema: {
         params: Type.Object({ submissionID: Type.String() }),
@@ -59,7 +59,7 @@ export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
   )
 
   route.put(
-    '/:submissionID/gradingResult/:testcaseIndex',
+    '/:submissionID/testcase-result/:testcaseIndex',
     {
       schema: {
         params: Type.Object({ submissionID: Type.String(), testcaseIndex: Type.String() }),

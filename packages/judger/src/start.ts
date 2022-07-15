@@ -31,7 +31,7 @@ async function handleGradingTask (task: GradingTask, boxID: number): Promise<voi
   availableBoxes.add(boxID)
   try {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    await got.put(new URL(`/submissions/${task.submissionID}/gradingResult/${task.testcaseIndex}`, serverBaseURL).href, {
+    await got.put(new URL(`/submissions/${task.submissionID}/testcase-result/${task.testcaseIndex}`, serverBaseURL).href, {
       json: result,
       timeout: {
         request: 30000
@@ -49,7 +49,7 @@ async function handleCompilingTask (task: CompilingTask, boxID: number): Promise
   availableBoxes.add(boxID)
   try {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    await got.put(new URL(`/submissions/${task.submissionID}/compilingResult`, serverBaseURL).href, {
+    await got.put(new URL(`/submissions/${task.submissionID}/compiling-result`, serverBaseURL).href, {
       json: result,
       timeout: {
         request: 30000
