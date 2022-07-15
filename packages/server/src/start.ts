@@ -28,16 +28,25 @@ const app = Fastify({
   }
 }).withTypeProvider<TypeBoxTypeProvider>()
 
+const DBContainers = [
+  { id: 'problems', partitionKey: '/id' },
+  { id: 'submissions', partitionKey: '/id' },
+  { id: 'users', partitionKey: '/id' },
+  { id: 'userMappings', partitionKey: '/type' }]
+
 export async function startServer (): Promise<void> {
-  await CosmosDB.containers.createIfNotExists({ id: 'problems' })
-  await CosmosDB.containers.createIfNotExists({ id: 'submissions' })
-  await CosmosDB.containers.createIfNotExists({ id: 'users' })
+  const DBInitQueue: Array<Promise<any>> = []
+  DBContainers.forEach((container) => {
+    DBInitQueue.push(CosmosDB.containers.createIfNotExists(container))
+  })
+  await Promise.all(DBInitQueue)
 
   app.setErrorHandler((err, request, reply) => {
     Sentry.captureException(err)
     app.log.error(err)
     void reply.status(500).send({ message: 'Server error.' })
   })
+
   await app.register(multipart, {
     prefix: '/testcases',
     limits: {
