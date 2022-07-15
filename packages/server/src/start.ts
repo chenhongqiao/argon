@@ -6,6 +6,7 @@ import { problemsRoutes } from './routes/problems.route'
 import { testcasesRoutes } from './routes/testcases.route'
 import { heartbeatRoutes } from './routes/heartbeat.route'
 import { submissionsRoutes } from './routes/submissions.route'
+import { usersRoutes } from './routes/users.route'
 
 import { CosmosDB } from '@chenhongqiao/carbon-common'
 
@@ -61,6 +62,7 @@ export async function startServer (): Promise<void> {
   await app.register(testcasesRoutes, { prefix: '/testcases' })
   await app.register(submissionsRoutes, { prefix: '/submissions' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
+  await app.register(usersRoutes, { prefix: '/users' })
 
   try {
     const port: number = parseInt(process.env.SERVER_PORT ?? '8000')
