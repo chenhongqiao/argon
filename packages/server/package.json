@@ -11,9 +11,6 @@
     "url": "ssh://git@github.com/chenhongqiao/project-carbon.git",
     "directory": "packages/server"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "engines": {
     "node": ">=16.0.0"
   },
