@@ -1,7 +1,9 @@
-import { User, NewUser, UserRole, CosmosDB, ConflictError, AzureError } from '@chenhongqiao/carbon-common'
+import { User, NewUser, UserRole, CosmosDB, ConflictError, AzureError, NotFoundError } from '@chenhongqiao/carbon-common'
 import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
+
+import { emailClient } from '../infras/email.infras'
 
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
@@ -26,13 +28,13 @@ interface EmailMapping {
   userID: string
 }
 
-export async function registerUser (userInfo: NewUser): Promise<{userID: string}> {
+export async function registerUser (newUser: NewUser): Promise<{userID: string, email: string}> {
   const salt = (await randomBytesAsync(32)).toString('base64')
-  const hash = (await pbkdf2Async(userInfo.password, salt, 100000, 512, 'sha512')).toString('base64')
+  const hash = (await pbkdf2Async(newUser.password, salt, 100000, 512, 'sha512')).toString('base64')
   const userID = randomUUID()
   const user: User = {
-    name: userInfo.name,
-    email: userInfo.email,
+    name: newUser.name,
+    email: newUser.email,
     password: {
       salt,
       hash
@@ -40,15 +42,15 @@ export async function registerUser (userInfo: NewUser): Promise<{userID: string}
     role: UserRole.User,
     emailVerified: false,
     id: userID,
-    username: userInfo.username
+    username: newUser.username
   }
   const usernameMapping: UsernameMapping = {
-    id: userInfo.username,
+    id: user.username,
     type: MappingType.Username,
     userID: userID
   }
   const emailMapping: EmailMapping = {
-    id: userInfo.email,
+    id: user.email,
     type: MappingType.Email,
     userID: userID
   }
@@ -57,7 +59,7 @@ export async function registerUser (userInfo: NewUser): Promise<{userID: string}
     await mappingContainer.items.create(usernameMapping)
   } catch (err) {
     if (err.code === 409) {
-      throw new ConflictError('Username exists.', userInfo.username)
+      throw new ConflictError('Username exists.', user.username)
     } else {
       throw new AzureError('Error while creating username mapping.', err)
     }
@@ -67,19 +69,60 @@ export async function registerUser (userInfo: NewUser): Promise<{userID: string}
     await mappingContainer.items.create(emailMapping)
   } catch (err) {
     if (err.code === 409) {
-      await mappingContainer.item(userInfo.username, 'Username').delete()
-      throw new ConflictError('Email exists.', userInfo.email)
+      await mappingContainer.item(user.username, 'Username').delete()
+      throw new ConflictError('Email exists.', user.email)
     } else {
       throw new AzureError('Error while creating Email mapping.', err)
     }
   }
 
-  const createUserResult = await usersContainer.items.create(user)
-  if (createUserResult.resource != null) {
-    return { userID: createUserResult.resource.id }
-  } else {
-    await mappingContainer.item(userInfo.username, 'Username').delete()
-    await mappingContainer.item(userInfo.email, 'Email').delete()
-    throw new AzureError('No resource ID returned while creating user.', createUserResult)
+  const created = await usersContainer.items.create(user)
+  if (created.resource == null) {
+    await mappingContainer.item(user.username, 'Username').delete()
+    await mappingContainer.item(user.email, 'Email').delete()
+    throw new AzureError('No resource ID returned while creating user.', created)
   }
+  return { userID: created.resource.id, email: user.email }
+}
+
+export async function fetchUser (userID: string): Promise<User> {
+  const userItem = usersContainer.item(userID, userID)
+  const fetched = await userItem.read<User>()
+  if (fetched.resource != null) {
+    return fetched.resource
+  } if (fetched.statusCode === 404) {
+    throw new NotFoundError('User not found.', userID)
+  } else {
+    throw new AzureError('Unexpected CosmosDB return.', fetched)
+  }
+}
+
+export async function sendVerificationEmail (email: string, token: string): Promise<void> {
+  const verificationEmail: emailClient.MailDataRequired = {
+    to: email,
+    from: { name: 'Carbon Contest Server', email: 'carbon@teamscode.org' },
+    subject: 'Please verify your email',
+    html: `This is your email verification token ${token}`
+  }
+
+  await emailClient.send(verificationEmail)
+}
+
+export async function verifyUser (userID: string): Promise<{userID: string}> {
+  const userItem = usersContainer.item(userID, userID)
+  const fetched = await userItem.read<User>()
+  if (fetched.resource == null) {
+    if (fetched.statusCode === 404) {
+      throw new NotFoundError('User not found.', userID)
+    } else {
+      throw new AzureError('Unexpected CosmosDB return.', fetched)
+    }
+  }
+  const user = fetched.resource
+  user.emailVerified = true
+  const replaced = await userItem.replace(user)
+  if (replaced.resource == null) {
+    throw new AzureError('Unexpected CosmosDB return.', replaced)
+  }
+  return { userID: replaced.resource.id }
 }
