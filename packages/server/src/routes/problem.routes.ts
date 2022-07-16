@@ -4,7 +4,7 @@ import {
   NewProblemSchema,
   NotFoundError,
   ProblemSchema
-} from '@pccs/common'
+} from '@cocs/common'
 import {
   createProblem,
   deleteProblem,

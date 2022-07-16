@@ -19,7 +19,7 @@ import {
   NotFoundError,
   Problem,
   SubmissionStatus
-} from '@pccs/common'
+} from '@cocs/common'
 
 const submissionsContainer = CosmosDB.container('submissions')
 const problemsContainer = CosmosDB.container('problems')

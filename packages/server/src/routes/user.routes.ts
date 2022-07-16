@@ -5,7 +5,7 @@ import { registerUser, sendVerificationEmail, fetchUser, verifyUser } from '../s
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
-import { ConflictError, NewUserSchema, NotFoundError } from '@pccs/common'
+import { ConflictError, NewUserSchema, NotFoundError } from '@cocs/common'
 
 import { EmailVerification, JWTPayloadType } from '../types/JWTPayload.types'
 

@@ -14,7 +14,7 @@ import {
   NewSubmissionSchema,
   NotFoundError,
   SubmissionResultSchema
-} from '@pccs/common'
+} from '@cocs/common'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'

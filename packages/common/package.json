@@ -1,16 +1,12 @@
 {
-  "name": "@pccs/common",
-  "version": "0.1.1",
-  "description": "Project Carbon Shared Modules",
+  "name": "@cocs/common",
+  "version": "0.1.2",
+  "description": "Carbon Online Contest Server Shared Modules",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "ssh://git@github.com/chenhongqiao/project-carbon.git",
-    "directory": "packages/common"
-  },
+  "repository": "github:chenhongqiao/project-carbon",
   "engines": {
     "node": ">=16.0.0"
   },

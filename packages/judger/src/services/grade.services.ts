@@ -1,6 +1,6 @@
 import {
   languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradingStatus, GradingTask, GradingResult
-} from '@pccs/common'
+} from '@cocs/common'
 
 import path = require('node:path')
 
