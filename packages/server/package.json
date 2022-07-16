@@ -26,8 +26,10 @@
   },
   "dependencies": {
     "@chenhongqiao/carbon-common": "workspace:*",
+    "@fastify/jwt": "^6.3.1",
     "@fastify/multipart": "^6.0.0",
     "@fastify/type-provider-typebox": "^1.0.0",
+    "@sendgrid/mail": "^7.7.0",
     "@sentry/node": "^7.5.1",
     "@sinclair/typebox": "^0.23.5",
     "@types/long": "^4.0.2",
