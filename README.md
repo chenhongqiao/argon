@@ -1,4 +1,4 @@
-# TeamsCode Project Carbon
+# Project Carbon - Next Generation Contest Server
 
 
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/chenhongqiao/project-carbon.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/chenhongqiao/project-carbon/context:javascript)
