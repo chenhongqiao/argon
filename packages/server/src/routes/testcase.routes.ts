@@ -25,7 +25,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
         queue.push(uploadTestcase(testcase.filepath))
       })
       const results = await Promise.all(queue)
-      void reply.status(201).send(results)
+      return await reply.status(201).send(results)
     }
   )
 
@@ -43,11 +43,11 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     async (request, reply) => {
       const { testcaseID } = request.params
       try {
-        const result = await deleteTestcase(testcaseID)
-        void reply.status(200).send(result)
+        const deleted = await deleteTestcase(testcaseID)
+        return await reply.status(200).send(deleted)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          void reply.status(404).send({ message: 'Testcase not found.' })
+          return await reply.status(404).send({ message: 'Testcase not found.' })
         } else {
           throw err
         }

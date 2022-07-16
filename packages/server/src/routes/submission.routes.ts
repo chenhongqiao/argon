@@ -33,9 +33,9 @@ export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const submission = request.body
-      const result = await createSubmission(submission)
-      await compileSubmission(result.submissionID)
-      void reply.status(201).send(result)
+      const created = await createSubmission(submission)
+      await compileSubmission(created.submissionID)
+      return await reply.status(201).send(created)
     }
   )
 
@@ -54,7 +54,7 @@ export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
       } catch (err) {
         await completeGrading(submissionID, err.message ?? 'Grading terminated due to an error.')
       }
-      void reply.status(204).send()
+      return await reply.status(204).send()
     }
   )
 
@@ -73,7 +73,7 @@ export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
       } catch (err) {
         await completeGrading(submissionID, err.message ?? 'Grading terminated due to an error.')
       }
-      void reply.status(204).send()
+      return await reply.status(204).send()
     }
   )
 
@@ -91,11 +91,11 @@ export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
     async (request, reply) => {
       const { submissionID } = request.params
       try {
-        const result = await fetchSubmission(submissionID)
-        void reply.status(200).send(result)
+        const submission = await fetchSubmission(submissionID)
+        return await reply.status(200).send(submission)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          void reply.status(404).send({ message: 'Submission not found.' })
+          return await reply.status(404).send({ message: 'Submission not found.' })
         } else {
           throw err
         }

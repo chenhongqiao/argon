@@ -9,46 +9,46 @@ import {
 const problemsContainer = CosmosDB.container('problems')
 
 export async function createProblem (problem: NewProblem): Promise<{ problemID: string }> {
-  const result = await problemsContainer.items.create(problem)
-  if (result.resource != null) {
-    return { problemID: result.resource.id }
+  const created = await problemsContainer.items.create(problem)
+  if (created.resource != null) {
+    return { problemID: created.resource.id }
   }
-  throw new AzureError('No resource ID returned.', result)
+  throw new AzureError('No resource ID returned.', created)
 }
 
 export async function fetchProblem (problemID: string): Promise<Problem> {
-  const item = problemsContainer.item(problemID, problemID)
-  const result = await item.read<Problem>()
-  if (result.resource != null) {
-    return result.resource
-  } if (result.statusCode === 404) {
+  const problemItem = problemsContainer.item(problemID, problemID)
+  const fetched = await problemItem.read<Problem>()
+  if (fetched.resource != null) {
+    return fetched.resource
+  } if (fetched.statusCode === 404) {
     throw new NotFoundError('Problem not found.', problemID)
   } else {
-    throw new AzureError('Unexpected CosmosDB return.', result)
+    throw new AzureError('Unexpected CosmosDB return.', fetched)
   }
 }
 
 export async function updateProblem (problem: Problem): Promise<{ problemID: string }> {
-  const item = problemsContainer.item(problem.id, problem.id)
-  const result = await item.replace(problem)
-  if (result.resource != null) {
-    return { problemID: result.resource.id }
-  } if (result.statusCode === 404) {
+  const problemItem = problemsContainer.item(problem.id, problem.id)
+  const updated = await problemItem.replace(problem)
+  if (updated.resource != null) {
+    return { problemID: updated.resource.id }
+  } if (updated.statusCode === 404) {
     throw new NotFoundError('Problem not found.', problem.id)
   } else {
-    throw new AzureError('Unexpected CosmosDB return.', result)
+    throw new AzureError('Unexpected CosmosDB return.', updated)
   }
 }
 
 export async function deleteProblem (problemID: string): Promise<{ problemID: string }> {
-  const item = problemsContainer.item(problemID, problemID)
-  const result = await item.delete<{ id: string }>()
-  if (result.resource != null) {
-    return { problemID: result.resource.id }
-  } if (result.statusCode === 404) {
+  const problemItem = problemsContainer.item(problemID, problemID)
+  const deleted = await problemItem.delete<{ id: string }>()
+  if (deleted.resource != null) {
+    return { problemID: deleted.resource.id }
+  } if (deleted.statusCode === 404) {
     throw new NotFoundError('Problem not found.', problemID)
   } else {
-    throw new AzureError('Unexpected CosmosDB return.', result)
+    throw new AzureError('Unexpected CosmosDB return.', deleted)
   }
 }
 
