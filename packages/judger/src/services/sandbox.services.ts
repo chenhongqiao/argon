@@ -10,7 +10,7 @@ import {
   SandboxSystemError,
   SandboxTimeExceeded,
   SandboxMemoryExceeded
-} from '@chenhongqiao/carbon-common'
+} from '@pccs/common'
 
 interface SandboxMeta {
   status?: string

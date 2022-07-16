@@ -4,7 +4,7 @@ import {
   NewProblem,
   NotFoundError,
   Problem
-} from '@chenhongqiao/carbon-common'
+} from '@pccs/common'
 
 const problemsContainer = CosmosDB.container('problems')
 

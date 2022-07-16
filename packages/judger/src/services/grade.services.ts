@@ -1,6 +1,6 @@
 import {
   languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradingStatus, GradingTask, GradingResult
-} from '@chenhongqiao/carbon-common'
+} from '@pccs/common'
 
 import path = require('node:path')
 

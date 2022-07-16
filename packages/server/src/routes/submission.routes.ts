@@ -14,7 +14,7 @@ import {
   NewSubmissionSchema,
   NotFoundError,
   SubmissionResultSchema
-} from '@chenhongqiao/carbon-common'
+} from '@pccs/common'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'

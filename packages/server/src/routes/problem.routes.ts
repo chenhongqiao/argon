@@ -4,7 +4,7 @@ import {
   NewProblemSchema,
   NotFoundError,
   ProblemSchema
-} from '@chenhongqiao/carbon-common'
+} from '@pccs/common'
 import {
   createProblem,
   deleteProblem,

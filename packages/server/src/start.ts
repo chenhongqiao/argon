@@ -9,7 +9,7 @@ import { heartbeatRoutes } from './routes/heartbeat.routes'
 import { submissionRoutes } from './routes/submission.routes'
 import { userRoutes } from './routes/user.routes'
 
-import { CosmosDB } from '@chenhongqiao/carbon-common'
+import { CosmosDB } from '@pccs/common'
 
 import { version } from '../package.json'
 
