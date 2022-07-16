@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Project Carbon Server",
   "author": "TeamsCode",
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0",
   "types": "./dist/src/index.d.ts",
   "main": "./dist/src/index.js",
   "repository": {
