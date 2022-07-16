@@ -1,8 +1,8 @@
 {
   "name": "@chenhongqiao/carbon-common",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Project Carbon Shared Modules",
-  "author": "TeamsCode",
+  "author": "Harry Chen",
   "license": "AGPL-3.0",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
