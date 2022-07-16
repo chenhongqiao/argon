@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import multipart from '@fastify/multipart'
+import jwt from '@fastify/jwt'
 import { ajvTypeBoxPlugin, TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { problemRoutes } from './routes/problem.routes'
@@ -41,6 +42,10 @@ export async function startServer (): Promise<void> {
     DBInitQueue.push(CosmosDB.containers.createIfNotExists(container))
   })
   await Promise.all(DBInitQueue)
+
+  await app.register(jwt, {
+    secret: process.env.JWT_SECRET ?? ''
+  })
 
   app.setErrorHandler((err, request, reply) => {
     if (err.statusCode != null && err.statusCode < 500) {
