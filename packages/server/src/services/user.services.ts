@@ -1,4 +1,4 @@
-import { User, NewUser, UserRole, CosmosDB, ConflictError, AzureError, NotFoundError } from '@cocs/common'
+import { User, NewUser, UserRole, CosmosDB, ConflictError, AzureError, NotFoundError, ItemResponse, AuthenicationError, AuthorizationError } from '@cocs/common'
 import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -125,4 +125,36 @@ export async function verifyUser (userID: string): Promise<{userID: string}> {
     throw new AzureError('Unexpected CosmosDB return.', replaced)
   }
   return { userID: replaced.resource.id }
+}
+
+export async function authenicateUser (usernameOrEmail: string, password: string): Promise<{userID: string, role: UserRole}> {
+  let fetchedMapping: ItemResponse<UsernameMapping|EmailMapping> = await mappingContainer.item(usernameOrEmail, 'Username').read<UsernameMapping>()
+  if (fetchedMapping.resource == null) {
+    fetchedMapping = await mappingContainer.item(usernameOrEmail, 'Email').read<EmailMapping>()
+  }
+
+  if (fetchedMapping.resource == null) {
+    if (fetchedMapping.statusCode === 404) {
+      throw new AuthenicationError('Authenication failed.', { usernameOrEmail })
+    } else {
+      throw new AzureError('Unexpected CosmosDB return.', fetchedMapping)
+    }
+  }
+
+  const { userID } = fetchedMapping.resource
+  const fetchedUser = await usersContainer.item(userID, userID).read<User>()
+  if (fetchedUser.resource == null) {
+    throw new AzureError('User does not exist but mapping exists.', fetchedUser)
+  }
+
+  const user = fetchedUser.resource
+  const hash = (await pbkdf2Async(password, user.password.salt, 100000, 512, 'sha512')).toString('base64')
+  if (hash === user.password.hash) {
+    if (!user.emailVerified) {
+      throw new AuthorizationError('Please verify your email first.', userID)
+    }
+    return { userID: user.id, role: user.role }
+  } else {
+    throw new AuthenicationError('Authenication failed.', { usernameOrEmail })
+  }
 }

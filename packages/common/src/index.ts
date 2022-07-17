@@ -17,3 +17,4 @@ export * from './types/server/submission.types'
 export * from './types/server/user.types'
 
 export { delay } from '@azure/service-bus'
+export { ItemResponse } from '@azure/cosmos'

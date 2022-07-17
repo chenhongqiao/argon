@@ -22,6 +22,30 @@ export class ConflictError extends Error {
   }
 }
 
+export class AuthorizationError extends Error {
+  resource = ''
+
+  constructor (message: string, resource: string) {
+    super(message)
+
+    this.resource = resource
+
+    Object.setPrototypeOf(this, AuthorizationError.prototype)
+  }
+}
+
+export class AuthenicationError extends Error {
+  credential = {};
+
+  constructor (message: string, credential: object) {
+    super(message)
+
+    this.credential = credential
+
+    Object.setPrototypeOf(this, AuthenicationError.prototype)
+  }
+}
+
 export class AzureError extends Error {
   context = {};
 

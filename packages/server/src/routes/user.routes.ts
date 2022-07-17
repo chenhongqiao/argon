@@ -1,13 +1,15 @@
 import { FastifyPluginCallback } from 'fastify'
 
-import { registerUser, sendVerificationEmail, fetchUser, verifyUser } from '../services/user.services'
+import { registerUser, sendVerificationEmail, fetchUser, verifyUser, authenicateUser } from '../services/user.services'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
-import { ConflictError, NewUserSchema, NotFoundError } from '@cocs/common'
+import { AuthenicationError, AuthorizationError, ConflictError, delay, NewUserSchema, NotFoundError } from '@cocs/common'
 
-import { EmailVerification, JWTPayloadType } from '../types/JWTPayload.types'
+import { EmailVerification, JWTPayloadType, UserAuth } from '../types/JWTPayload.types'
+
+import { randomInt } from 'node:crypto'
 
 export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   const route = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -37,8 +39,8 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     }
   )
 
-  route.get(
-    '/:userID/email-verification',
+  route.post(
+    '/:userID/send-verification',
     {
       schema: {
         params: Type.Object({ userID: Type.String() }),
@@ -65,7 +67,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   )
 
   route.put(
-    '/:userID/email-verification',
+    '/:userID/verify-email',
     {
       schema: {
         params: Type.Object({ userID: Type.String() }),
@@ -92,6 +94,39 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
       } catch (err) {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'User to be verified not found.' })
+        } else {
+          throw err
+        }
+      }
+    }
+  )
+
+  route.post(
+    '/:userID/login',
+    {
+      schema: {
+        params: Type.Object({ userID: Type.String() }),
+        body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
+        response: {
+          200: Type.Object({ token: Type.String() }),
+          401: Type.Object({ message: Type.String() }),
+          403: Type.Object({ message: Type.String() })
+        }
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { usernameOrEmail, password } = request.body
+        const authenicated = await authenicateUser(usernameOrEmail, password)
+        const payload: UserAuth = { type: JWTPayloadType.UserAuth, userID: authenicated.userID, role: authenicated.role }
+        const token = await reply.jwtSign(payload)
+        await delay(randomInt(300, 600))
+        return await reply.status(200).send({ token })
+      } catch (err) {
+        if (err instanceof AuthenicationError) {
+          return await reply.status(401).send({ message: 'Login failed.' })
+        } else if (err instanceof AuthorizationError) {
+          return await reply.status(403).send({ message: 'Please verify your email first.' })
         } else {
           throw err
         }
