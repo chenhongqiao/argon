@@ -398,9 +398,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@project-carbon/shared@workspace:*, @project-carbon/shared@workspace:packages/common":
+"@project-carbon/shared@workspace:*, @project-carbon/shared@workspace:packages/shared":
   version: 0.0.0-use.local
-  resolution: "@project-carbon/shared@workspace:packages/common"
+  resolution: "@project-carbon/shared@workspace:packages/shared"
   dependencies:
     "@azure/cosmos": ^3.16.1
     "@azure/logger": ^1.0.3

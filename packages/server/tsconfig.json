@@ -20,7 +20,7 @@
   ],
   "references": [
     {
-      "path": "../common"
+      "path": "../shared"
     }
   ]
 }
