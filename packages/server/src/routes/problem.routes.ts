@@ -4,7 +4,7 @@ import {
   NewProblemSchema,
   NotFoundError,
   ProblemSchema
-} from '@proejct-carbon/shared'
+} from '@project-carbon/shared'
 import {
   createProblem,
   deleteProblem,

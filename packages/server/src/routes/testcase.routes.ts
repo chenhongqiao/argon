@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 
 import { deleteTestcase, uploadTestcase } from '../services/testcase.services'
-import { NotFoundError } from '@proejct-carbon/shared'
+import { NotFoundError } from '@project-carbon/shared'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
