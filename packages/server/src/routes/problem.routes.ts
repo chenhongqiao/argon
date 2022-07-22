@@ -4,7 +4,7 @@ import {
   NewProblemSchema,
   NotFoundError,
   ProblemSchema
-} from '@cocs/common'
+} from '@proejct-carbon/shared'
 import {
   createProblem,
   deleteProblem,

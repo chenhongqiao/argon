@@ -1,6 +1,6 @@
 import { parentPort, workerData } from 'node:worker_threads'
 
-import { cleanTestcase, readFile } from '@cocs/common'
+import { cleanTestcase, readFile } from '@proejct-carbon/shared'
 
 import { createHash } from 'node:crypto'
 

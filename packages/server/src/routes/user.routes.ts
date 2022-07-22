@@ -5,7 +5,7 @@ import { registerUser, sendVerificationEmail, fetchUser, verifyUser, authenicate
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
-import { AuthenicationError, AuthorizationError, ConflictError, delay, NewUserSchema, NotFoundError } from '@cocs/common'
+import { AuthenicationError, AuthorizationError, ConflictError, delay, NewUserSchema, NotFoundError } from '@proejct-carbon/shared'
 
 import { EmailVerification, JWTPayloadType, UserAuth } from '../types/JWTPayload.types'
 

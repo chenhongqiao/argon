@@ -1,4 +1,4 @@
-import { UserRole } from '@cocs/common'
+import { UserRole } from '@proejct-carbon/shared'
 
 export enum JWTPayloadType {
   EmailVerification = 'EmailVerification',

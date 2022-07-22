@@ -1,6 +1,6 @@
 import {
   languageConfigs, downloadToDisk, getBlobHash, SandboxStatus, GradingStatus, GradingTask, GradingResult
-} from '@cocs/common'
+} from '@proejct-carbon/shared'
 
 import path = require('node:path')
 
