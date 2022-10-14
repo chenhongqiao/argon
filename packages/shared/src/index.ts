@@ -15,6 +15,7 @@ export * from './types/judger/grade.types'
 export * from './types/server/problem.types'
 export * from './types/server/submission.types'
 export * from './types/server/user.types'
+export * from './types/server/domain.types'
 
 export { delay } from '@azure/service-bus'
-export { ItemResponse } from '@azure/cosmos'
+export { ItemResponse, Item } from '@azure/cosmos'
