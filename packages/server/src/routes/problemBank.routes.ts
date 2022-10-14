@@ -1,15 +1,24 @@
 import {
   NewProblemSchema,
   NotFoundError,
-  ProblemSchema
+  ProblemSchema,
+  NewSubmissionSchema,
+  SubmissionResultSchema
 } from '@project-carbon/shared'
+
 import {
-  createProblem,
+  createInProblemBank,
   deleteProblem,
-  fetchAllProblems,
-  fetchProblem,
+  fetchDomainProblems,
+  fetchFromProblemBank,
   updateProblem
-} from '../services/problemBank.services'
+} from '../services/problem.services'
+
+import {
+  compileSubmission,
+  createSubmission,
+  fetchSubmission
+} from '../services/submission.services'
 
 import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
@@ -41,7 +50,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const problem = request.body
-      const created = await createProblem(problem, request.user.userId)
+      const { domainId } = request.params
+      const created = await createInProblemBank(problem, domainId)
       return await reply.status(201).send(created)
     }
   )
@@ -60,16 +70,14 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      try {
-        const problem = await fetchProblem(problemId, domainId)
-        return await reply.status(200).send(problem)
-      } catch (err) {
+      const problem = await fetchFromProblemBank(problemId, domainId).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'Problem not found.' })
         } else {
           throw err
         }
-      }
+      })
+      return await reply.status(200).send(problem)
     }
   )
 
@@ -86,7 +94,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const { domainId } = request.params
-      const problems = await fetchAllProblems(domainId)
+      const problems = await fetchDomainProblems(domainId)
       return await reply.status(200).send(problems)
     }
   )
@@ -105,18 +113,16 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       }
     },
     async (request, reply) => {
-      try {
-        const { problemId, domainId } = request.params
-        const problem = request.body
-        const updated = await updateProblem(problem, problemId, domainId)
-        return await reply.status(200).send(updated)
-      } catch (err) {
+      const { problemId, domainId } = request.params
+      const problem = request.body
+      const updated = await updateProblem(problem, problemId, domainId).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'Problem not found.' })
         } else {
           throw err
         }
-      }
+      })
+      return await reply.status(200).send(updated)
     }
   )
 
@@ -144,6 +150,64 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           throw err
         }
       }
+    }
+  )
+
+  authned.post(
+    '/:domainId/:problemId/submissions',
+    {
+      schema: {
+        body: NewSubmissionSchema,
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
+        response: {
+          201: Type.Object({ submissionId: Type.String() }),
+          404: Type.Object({ message: Type.String() })
+        }
+      }
+    },
+    async (request, reply) => {
+      const submission = request.body
+      const { domainId, problemId } = request.params
+      const problem = await fetchFromProblemBank(problemId, domainId).catch(async (err) => {
+        if (err instanceof NotFoundError) {
+          return await reply.status(404).send({ message: 'Problem not found.' })
+        } else {
+          throw err
+        }
+      })
+
+      const created = await createSubmission(submission, { id: problem.id, domainId: problem.domainId }, request.user.userId)
+      await compileSubmission(created.submissionId)
+      return await reply.status(201).send(created)
+    }
+  )
+
+  authned.get(
+    '/:domainId/:problemId/submissions/:submissionId',
+    {
+      schema: {
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String(), submissionId: Type.String() }),
+        response: {
+          200: SubmissionResultSchema,
+          404: Type.Object({ message: Type.String() })
+        }
+      }
+    },
+    async (request, reply) => {
+      const { domainId, submissionId, problemId } = request.params
+      const submission = await fetchSubmission(submissionId).catch(async (err) => {
+        if (err instanceof NotFoundError) {
+          return await reply.status(404).send({ message: 'Submission not found.' })
+        } else {
+          throw err
+        }
+      })
+
+      if (submission.problem.id !== problemId || submission.problem.id !== domainId) {
+        return await reply.status(404).send({ message: 'Submission not found.' })
+      }
+
+      return await reply.status(200).send(submission)
     }
   )
   return done()
