@@ -92,34 +92,34 @@ export async function runInSandbox (
   let command = `isolate --run --cg --box-id=${boxId} --meta=/var/local/lib/isolate/${boxId}/meta.txt`
 
   if (task.constraints.memory != null) {
-    command += ' ' + `--cg-mem=${task.constraints.memory}`
+    command += ` --cg-mem=${task.constraints.memory}`
   }
   if (task.constraints.time != null) {
-    command += ' ' + `--time=${task.constraints.time / 1000.0}`
+    command += ` --time=${task.constraints.time / 1000.0}`
     if (task.constraints.wallTime == null) {
-      command += ' ' + `--wall-time=${(task.constraints.time / 1000.0) * 3}`
+      command += ` --wall-time=${(task.constraints.time / 1000.0) * 3}`
     }
   }
   if (task.constraints.wallTime != null) {
-    command += ' ' + `--wall-time=${task.constraints.wallTime / 1000.0}`
+    command += ` --wall-time=${task.constraints.wallTime / 1000.0}`
   }
   if (task.constraints.totalStorage != null) {
-    command += ' ' + `--fsize=${task.constraints.totalStorage}`
+    command += ` --fsize=${task.constraints.totalStorage}`
   }
   if (task.constraints.processes != null) {
-    command += ' ' + `--processes=${task.constraints.processes}`
+    command += ` --processes=${task.constraints.processes}`
   }
   if (task.env != null) {
-    command += ' ' + `--env=${task.env}`
+    command += ` --env=${task.env}`
   }
   if (task.outputPath != null) {
-    command += ' ' + `--stdout=${task.outputPath}`
+    command += ` --stdout=${task.outputPath}`
   }
   if (task.inputPath != null) {
-    command += ' ' + `--stdin=${task.inputPath}`
+    command += ` --stdin=${task.inputPath}`
   }
   if (task.stderrPath != null) {
-    command += ' ' + `--stderr=${task.stderrPath}`
+    command += ` --stderr=${task.stderrPath}`
   }
   command += ' -- ' + task.command
 
