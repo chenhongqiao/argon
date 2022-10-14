@@ -162,7 +162,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         response: {
           201: Type.Object({ submissionId: Type.String() }),
           404: Type.Object({ message: Type.String() })
-        }
+        },
+        preHandler: [authned.auth([verifyTeamScope(['problemBank.test'])]) as any]
       }
     },
     async (request, reply) => {
@@ -190,7 +191,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         response: {
           200: SubmissionResultSchema,
           404: Type.Object({ message: Type.String() })
-        }
+        },
+        preHandler: [authned.auth([verifyTeamScope(['problemBank.test'])]) as any]
       }
     },
     async (request, reply) => {
