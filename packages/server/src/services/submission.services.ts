@@ -18,19 +18,21 @@ import {
   NewSubmission,
   NotFoundError,
   Problem,
-  SubmissionStatus
+  SubmissionStatus,
+  SubmissionResult
 } from '@project-carbon/shared'
 
-const submissionsContainer = CosmosDB.container('submissions')
-const problemsContainer = CosmosDB.container('problems')
+import { fetchFromProblemBank } from './problem.services'
 
-export async function createSubmission (submission: NewSubmission, userId): Promise<{ submissionId: string }> {
-  const newSubmission: Omit<CompilingSubmission, 'id'> = { ...submission, status: SubmissionStatus.Compiling, userId }
-  const createSubmissionResp = await submissionsContainer.items.create(newSubmission)
-  if (createSubmissionResp.resource != null) {
-    return { submissionId: createSubmissionResp.resource.id }
+const submissionsContainer = CosmosDB.container('submissions')
+
+export async function createSubmission (submission: NewSubmission, problem: {id: string, domainId: string}, userId: string, contestId?: string): Promise<{ submissionId: string}> {
+  const newSubmission: Omit<CompilingSubmission, 'id'> = { ...submission, status: SubmissionStatus.Compiling, userId, problem, contestId }
+  const created = await submissionsContainer.items.create(newSubmission)
+  if (created.resource != null) {
+    return { submissionId: created.resource.id }
   }
-  throw new AzureError('No resource ID returned.', createSubmissionResp)
+  throw new AzureError('No resource ID returned.', created)
 }
 
 export async function compileSubmission (submissionId: string): Promise<void> {
@@ -70,17 +72,15 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
   const submission = fetchedSubmission.resource
   if (compileResult.status === CompilingStatus.Succeeded) {
     const batch = await messageSender.createMessageBatch()
-    const problemItem = problemsContainer.item(submission.problemId, submission.problemId)
-    const fetchedProblem = await problemItem.read<Problem>()
-    if (fetchedProblem.resource == null) {
-      if (fetchedProblem.statusCode === 404) {
-        throw new NotFoundError('Problem not found.', submission.problemId)
-      } else {
-        throw new AzureError('Unexpected CosmosDB return.', fetchedProblem)
-      }
+    let problem: Problem
+    if (submission.contestId == null) {
+      problem = await fetchFromProblemBank(submission.problem.id, submission.problem.domainId)
+    } else {
+      // Fetch Contest Problem
+      // TODO
     }
-    const problem: Problem = fetchedProblem.resource
     const submissionTestcases: Array<{points: number, input: string, output: string}> = []
+    // @ts-expect-error: TODO
     problem.testcases.forEach((testcase, index) => {
       const task: GradingTask = {
         constraints: problem.constraints,
@@ -151,7 +151,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
     const gradedSubmission: GradedSubmission = {
       ...baseSubmission,
       status: SubmissionStatus.Graded,
-      // @ts-expect-error Since we've previously checked that the number of graded testcase is equal to the number of total testcases, we can assume that all testcases have a result property.
+      // @ts-expect-error: since we've previously checked that the number of graded testcase is equal to the number of total testcases, we can assume that all testcases have a result property.
       testcases: testcases,
       score
     }
@@ -159,7 +159,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
   }
 }
 
-export async function handleGradingResult (gradingResult: GradingResult, submissionId, testcaseIndex): Promise<void> {
+export async function handleGradingResult (gradingResult: GradingResult, submissionId: string, testcaseIndex: number): Promise<void> {
   const submissionItem = submissionsContainer.item(submissionId, submissionId)
   const fetched = await submissionItem.read<GradingSubmission|FailedSubmission>()
   if (fetched.resource == null) {
@@ -172,7 +172,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
   const submission = fetched.resource
   if (submission.status === SubmissionStatus.Grading) {
     if (submission.testcases[testcaseIndex] == null) {
-      throw new NotFoundError('Testcase not found.', testcaseIndex)
+      throw new NotFoundError('Testcase not found.', testcaseIndex.toString())
     }
     if (submission.testcases[testcaseIndex].result == null) {
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
@@ -186,9 +186,9 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
   }
 }
 
-export async function fetchSubmission (submissionId: string): Promise<GradingSubmission|CompilingSubmission|GradedSubmission|FailedSubmission> {
+export async function fetchSubmission (submissionId: string): Promise<SubmissionResult> {
   const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetched = await submissionItem.read<GradingSubmission|CompilingSubmission|GradedSubmission|FailedSubmission>()
+  const fetched = await submissionItem.read<SubmissionResult>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
       throw new NotFoundError('Submission not found.', submissionId)
@@ -196,5 +196,6 @@ export async function fetchSubmission (submissionId: string): Promise<GradingSub
       throw new AzureError('Unexpected CosmosDB return.', fetched)
     }
   }
+
   return fetched.resource
 }
