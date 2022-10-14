@@ -121,7 +121,7 @@ export async function runInSandbox (
   if (task.stderrPath != null) {
     command += ` --stderr=${task.stderrPath}`
   }
-  command += ' -- ' + task.command
+  command += ` -- ${task.command}`
 
   try {
     await exec(command)
