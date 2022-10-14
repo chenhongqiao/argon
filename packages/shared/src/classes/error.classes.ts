@@ -34,7 +34,7 @@ export class AuthorizationError extends Error {
   }
 }
 
-export class AuthenicationError extends Error {
+export class AuthenticationError extends Error {
   credential = {};
 
   constructor (message: string, credential: object) {
@@ -42,7 +42,7 @@ export class AuthenicationError extends Error {
 
     this.credential = credential
 
-    Object.setPrototypeOf(this, AuthenicationError.prototype)
+    Object.setPrototypeOf(this, AuthenticationError.prototype)
   }
 }
 
