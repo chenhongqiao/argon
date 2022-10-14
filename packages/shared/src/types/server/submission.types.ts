@@ -6,8 +6,7 @@ import { GradingResultSchema } from '../judger/grade.types'
 
 export const NewSubmissionSchema = Type.Object({
   language: Type.Enum(SubmissionLang),
-  source: Type.String(),
-  problemId: Type.String()
+  source: Type.String()
 })
 
 export type NewSubmission = Static<typeof NewSubmissionSchema>
@@ -22,7 +21,12 @@ export enum SubmissionStatus {
 
 const BaseSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
   id: Type.String(),
-  userId: Type.String()
+  userId: Type.String(),
+  problem: Type.Object({
+    id: Type.String(),
+    domainId: Type.String()
+  }),
+  contestId: Type.Optional(Type.String())
 })])
 
 export const CompilingSubmissionSchema = Type.Intersect([BaseSubmissionSchema, Type.Object({
