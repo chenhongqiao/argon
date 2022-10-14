@@ -3,7 +3,7 @@ import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
 
-import { emailClient } from '../infras/email.infras'
+import { emailClient } from '../connections/email.connections'
 
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)

@@ -1,7 +1,7 @@
-export * from './infras/blobStorage.infras'
-export * from './infras/cosmos.infras'
-export * from './infras/fileSystem.infras'
-export * from './infras/serviceBus.infras'
+export * from './connections/blobStorage.connections'
+export * from './connections/cosmos.connections'
+export * from './connections/fileSystem.connections'
+export * from './connections/serviceBus.connections'
 export * from './utils/cleanTestcase.utils'
 
 export * from './configs/language.configs'
