@@ -1,9 +1,9 @@
 import Fastify from 'fastify'
 import multipart from '@fastify/multipart'
 import jwt from '@fastify/jwt'
-import { ajvTypeBoxPlugin, TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
-import { problemRoutes } from './routes/problem.routes'
+import { problemBankRoutes } from './routes/problemBank.routes'
 import { testcaseRoutes } from './routes/testcase.routes'
 import { heartbeatRoutes } from './routes/heartbeat.routes'
 import { submissionRoutes } from './routes/submission.routes'
@@ -14,6 +14,7 @@ import { CosmosDB } from '@project-carbon/shared'
 import { version } from '../package.json'
 
 import Sentry = require('@sentry/node')
+import fastifyAuth from '@fastify/auth'
 
 Sentry.init({
   dsn: 'https://7e6e404e57024a01819d0fb4cb215538@o1044666.ingest.sentry.io/6554031',
@@ -24,17 +25,15 @@ Sentry.init({
 const app = Fastify({
   logger: {
     enabled: true
-  },
-  ajv: {
-    plugins: [ajvTypeBoxPlugin]
   }
 }).withTypeProvider<TypeBoxTypeProvider>()
 
 const DBContainers = [
-  { id: 'problems', partitionKey: '/id' },
+  { id: 'problems', partitionKey: '/userId' },
   { id: 'submissions', partitionKey: '/id' },
   { id: 'users', partitionKey: '/id' },
-  { id: 'userMappings', partitionKey: '/type' }]
+  { id: 'userMappings', partitionKey: '/type' },
+  { id: 'emailVerifications', partitionKey: '/userId' }]
 
 export async function startServer (): Promise<void> {
   const DBInitQueue: Array<Promise<any>> = []
@@ -42,10 +41,6 @@ export async function startServer (): Promise<void> {
     DBInitQueue.push(CosmosDB.containers.createIfNotExists(container))
   })
   await Promise.all(DBInitQueue)
-
-  await app.register(jwt, {
-    secret: process.env.JWT_SECRET ?? ''
-  })
 
   app.setErrorHandler((err, request, reply) => {
     if (err.statusCode != null && err.statusCode < 500) {
@@ -57,13 +52,19 @@ export async function startServer (): Promise<void> {
     }
   })
 
+  await app.register(jwt, {
+    secret: process.env.JWT_SECRET ?? ''
+  })
+
+  await app.register(fastifyAuth)
+
   await app.register(multipart, {
     prefix: '/testcases',
     limits: {
       fileSize: 20971520
     }
   })
-  await app.register(problemRoutes, { prefix: '/problems' })
+  await app.register(problemBankRoutes, { prefix: '/problems' })
   await app.register(testcaseRoutes, { prefix: '/testcases' })
   await app.register(submissionRoutes, { prefix: '/submissions' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
