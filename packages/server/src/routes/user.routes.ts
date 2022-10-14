@@ -1,15 +1,15 @@
 import { FastifyPluginCallback } from 'fastify'
 
-import { registerUser, sendVerificationEmail, fetchUser, verifyUser, authenicateUser } from '../services/user.services'
+import { registerUser, initiateVerification, fetchUser, completeVerification, authenticateUser } from '../services/user.services'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
-import { AuthenicationError, AuthorizationError, ConflictError, delay, NewUserSchema, NotFoundError } from '@project-carbon/shared'
-
-import { EmailVerification, JWTPayloadType, UserAuth } from '../types/JWTPayload.types'
+import { AuthenticationError, AuthorizationError, ConflictError, delay, NewUserSchema, NotFoundError } from '@project-carbon/shared'
 
 import { randomInt } from 'node:crypto'
+
+import { JWTPayload } from '../types'
 
 export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   const route = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -19,7 +19,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
       schema: {
         body: NewUserSchema,
         response: {
-          201: Type.Object({ userID: Type.String() }),
+          201: Type.Object({ userId: Type.String() }),
           409: Type.Object({ message: Type.String() })
         }
       }
@@ -40,21 +40,20 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   )
 
   route.post(
-    '/:userID/send-verification',
+    '/:userId/initiate-verification',
     {
       schema: {
-        params: Type.Object({ userID: Type.String() }),
+        params: Type.Object({ userId: Type.String() }),
         response: {
           404: Type.Object({ message: Type.String() })
         }
       }
     },
     async (request, reply) => {
-      const { userID } = request.params
+      const { userId } = request.params
       try {
-        const user = await fetchUser(userID)
-        const token = await reply.jwtSign({ userID: user.id, type: JWTPayloadType.EmailVerification })
-        await sendVerificationEmail(user.email, token)
+        const user = await fetchUser(userId)
+        await initiateVerification(userId, user.email)
         return await reply.status(204).send()
       } catch (err) {
         if (err instanceof NotFoundError) {
@@ -67,30 +66,23 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   )
 
   route.put(
-    '/:userID/verify-email',
+    '/:userId/complete-verification',
     {
       schema: {
-        params: Type.Object({ userID: Type.String() }),
+        params: Type.Object({ userId: Type.String() }),
+        body: Type.String(),
         response: {
-          200: Type.Object({ userID: Type.String() }),
+          200: Type.Object({ userId: Type.String() }),
           401: Type.Object({ message: Type.String() }),
           404: Type.Object({ message: Type.String() })
         }
       }
     },
     async (request, reply) => {
-      let decoded: EmailVerification
       try {
-        decoded = await request.jwtVerify()
-      } catch (err) {
-        return await reply.status(401).send({ message: 'Invalid authorization token.' })
-      }
-      if (decoded.userID !== request.params.userID || decoded.type !== JWTPayloadType.EmailVerification) {
-        return await reply.status(401).send({ message: 'Invalid authorization token.' })
-      }
-      try {
-        const verified = await verifyUser(request.params.userID)
-        return await reply.status(200).send({ userID: verified.userID })
+        const verificationId = request.body
+        const verified = await completeVerification(verificationId, request.params.userId)
+        return await reply.status(200).send({ userId: verified.userId })
       } catch (err) {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'User to be verified not found.' })
@@ -102,10 +94,10 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   )
 
   route.post(
-    '/:userID/login',
+    '/:userId/login',
     {
       schema: {
-        params: Type.Object({ userID: Type.String() }),
+        params: Type.Object({ userId: Type.String() }),
         body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
         response: {
           200: Type.Object({ token: Type.String() }),
@@ -117,13 +109,13 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     async (request, reply) => {
       try {
         const { usernameOrEmail, password } = request.body
-        const authenicated = await authenicateUser(usernameOrEmail, password)
-        const payload: UserAuth = { type: JWTPayloadType.UserAuth, userID: authenicated.userID, role: authenicated.role }
+        const authenicated = await authenticateUser(usernameOrEmail, password)
+        const payload: JWTPayload = { userId: authenicated.userId, scopes: authenicated.scopes }
         const token = await reply.jwtSign(payload)
         await delay(randomInt(300, 600))
         return await reply.status(200).send({ token })
       } catch (err) {
-        if (err instanceof AuthenicationError) {
+        if (err instanceof AuthenticationError) {
           return await reply.status(401).send({ message: 'Login failed.' })
         } else if (err instanceof AuthorizationError) {
           return await reply.status(403).send({ message: 'Please verify your email first.' })
@@ -133,5 +125,5 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
       }
     }
   )
-  done()
+  return done()
 }
