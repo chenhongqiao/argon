@@ -6,7 +6,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { problemBankRoutes } from './routes/problemBank.routes'
 import { testcaseRoutes } from './routes/testcase.routes'
 import { heartbeatRoutes } from './routes/heartbeat.routes'
-import { submissionRoutes } from './routes/submission.routes'
+import { submissionResultRoutes } from './routes/submissionResult.routes'
 import { userRoutes } from './routes/user.routes'
 
 import { CosmosDB } from '@project-carbon/shared'
@@ -29,7 +29,7 @@ const app = Fastify({
 }).withTypeProvider<TypeBoxTypeProvider>()
 
 const DBContainers = [
-  { id: 'problems', partitionKey: '/userId' },
+  { id: 'problemBank', partitionKey: '/domainId' },
   { id: 'submissions', partitionKey: '/id' },
   { id: 'users', partitionKey: '/id' },
   { id: 'userMappings', partitionKey: '/type' },
@@ -64,9 +64,9 @@ export async function startServer (): Promise<void> {
       fileSize: 20971520
     }
   })
-  await app.register(problemBankRoutes, { prefix: '/problems' })
+  await app.register(problemBankRoutes, { prefix: '/problem-bank' })
   await app.register(testcaseRoutes, { prefix: '/testcases' })
-  await app.register(submissionRoutes, { prefix: '/submissions' })
+  await app.register(submissionResultRoutes, { prefix: '/submission-results' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
   await app.register(userRoutes, { prefix: '/users' })
 

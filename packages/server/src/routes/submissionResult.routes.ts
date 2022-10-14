@@ -13,7 +13,7 @@ import {
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
-export const submissionRoutes: FastifyPluginCallback = (app, options, done) => {
+export const submissionResultRoutes: FastifyPluginCallback = (app, options, done) => {
   const judger = app.withTypeProvider<TypeBoxTypeProvider>()
   judger.put(
     '/:submissionId/compiling-result',
