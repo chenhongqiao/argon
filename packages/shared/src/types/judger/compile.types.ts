@@ -7,7 +7,7 @@ export interface CompilingTask {
   type: JudgerTaskType.Compiling
   constraints: Constraints
   language: SubmissionLang
-  submissionID: string
+  submissionId: string
 }
 
 export enum CompilingStatus {

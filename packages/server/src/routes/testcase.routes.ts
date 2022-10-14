@@ -14,12 +14,12 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         response: {
-          201: Type.Array(Type.Object({ testcaseID: Type.String() }))
+          201: Type.Array(Type.Object({ testcaseId: Type.String() }))
         }
       }
     },
     async (request, reply) => {
-      const queue: Array<Promise<{testcaseID: string}>> = []
+      const queue: Array<Promise<{testcaseId: string}>> = []
       const files = await request.saveRequestFiles()
       files.forEach(testcase => {
         queue.push(uploadTestcase(testcase.filepath))
@@ -30,20 +30,20 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   )
 
   route.delete(
-    '/:testcaseID',
+    '/:testcaseId',
     {
       schema: {
-        params: Type.Object({ testcaseID: Type.String() }),
+        params: Type.Object({ testcaseId: Type.String() }),
         response: {
-          200: Type.Object({ testcaseID: Type.String() }),
+          200: Type.Object({ testcaseId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         }
       }
     },
     async (request, reply) => {
-      const { testcaseID } = request.params
+      const { testcaseId } = request.params
       try {
-        const deleted = await deleteTestcase(testcaseID)
+        const deleted = await deleteTestcase(testcaseId)
         return await reply.status(200).send(deleted)
       } catch (err) {
         if (err instanceof NotFoundError) {
@@ -54,5 +54,5 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
       }
     }
   )
-  done()
+  return done()
 }

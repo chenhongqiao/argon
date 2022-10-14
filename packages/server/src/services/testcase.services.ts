@@ -5,11 +5,11 @@ import { deleteBlob } from '@project-carbon/shared'
 
 import path = require('node:path')
 
-export async function uploadTestcase (testcasePath: string): Promise<{testcaseID: string}> {
-  const testcaseID = randomUUID()
+export async function uploadTestcase (testcasePath: string): Promise<{testcaseId: string}> {
+  const testcaseId = randomUUID()
   return await new Promise((resolve, reject) => {
     const worker = new Worker(path.join(__dirname, '../workers/uploadTestcase.worker.js'), {
-      workerData: { testcasePath, testcaseID }
+      workerData: { testcasePath, testcaseId }
     })
     worker.on('message', resolve)
     worker.on('error', reject)
@@ -21,7 +21,7 @@ export async function uploadTestcase (testcasePath: string): Promise<{testcaseID
   })
 }
 
-export async function deleteTestcase (testcaseID: string): Promise<{testcaseID: string}> {
-  await deleteBlob({ containerName: 'testcases', blobName: testcaseID })
-  return { testcaseID: testcaseID }
+export async function deleteTestcase (testcaseId: string): Promise<{testcaseId: string}> {
+  await deleteBlob({ containerName: 'testcases', blobName: testcaseId })
+  return { testcaseId: testcaseId }
 }

@@ -18,7 +18,7 @@ export enum GradingStatus {
 
 export interface GradingTask {
   type: JudgerTaskType.Grading
-  submissionID: string
+  submissionId: string
   testcase: {
     input: string
     output: string
