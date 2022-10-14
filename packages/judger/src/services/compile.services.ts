@@ -7,20 +7,20 @@ import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus
 
 const submissionsContainer = CosmosDB.container('submissions')
 
-export async function compileSubmission (task: CompilingTask, boxID: number): Promise<CompileSucceeded|CompileFailed> {
-  const { submissionID } = task
-  const submissionItem = submissionsContainer.item(submissionID, submissionID)
+export async function compileSubmission (task: CompilingTask, boxId: number): Promise<CompileSucceeded|CompileFailed> {
+  const { submissionId } = task
+  const submissionItem = submissionsContainer.item(submissionId, submissionId)
   const submissionFetchResult = await submissionItem.read<CompilingSubmission>()
   if (submissionFetchResult.resource == null) {
     if (submissionFetchResult.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', submissionID)
+      throw new NotFoundError('Submission not found.', submissionId)
     } else {
       throw new AzureError('Unexpected CosmosDB return.', submissionFetchResult)
     }
   }
   const submission = submissionFetchResult.resource
 
-  const workDir = `/var/local/lib/isolate/${boxID}/box`
+  const workDir = `/var/local/lib/isolate/${boxId}/box`
   const config = languageConfigs[task.language]
   const srcPath = path.join(workDir, config.srcFile)
   const binaryPath = path.join(workDir, config.binaryFile)
@@ -36,10 +36,10 @@ export async function compileSubmission (task: CompilingTask, boxID: number): Pr
       stderrPath: 'log.txt',
       env: 'PATH=/bin:/usr/local/bin:/usr/bin'
     },
-    boxID
+    boxId
   )
   if (result.status === SandboxStatus.Succeeded) {
-    await uploadFromDisk(binaryPath, { containerName: 'binaries', blobName: task.submissionID })
+    await uploadFromDisk(binaryPath, { containerName: 'binaries', blobName: task.submissionId })
     return {
       status: CompilingStatus.Succeeded
     }

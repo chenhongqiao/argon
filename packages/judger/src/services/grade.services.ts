@@ -13,15 +13,15 @@ import {
 
 export async function gradeSubmission (
   task: GradingTask,
-  boxID: number
+  boxId: number
 ): Promise<GradingResult> {
-  const workDir = `/var/local/lib/isolate/${boxID}/box`
+  const workDir = `/var/local/lib/isolate/${boxId}/box`
   const config = languageConfigs[task.language]
   await downloadToDisk(
     path.join(workDir, config.binaryFile),
     {
       containerName: 'binaries',
-      blobName: task.submissionID
+      blobName: task.submissionId
     }
   )
 
@@ -44,7 +44,7 @@ export async function gradeSubmission (
       inputPath: 'in.txt',
       outputPath: 'out.txt'
     },
-    boxID
+    boxId
   )
   if (sandboxResult.status === SandboxStatus.Succeeded) {
     const correctHash = await getBlobHash(

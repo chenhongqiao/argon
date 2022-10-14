@@ -15,7 +15,7 @@ import { version } from '../package.json'
 const logger = pino()
 
 const availableBoxes = new Set()
-const judgerID = randomUUID()
+const judgerId = randomUUID()
 const serverBaseURL = process.env.SERVER_BASE_URL ?? 'http://127.0.0.1:8000'
 
 Sentry.init({
@@ -24,14 +24,14 @@ Sentry.init({
   release: version
 })
 
-async function handleGradingTask (task: GradingTask, boxID: number): Promise<void> {
-  await initSandbox(boxID)
-  const result = await gradeSubmission(task, boxID)
-  await destroySandbox(boxID)
-  availableBoxes.add(boxID)
+async function handleGradingTask (task: GradingTask, boxId: number): Promise<void> {
+  await initSandbox(boxId)
+  const result = await gradeSubmission(task, boxId)
+  await destroySandbox(boxId)
+  availableBoxes.add(boxId)
   try {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    await got.put(new URL(`/submissions/${task.submissionID}/testcase-result/${task.testcaseIndex}`, serverBaseURL).href, {
+    await got.put(new URL(`/submissions/${task.submissionId}/testcase-result/${task.testcaseIndex}`, serverBaseURL).href, {
       json: result,
       timeout: {
         request: 30000
@@ -42,14 +42,14 @@ async function handleGradingTask (task: GradingTask, boxID: number): Promise<voi
   }
 }
 
-async function handleCompilingTask (task: CompilingTask, boxID: number): Promise<void> {
-  await initSandbox(boxID)
-  const result = await compileSubmission(task, boxID)
-  await destroySandbox(boxID)
-  availableBoxes.add(boxID)
+async function handleCompilingTask (task: CompilingTask, boxId: number): Promise<void> {
+  await initSandbox(boxId)
+  const result = await compileSubmission(task, boxId)
+  await destroySandbox(boxId)
+  availableBoxes.add(boxId)
   try {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    await got.put(new URL(`/submissions/${task.submissionID}/compiling-result`, serverBaseURL).href, {
+    await got.put(new URL(`/submissions/${task.submissionId}/compiling-result`, serverBaseURL).href, {
       json: result,
       timeout: {
         request: 30000
@@ -65,14 +65,14 @@ export async function startJudger (): Promise<void> {
 
   logger.info(`${cores} CPU cores detected.`)
 
-  const destroyQueue: Array<Promise<{ boxID: number }>> = []
+  const destroyQueue: Array<Promise<{ boxId: number }>> = []
   for (let id = 1; id <= cores; id += 1) {
     destroyQueue.push(destroySandbox(id))
     availableBoxes.add(id)
   }
   await Promise.all(destroyQueue)
 
-  logger.info(`Judger ${judgerID} start receiving tasks.`)
+  logger.info(`Judger ${judgerId} start receiving tasks.`)
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -82,18 +82,18 @@ export async function startJudger (): Promise<void> {
         message => message.body
       )
       tasks.forEach(task => {
-        const boxID = availableBoxes.values().next().value
-        availableBoxes.delete(boxID)
+        const boxId = availableBoxes.values().next().value
+        availableBoxes.delete(boxId)
         if (task.type === JudgerTaskType.Grading) {
           try {
-            void handleGradingTask(task, boxID)
+            void handleGradingTask(task, boxId)
           } catch (err) {
             Sentry.captureException(err)
             logger.error(err)
           }
         } else if (task.type === JudgerTaskType.Compiling) {
           try {
-            void handleCompilingTask(task, boxID)
+            void handleCompilingTask(task, boxId)
           } catch (err) {
             Sentry.captureException(err)
             logger.error(err)

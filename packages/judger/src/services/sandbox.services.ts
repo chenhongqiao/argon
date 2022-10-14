@@ -46,24 +46,24 @@ function parseMeta (metaStr: string): SandboxMeta {
 }
 
 export async function initSandbox (
-  boxID: number
-): Promise<{ workDir: string, boxID: number }> {
+  boxId: number
+): Promise<{ workDir: string, boxId: number }> {
   let workDir = ''
   try {
-    workDir = (await exec(`isolate --box-id=${boxID} --cg --init`)).stdout
+    workDir = (await exec(`isolate --box-id=${boxId} --cg --init`)).stdout
   } catch (err) {
     if (Boolean((err.message?.startsWith('Box already exists')))) {
-      throw new ConflictError('Box already exists', `sandbox ${boxID}`)
+      throw new ConflictError('Box already exists', `sandbox ${boxId}`)
     } else {
       throw err
     }
   }
-  return { workDir, boxID }
+  return { workDir, boxId }
 }
 
-export async function destroySandbox (boxID: number): Promise<{ boxID: number }> {
-  await exec(`isolate --box-id=${boxID} --cleanup`)
-  return { boxID }
+export async function destroySandbox (boxId: number): Promise<{ boxId: number }> {
+  await exec(`isolate --box-id=${boxId} --cleanup`)
+  return { boxId }
 }
 
 export interface SandboxTask {
@@ -85,11 +85,11 @@ interface SandboxSucceeded {
 
 export async function runInSandbox (
   task: SandboxTask,
-  boxID: number
+  boxId: number
 ): Promise<
   SandboxSucceeded | SandboxMemoryExceeded | SandboxSystemError | SandboxTimeExceeded | SandboxRuntimeError
   > {
-  let command = `isolate --run --cg --box-id=${boxID} --meta=/var/local/lib/isolate/${boxID}/meta.txt`
+  let command = `isolate --run --cg --box-id=${boxId} --meta=/var/local/lib/isolate/${boxId}/meta.txt`
 
   if (task.constraints.memory != null) {
     command += ' ' + `--cg-mem=${task.constraints.memory}`
@@ -127,7 +127,7 @@ export async function runInSandbox (
     await exec(command)
   } catch (err) {
     try {
-      const meta = (await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)).data.toString()
+      const meta = (await readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).data.toString()
       const result = parseMeta(meta)
 
       switch (result.status) {
@@ -191,7 +191,7 @@ export async function runInSandbox (
   }
 
   try {
-    const meta = (await readFile(`/var/local/lib/isolate/${boxID}/meta.txt`)).data.toString()
+    const meta = (await readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).data.toString()
     const result = parseMeta(meta)
     if (result.time == null || result['time-wall'] == null || result.memory == null) {
       return {
