@@ -237,6 +237,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/auth@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@fastify/auth@npm:4.1.0"
+  dependencies:
+    fastify-plugin: ^4.0.0
+    reusify: ^1.0.4
+  checksum: 63a432545e6c0bfbb6c788d20214271149dd56c6dbe25a7c5baa76b097a6845777130681310e440fbab8e8cd74f8afc8a6e848f94c3d7aa759fac898756d999b
+  languageName: node
+  linkType: hard
+
 "@fastify/busboy@npm:^1.0.0":
   version: 1.1.0
   resolution: "@fastify/busboy@npm:1.1.0"
@@ -298,13 +308,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/type-provider-typebox@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@fastify/type-provider-typebox@npm:1.0.0"
+"@fastify/type-provider-typebox@npm:^2.0.0":
+  version: 2.3.0
+  resolution: "@fastify/type-provider-typebox@npm:2.3.0"
   peerDependencies:
-    "@sinclair/typebox": ^0.23.0
+    "@sinclair/typebox": ^0.24.1
     fastify: ^4.0.0
-  checksum: 2dc1ea21cf16d3d595ecb0b289fffeed64875db7954f0ec1947742ff073e4d93a5a989549b41c6269b5beacb1bb06725a836b256be8b8c98f7af0ee6ec3b9636
+  checksum: d76ab6b1862beca711066e9a6adab2cfd87360a0cb9b6df82141824586de277c3cf4a2de6ec0b525637d748581867b8105d2781b4623d7fc7e6b3dca0fe7f299
   languageName: node
   linkType: hard
 
@@ -384,13 +394,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@project-carbon/server@workspace:packages/server"
   dependencies:
+    "@fastify/auth": ^4.1.0
     "@fastify/jwt": ^6.3.1
     "@fastify/multipart": ^6.0.0
-    "@fastify/type-provider-typebox": ^1.0.0
+    "@fastify/type-provider-typebox": ^2.0.0
     "@project-carbon/shared": "workspace:*"
     "@sendgrid/mail": ^7.7.0
     "@sentry/node": ^7.5.1
-    "@sinclair/typebox": ^0.23.5
+    "@sinclair/typebox": ^0.24.0
     "@types/long": ^4.0.2
     "@types/node": ^17.0.41
     fastify: ^4.1.0
@@ -406,7 +417,7 @@ __metadata:
     "@azure/logger": ^1.0.3
     "@azure/service-bus": ^7.5.1
     "@azure/storage-blob": ^12.10.0
-    "@sinclair/typebox": ^0.23.5
+    "@sinclair/typebox": ^0.24.0
     "@types/node": ^17.0.41
     typescript: ^4.3.2
   languageName: unknown
@@ -497,10 +508,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sinclair/typebox@npm:^0.23.5":
-  version: 0.23.5
-  resolution: "@sinclair/typebox@npm:0.23.5"
-  checksum: c96056d35d9cb862aeb635ff8873e2e7633e668dd544e162aee2690a82c970d0b3f90aa2b3501fe374dfa8e792388559a3e3a86712b23ebaef10061add534f47
+"@sinclair/typebox@npm:^0.24.0":
+  version: 0.24.41
+  resolution: "@sinclair/typebox@npm:0.24.41"
+  checksum: eb9861ad7bc5a29d5a6be27732757210edfcfa73fca386e303b0363af31c7ad16ebad75cf0c3fdf6444663dda5884ba0de333fc7a8ab8680c1c01e1e91089c1d
   languageName: node
   linkType: hard
 
