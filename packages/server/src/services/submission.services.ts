@@ -147,7 +147,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
       }
     })
 
-    const { gradedCases, testcases, ...baseSubmission } = submission
+    const { testcases, ...baseSubmission } = submission
     const gradedSubmission: GradedSubmission = {
       ...baseSubmission,
       status: SubmissionStatus.Graded,
