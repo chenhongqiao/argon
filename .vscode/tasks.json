@@ -16,7 +16,7 @@
       "label": "Build Server",
       "type": "typescript",
       "tsconfig": "packages/server/tsconfig.json",
-      "dependsOn": "Build Common Modules",
+      "dependsOn": "Build Shared Modules",
       "problemMatcher": [
         "$tsc"
       ],
@@ -28,7 +28,7 @@
       "label": "Build Judger",
       "type": "typescript",
       "tsconfig": "packages/judger/tsconfig.json",
-      "dependsOn": "Build Common Modules",
+      "dependsOn": "Build Shared Modules",
       "problemMatcher": [
         "$tsc"
       ],
