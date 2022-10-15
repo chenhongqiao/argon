@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Common Modules",
+      "label": "Build Shared Modules",
       "type": "typescript",
-      "tsconfig": "packages/common/tsconfig.json",
+      "tsconfig": "packages/shared/tsconfig.json",
       "problemMatcher": [
         "$tsc"
       ],
