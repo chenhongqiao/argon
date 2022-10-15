@@ -1,4 +1,4 @@
-import { User, NewUser, CosmosDB, ConflictError, AzureError, NotFoundError, ItemResponse, AuthenticationError, AuthorizationError } from '@project-carbon/shared'
+import { User, NewUser, CosmosDB, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError } from '@project-carbon/shared'
 import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -9,23 +9,12 @@ const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
 const usersContainer = CosmosDB.container('users')
-const mappingsContainer = CosmosDB.container('userMappings')
+const usernameIndexContainer = CosmosDB.container('usernameIndex')
+const emailIndexContainer = CosmosDB.container('emailIndex')
 const verificationsContainer = CosmosDB.container('emailVerifications')
 
-enum MappingType {
-  Username = 'Username',
-  Email = 'Email'
-}
-
-interface UsernameMapping {
+interface UserIndex {
   id: string
-  type: MappingType.Username
-  userId: string
-}
-
-interface EmailMapping {
-  id: string
-  type: MappingType.Email
   userId: string
 }
 
@@ -45,19 +34,17 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
     username: newUser.username,
     scopes: {}
   }
-  const usernameMapping: UsernameMapping = {
+  const usernameIndex: UserIndex = {
     id: user.username,
-    type: MappingType.Username,
     userId: userId
   }
-  const emailMapping: EmailMapping = {
+  const emailIndex: UserIndex = {
     id: user.email,
-    type: MappingType.Email,
     userId: userId
   }
 
   try {
-    await mappingsContainer.items.create(usernameMapping)
+    await usernameIndexContainer.items.create(usernameIndex)
   } catch (err) {
     if (err.code === 409) {
       throw new ConflictError('Username exists.', user.username)
@@ -67,10 +54,10 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
   }
 
   try {
-    await mappingsContainer.items.create(emailMapping)
+    await emailIndexContainer.items.create(emailIndex)
   } catch (err) {
     if (err.code === 409) {
-      await mappingsContainer.item(user.username, 'Username').delete()
+      await usernameIndexContainer.item(user.username, user.username).delete()
       throw new ConflictError('Email exists.', user.email)
     } else {
       throw new AzureError('Error while creating Email mapping.', err)
@@ -79,8 +66,8 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
 
   const created = await usersContainer.items.create(user)
   if (created.resource == null) {
-    await mappingsContainer.item(user.username, 'Username').delete()
-    await mappingsContainer.item(user.email, 'Email').delete()
+    await usernameIndexContainer.item(user.username, user.username).delete()
+    await emailIndexContainer.item(user.email, user.email).delete()
     throw new AzureError('No resource ID returned while creating user.', created)
   }
   return { userId: created.resource.id, email: user.email }
@@ -146,20 +133,25 @@ export async function completeVerification (userId: string, verificationId: stri
 }
 
 export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{userId: string, scopes: Record<string, string[]>}> {
-  let fetchedMapping: ItemResponse<UsernameMapping|EmailMapping> = await mappingsContainer.item(usernameOrEmail, 'Username').read<UsernameMapping>()
-  if (fetchedMapping.resource == null) {
-    fetchedMapping = await mappingsContainer.item(usernameOrEmail, 'Email').read<EmailMapping>()
-  }
+  let userIndex = await usernameIndexContainer.item(usernameOrEmail, usernameOrEmail).read<UserIndex>()
 
-  if (fetchedMapping.resource == null) {
-    if (fetchedMapping.statusCode === 404) {
-      throw new AuthenticationError('Authentication failed.', { usernameOrEmail })
+  if (userIndex.resource == null) {
+    if (userIndex.statusCode === 404) {
+      userIndex = await emailIndexContainer.item(usernameOrEmail, usernameOrEmail).read<UserIndex>()
     } else {
-      throw new AzureError('Unexpected CosmosDB return.', fetchedMapping)
+      throw new AzureError('Unexpected CosmosDB return.', userIndex)
     }
   }
 
-  const { userId } = fetchedMapping.resource
+  if (userIndex.resource == null) {
+    if (userIndex.statusCode === 404) {
+      throw new AuthenticationError('Authentication failed.', { usernameOrEmail })
+    } else {
+      throw new AzureError('Unexpected CosmosDB return.', userIndex)
+    }
+  }
+
+  const { userId } = userIndex.resource
   const fetchedUser = await usersContainer.item(userId, userId).read<User>()
   if (fetchedUser.resource == null) {
     throw new AzureError('User does not exist but mapping exists.', fetchedUser)

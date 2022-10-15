@@ -27,8 +27,8 @@ import { Type } from '@sinclair/typebox'
 import verifyTeamScope from '../auth/verifyTeamScope'
 
 export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => {
-  const authned = app.withTypeProvider<TypeBoxTypeProvider>()
-  authned.addHook('onRequest', async (request, reply) => {
+  const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  privateRoutes.addHook('onRequest', async (request, reply) => {
     try {
       await request.jwtVerify()
     } catch (err) {
@@ -36,7 +36,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   })
 
-  authned.post(
+  privateRoutes.post(
     '/:domainId',
     {
       schema: {
@@ -46,7 +46,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           201: Type.Object({ problemId: Type.String() })
         }
       },
-      preHandler: [authned.auth([verifyTeamScope(['problemBank.manage'])]) as any]
+      preHandler: [privateRoutes.auth([verifyTeamScope(['problemBank.manage'])]) as any]
     },
     async (request, reply) => {
       const problem = request.body
@@ -56,7 +56,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  authned.get(
+  privateRoutes.get(
     '/:domainId/:problemId',
     {
       schema: {
@@ -66,7 +66,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           404: Type.Object({ message: Type.String() })
         }
       },
-      preHandler: [authned.auth([verifyTeamScope(['problemBank.read'])]) as any]
+      preHandler: [privateRoutes.auth([verifyTeamScope(['problemBank.read'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
@@ -81,7 +81,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  authned.get(
+  privateRoutes.get(
     '/:domainId',
     {
       schema: {
@@ -90,7 +90,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         },
         params: Type.Object({ domainId: Type.String() })
       },
-      preHandler: [authned.auth([verifyTeamScope(['problemBank.read'])]) as any]
+      preHandler: [privateRoutes.auth([verifyTeamScope(['problemBank.read'])]) as any]
     },
     async (request, reply) => {
       const { domainId } = request.params
@@ -99,7 +99,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  authned.put(
+  privateRoutes.put(
     '/:domainId/:problemId',
     {
       schema: {
@@ -109,7 +109,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           404: Type.Object({ message: Type.String() })
         },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
-        preHandler: [authned.auth([verifyTeamScope(['problemBank.manage'])]) as any]
+        preHandler: [privateRoutes.auth([verifyTeamScope(['problemBank.manage'])]) as any]
       }
     },
     async (request, reply) => {
@@ -126,7 +126,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  authned.delete(
+  privateRoutes.delete(
     '/:domainId/:problemId',
     {
       schema: {
@@ -136,7 +136,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           404: Type.Object({ message: Type.String() })
         }
       },
-      preHandler: [authned.auth([verifyTeamScope(['problemBank.manage'])]) as any]
+      preHandler: [privateRoutes.auth([verifyTeamScope(['problemBank.manage'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
@@ -153,7 +153,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  authned.post(
+  privateRoutes.post(
     '/:domainId/:problemId/submissions',
     {
       schema: {
@@ -163,7 +163,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           201: Type.Object({ submissionId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         },
-        preHandler: [authned.auth([verifyTeamScope(['problemBank.test'])]) as any]
+        preHandler: [privateRoutes.auth([verifyTeamScope(['problemBank.test'])]) as any]
       }
     },
     async (request, reply) => {
@@ -183,7 +183,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     }
   )
 
-  authned.get(
+  privateRoutes.get(
     '/:domainId/:problemId/submissions/:submissionId',
     {
       schema: {
@@ -192,7 +192,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           200: SubmissionResultSchema,
           404: Type.Object({ message: Type.String() })
         },
-        preHandler: [authned.auth([verifyTeamScope(['problemBank.test'])]) as any]
+        preHandler: [privateRoutes.auth([verifyTeamScope(['problemBank.test'])]) as any]
       }
     },
     async (request, reply) => {

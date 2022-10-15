@@ -14,8 +14,8 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
 export const submissionResultRoutes: FastifyPluginCallback = (app, options, done) => {
-  const judger = app.withTypeProvider<TypeBoxTypeProvider>()
-  judger.put(
+  const judgerRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  judgerRoutes.put(
     '/:submissionId/compiling-result',
     {
       schema: {
@@ -34,7 +34,7 @@ export const submissionResultRoutes: FastifyPluginCallback = (app, options, done
     }
   )
 
-  judger.put(
+  judgerRoutes.put(
     '/:submissionId/testcase-result/:testcaseIndex',
     {
       schema: {

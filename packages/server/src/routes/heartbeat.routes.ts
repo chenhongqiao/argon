@@ -11,12 +11,12 @@ export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         response: {
-          200: Type.Object({ version: Type.String(), ready: Type.Boolean() })
+          200: Type.Object({ version: Type.String(), online: Type.Boolean() })
         }
       }
     },
     (request, reply) => {
-      void reply.status(200).send({ version, ready: true })
+      void reply.status(200).send({ version, online: true })
     }
   )
   return done()
