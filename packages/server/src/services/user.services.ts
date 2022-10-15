@@ -100,7 +100,7 @@ export async function initiateVerification (userId: string, email: string): Prom
   const verification = created.resource
   const verificationEmail: emailClient.MailDataRequired = {
     to: verification.email,
-    from: { name: 'Carbon Contest Server', email: 'carbon@teamscode.org' },
+    from: { name: 'Carbon Online Contest Server', email: 'noreply@cocs.io' },
     subject: 'Please verify your email',
     html: `User: ${verification.userId}<br>Token: ${verification.id}`
   }

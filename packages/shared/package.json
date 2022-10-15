@@ -1,7 +1,7 @@
 {
   "name": "@project-carbon/shared",
   "version": "0.1.3",
-  "description": "Carbon Contest Server Shared Modules",
+  "description": "Carbon Online Contest Server Shared Modules",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "main": "./dist/src/index.js",

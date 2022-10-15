@@ -41,7 +41,6 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     '/login',
     {
       schema: {
-        params: Type.Object({ userId: Type.String() }),
         body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
         response: {
           200: Type.Object({ token: Type.String() }),
