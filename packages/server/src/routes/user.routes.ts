@@ -26,16 +26,14 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const user = request.body
-      try {
-        const registered = await registerUser(user)
-        return await reply.status(201).send(registered)
-      } catch (err) {
+      const registered = await registerUser(user).catch(async (err) => {
         if (err instanceof ConflictError) {
           return await reply.status(409).send({ message: err.message })
         } else {
           throw err
         }
-      }
+      })
+      return await reply.status(201).send(registered)
     }
   )
 
@@ -51,17 +49,15 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { userId } = request.params
-      try {
-        const user = await fetchUser(userId)
-        await initiateVerification(userId, user.email)
-        return await reply.status(204).send()
-      } catch (err) {
+      const user = await fetchUser(userId)
+      await initiateVerification(userId, user.email).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'User not found.' })
         } else {
           throw err
         }
-      }
+      })
+      return await reply.status(204).send()
     }
   )
 
@@ -79,17 +75,15 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
       }
     },
     async (request, reply) => {
-      try {
-        const verificationId = request.body
-        const verified = await completeVerification(verificationId, request.params.userId)
-        return await reply.status(200).send({ userId: verified.userId })
-      } catch (err) {
+      const verificationId = request.body
+      const verified = await completeVerification(verificationId, request.params.userId).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'User to be verified not found.' })
         } else {
           throw err
         }
-      }
+      })
+      return await reply.status(200).send({ userId: verified.userId })
     }
   )
 
@@ -107,14 +101,8 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
       }
     },
     async (request, reply) => {
-      try {
-        const { usernameOrEmail, password } = request.body
-        const authenicated = await authenticateUser(usernameOrEmail, password)
-        const payload: JWTPayload = { userId: authenicated.userId, scopes: authenicated.scopes }
-        const token = await reply.jwtSign(payload)
-        await delay(randomInt(300, 600))
-        return await reply.status(200).send({ token })
-      } catch (err) {
+      const { usernameOrEmail, password } = request.body
+      const authenicated = await authenticateUser(usernameOrEmail, password).catch(async (err) => {
         if (err instanceof AuthenticationError) {
           return await reply.status(401).send({ message: 'Login failed.' })
         } else if (err instanceof AuthorizationError) {
@@ -122,7 +110,11 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
         } else {
           throw err
         }
-      }
+      })
+      const payload: JWTPayload = { userId: authenicated.userId, scopes: authenicated.scopes }
+      const token = await reply.jwtSign(payload)
+      await delay(randomInt(300, 600))
+      return await reply.status(200).send({ token })
     }
   )
   return done()

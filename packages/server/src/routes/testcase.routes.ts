@@ -42,16 +42,14 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { testcaseId } = request.params
-      try {
-        const deleted = await deleteTestcase(testcaseId)
-        return await reply.status(200).send(deleted)
-      } catch (err) {
+      const deleted = await deleteTestcase(testcaseId).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'Testcase not found.' })
         } else {
           throw err
         }
-      }
+      })
+      return await reply.status(200).send(deleted)
     }
   )
   return done()
