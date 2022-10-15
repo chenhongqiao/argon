@@ -3,7 +3,7 @@
   "version": "0.1.3",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
-  "description": "Carbon Online Contest Server Judger",
+  "description": "Carbon Contest Server Judger",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "repository": "github:chenhongqiao/project-carbon",
