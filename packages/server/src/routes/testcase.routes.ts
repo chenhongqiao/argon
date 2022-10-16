@@ -7,16 +7,27 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
 
+import verifyAnyScope from '../auth/verifyAnyScope'
+
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
-  const route = app.withTypeProvider<TypeBoxTypeProvider>()
-  route.post(
+  const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  privateRoutes.addHook('onRequest', async (request, reply) => {
+    try {
+      await request.jwtVerify()
+    } catch (err) {
+      await reply.status(401).send('Please login first.')
+    }
+  })
+
+  privateRoutes.post(
     '/',
     {
       schema: {
         response: {
           201: Type.Array(Type.Object({ testcaseId: Type.String() }))
         }
-      }
+      },
+      preValidation: [privateRoutes.auth([verifyAnyScope(['problemBank.manage'])]) as any]
     },
     async (request, reply) => {
       const queue: Array<Promise<{testcaseId: string}>> = []
@@ -29,7 +40,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     }
   )
 
-  route.delete(
+  privateRoutes.delete(
     '/:testcaseId',
     {
       schema: {
@@ -38,7 +49,8 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
           200: Type.Object({ testcaseId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         }
-      }
+      },
+      preValidation: [privateRoutes.auth([verifyAnyScope(['problemBank.manage'])]) as any]
     },
     async (request, reply) => {
       const { testcaseId } = request.params
