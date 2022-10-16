@@ -19,3 +19,9 @@ export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password'])
   scopes: Type.Record(Type.String(), Type.Array(Type.String()))
 })])
 export type User = Static<typeof UserSchema>
+
+export const PublicUserProfileSchema = Type.Pick(UserSchema, ['username', 'name'])
+export type PublicUserProfile = Static<typeof PublicUserProfileSchema>
+
+export const PrivateUserProfileSchema = Type.Omit(UserSchema, ['password'])
+export type PrivateUserProfile = Static<typeof PrivateUserProfileSchema>
