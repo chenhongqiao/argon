@@ -3,6 +3,7 @@ import '@fastify/jwt'
 export interface JWTPayload {
   userId: string
   scopes: Record<string, string[]>
+  superAdmin: boolean
 }
 
 declare module '@fastify/jwt' {

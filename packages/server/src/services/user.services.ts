@@ -29,6 +29,7 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
       salt,
       hash
     },
+    superAdmin: false,
     verifiedEmail: null,
     id: userId,
     username: newUser.username,
@@ -85,6 +86,19 @@ export async function fetchUser (userId: string): Promise<User> {
   }
 }
 
+export async function updateUser (user: User, userId: string): Promise<{ userId: string }> {
+  const userWithId = { ...user, userId }
+  const userItem = usersContainer.item(userId, userId)
+  const updated = await userItem.replace(userWithId)
+  if (updated.resource != null) {
+    return { userId: updated.resource.id }
+  } if (updated.statusCode === 404) {
+    throw new NotFoundError('User not found.', userId)
+  } else {
+    throw new AzureError('Unexpected CosmosDB return.', updated)
+  }
+}
+
 interface EmailVerification {
   userId: string
   email: string
@@ -133,7 +147,7 @@ export async function completeVerification (userId: string, verificationId: stri
   return { userId: replaced.resource.id, statusChanged: true }
 }
 
-export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{userId: string, scopes: Record<string, string[]>}> {
+export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{userId: string, scopes: Record<string, string[]>, superAdmin: boolean}> {
   let userIndex = await usernameIndexContainer.item(usernameOrEmail, usernameOrEmail).read<UserIndex>()
 
   if (userIndex.resource == null) {
@@ -164,7 +178,7 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
     if (user.email !== user.verifiedEmail) {
       throw new AuthorizationError('Please verify your email first.', userId)
     }
-    return { userId: user.id, scopes: user.scopes }
+    return { userId: user.id, scopes: user.scopes, superAdmin: user.superAdmin }
   } else {
     throw new AuthenticationError('Authentication failed.', { usernameOrEmail })
   }

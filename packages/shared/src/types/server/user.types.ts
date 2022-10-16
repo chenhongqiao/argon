@@ -13,6 +13,7 @@ export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password'])
     hash: Type.String(),
     salt: Type.String()
   }),
+  superAdmin: Type.Boolean(),
   id: Type.String(),
   verifiedEmail: Type.Union([Type.String(), Type.Null()]),
   scopes: Type.Record(Type.String(), Type.Array(Type.String()))
