@@ -1,19 +1,8 @@
-import { NewDomain, Domain, CosmosDB, AzureError, User, NotFoundError, Item } from '@project-carbon/shared'
+import { NewDomain, Domain, CosmosDB, AzureError, NotFoundError } from '@project-carbon/shared'
+
+import { fetchUser, updateUser } from './user.services'
 
 const domainsContainer = CosmosDB.container('domains')
-const usersContainer = CosmosDB.container('domains')
-
-async function fetchUser (userId: string): Promise<{user: User, userItem: Item}> {
-  const userItem = usersContainer.item(userId, userId)
-  const fetchedUser = await userItem.read<User>()
-  if (fetchedUser.statusCode === 404) {
-    throw new NotFoundError('User not found.', userId)
-  } else if (fetchedUser.resource == null) {
-    throw new AzureError('Unexpected CosmosDB return.', fetchedUser)
-  }
-  const user = fetchedUser.resource
-  return { user, userItem }
-}
 
 export async function createDomain (newDomain: NewDomain): Promise<{domainId: string}> {
   const created = await domainsContainer.items.create(newDomain)
@@ -25,7 +14,7 @@ export async function createDomain (newDomain: NewDomain): Promise<{domainId: st
 }
 
 export async function addDomainMember (domainId: string, userId: string): Promise<{domainId: string, userId: string}> {
-  const { user, userItem } = await fetchUser(userId)
+  const user = await fetchUser(userId)
 
   const domainItem = domainsContainer.item(domainId, domainId)
   const fetchedDomain = await domainItem.read<Domain>()
@@ -44,28 +33,18 @@ export async function addDomainMember (domainId: string, userId: string): Promis
     user.scopes[domainId] = []
   }
 
-  const updatedUser = await userItem.replace(user)
-  if (updatedUser.resource == null) {
-    throw new AzureError('Unexpected CosmosDB return.', updatedUser)
-  }
+  const updatedUser = await updateUser(user, userId)
 
   const updatedDomain = await domainItem.replace(domain)
   if (updatedDomain.resource == null) {
     throw new AzureError('Unexpected CosmosDB return.', updatedDomain)
   }
 
-  return { userId: updatedUser.resource.id, domainId: updatedDomain.resource.id }
+  return { userId: updatedUser.userId, domainId: updatedDomain.resource.id }
 }
 
 export async function removeDomainMember (domainId: string, userId: string): Promise<{domainId: string, userId: string}> {
-  const userItem = usersContainer.item(userId, userId)
-  const fetchedUser = await userItem.read<User>()
-  if (fetchedUser.statusCode === 404) {
-    throw new NotFoundError('User not found.', userId)
-  } else if (fetchedUser.resource == null) {
-    throw new AzureError('Unexpected CosmosDB return.', fetchedUser)
-  }
-  const user = fetchedUser.resource
+  const user = await fetchUser(userId)
 
   const domainItem = domainsContainer.item(domainId, domainId)
   const fetchedDomain = await domainItem.read<Domain>()
@@ -85,15 +64,12 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
     delete user.scopes[domainId]
   }
 
-  const updatedUser = await userItem.replace(user)
-  if (updatedUser.resource == null) {
-    throw new AzureError('Unexpected CosmosDB return.', updatedUser)
-  }
+  const updatedUser = await updateUser(user, userId)
 
   const updatedDomain = await domainItem.replace(domain)
   if (updatedDomain.resource == null) {
     throw new AzureError('Unexpected CosmosDB return.', updatedDomain)
   }
 
-  return { userId: updatedUser.resource.id, domainId: updatedDomain.resource.id }
+  return { userId: updatedUser.userId, domainId: updatedDomain.resource.id }
 }
