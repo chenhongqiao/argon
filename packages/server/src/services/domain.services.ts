@@ -1,4 +1,5 @@
-import { NewDomain, Domain, CosmosDB, AzureError, NotFoundError } from '@project-carbon/shared'
+import { NewDomain, Domain, CosmosDB, AzureError, NotFoundError, ConflictError } from '@project-carbon/shared'
+import { deleteInProblemBank, fetchDomainProblems } from './problem.services'
 
 import { fetchUser, updateUser } from './user.services'
 
@@ -13,7 +14,42 @@ export async function createDomain (newDomain: NewDomain): Promise<{domainId: st
   return { domainId: created.resource.id }
 }
 
-export async function addDomainMember (domainId: string, userId: string): Promise<{domainId: string, userId: string}> {
+export async function deleteDomain (domainId: string): Promise<{ domainId: string }> {
+  const domainItem = domainsContainer.item(domainId, domainId)
+  const fetched = await domainItem.read<Domain>()
+  if (fetched.resource == null) {
+    if (fetched.statusCode === 404) {
+      throw new NotFoundError('Domain not found.', domainId)
+    } else {
+      throw new AzureError('Unexpected CosmosDB return.', fetched)
+    }
+  }
+  const domain = fetched.resource
+
+  const removedMembers: Array<Promise<{ domainId: string, userId: string }>> = []
+  domain.members.forEach((userId) => {
+    removedMembers.push(removeDomainMember(domainId, userId))
+  })
+
+  await Promise.all(removedMembers)
+
+  const deletedProblems: Array<Promise<{problemId: string}>> = []
+  const domainProblems = await fetchDomainProblems(domainId)
+  domainProblems.forEach((problem) => {
+    deletedProblems.push(deleteInProblemBank(problem.id, domainId))
+  })
+
+  await Promise.all(deletedProblems)
+
+  const deleted = await domainItem.delete<{ id: string }>()
+  if (deleted.resource == null) {
+    throw new AzureError('Unexpected CosmosDB return.', deleted)
+  }
+
+  return { domainId: deleted.resource.id }
+}
+
+export async function addDomainMember (domainId: string, userId: string, scopes: string[]): Promise<{domainId: string, userId: string}> {
   const user = await fetchUser(userId)
 
   const domainItem = domainsContainer.item(domainId, domainId)
@@ -25,13 +61,12 @@ export async function addDomainMember (domainId: string, userId: string): Promis
   }
   const domain = fetchedDomain.resource
 
-  if (!Boolean(domain.members.includes(userId))) {
-    domain.members.push(userId)
+  if (Boolean(domain.members.includes(userId)) || user.scopes[domainId] != null) {
+    throw new ConflictError('User already exists in domain.', `${userId} in ${domainId}`)
   }
 
-  if (user.scopes[domainId] == null) {
-    user.scopes[domainId] = []
-  }
+  domain.members.push(userId)
+  user.scopes[domainId] = scopes
 
   const updatedUser = await updateUser(user, userId)
 
@@ -72,4 +107,18 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
   }
 
   return { userId: updatedUser.userId, domainId: updatedDomain.resource.id }
+}
+
+export async function updateMemberScopes (domainId: string, userId: string, scopes: string[]): Promise<{domainId: string, userId: string}> {
+  const user = await fetchUser(userId)
+
+  if (user.scopes[domainId] == null) {
+    throw new NotFoundError('User not part of this domain', `${userId} in ${domainId}`)
+  }
+
+  user.scopes[domainId] = scopes
+
+  const updatedUser = await updateUser(user, userId)
+
+  return { userId: updatedUser.userId, domainId }
 }
