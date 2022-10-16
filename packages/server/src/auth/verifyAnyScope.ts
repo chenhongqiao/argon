@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-export default function verifyAnyScope (scopes: string[]) {
+export function verifyAnyScope (scopes: string[]) {
   return function handler (request: FastifyRequest, reply: FastifyReply, done) {
     const allScopes = Object.values(request.user.scopes).flat(1)
 
