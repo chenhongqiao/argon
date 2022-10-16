@@ -7,7 +7,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
 
-import { verifyAnyScope } from '../auth/verifyAnyScope'
+import { verifyAnyScope } from '../auth/anyScope.auth'
 
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()

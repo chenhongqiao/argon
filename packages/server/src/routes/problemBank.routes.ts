@@ -24,7 +24,7 @@ import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
-import { verifyDomainScope } from '../auth/verifyDomainScope'
+import { verifyDomainScope } from '../auth/domainScope.auth'
 
 export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()

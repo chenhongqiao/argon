@@ -28,7 +28,7 @@ const app = Fastify({
   }
 }).withTypeProvider<TypeBoxTypeProvider>()
 
-const DBContainers = [
+const DbContainers = [
   { id: 'problemBank', partitionKey: '/domainId' },
   { id: 'submissions', partitionKey: '/id' },
   { id: 'users', partitionKey: '/id' },
@@ -37,11 +37,11 @@ const DBContainers = [
   { id: 'emailVerifications', partitionKey: '/userId', defaultTtl: 900 }]
 
 export async function startServer (): Promise<void> {
-  const DBInitQueue: Array<Promise<any>> = []
-  DBContainers.forEach((container) => {
-    DBInitQueue.push(CosmosDB.containers.createIfNotExists(container))
+  const DbInitQueue: Array<Promise<any>> = []
+  DbContainers.forEach((container) => {
+    DbInitQueue.push(CosmosDB.containers.createIfNotExists(container))
   })
-  await Promise.all(DBInitQueue)
+  await Promise.all(DbInitQueue)
 
   app.setErrorHandler((err, request, reply) => {
     if (err.statusCode != null && err.statusCode < 500) {

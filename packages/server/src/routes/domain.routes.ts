@@ -3,8 +3,8 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { ConflictError, NewDomainSchema, NotFoundError } from '@project-carbon/shared'
 import { addDomainMember, createDomain, deleteDomain, removeDomainMember, updateMemberScopes } from '../services/domain.services'
-import { verifySuperAdmin } from '../auth/verifySuperAdmin'
-import { verifyDomainScope } from '../auth/verifyDomainScope'
+import { verifySuperAdmin } from '../auth/superAdmin.auth'
+import { verifyDomainScope } from '../auth/domainScope.auth'
 
 export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()

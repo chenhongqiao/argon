@@ -3,7 +3,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile } from '@project-carbon/shared'
 import { fetchUser } from '../services/user.services'
-import { verifyUserOwnsership } from '../auth/verifyUserOwnership'
+import { verifyUserOwnsership } from '../auth/userOwnership.auth'
 
 export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
