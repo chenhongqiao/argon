@@ -29,9 +29,10 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
   }
 }
 
-export async function updateProblem (problem: NewProblem, problemId: string, domainId: string): Promise<{ problemId: string }> {
+export async function updateProblem (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string }> {
+  const problemWithId = { ...problem, problemId, domainId }
   const problemItem = problemBankContainer.item(problemId, domainId)
-  const updated = await problemItem.replace(problem)
+  const updated = await problemItem.replace(problemWithId)
   if (updated.resource != null) {
     return { problemId: updated.resource.id }
   } if (updated.statusCode === 404) {
