@@ -29,7 +29,7 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
   }
 }
 
-export async function updateProblem (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string }> {
+export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string }> {
   const problemWithId = { ...problem, problemId, domainId }
   const problemItem = problemBankContainer.item(problemId, domainId)
   const updated = await problemItem.replace(problemWithId)
@@ -42,7 +42,7 @@ export async function updateProblem (problem: Problem, problemId: string, domain
   }
 }
 
-export async function deleteProblem (problemId: string, domainId: string): Promise<{ problemId: string }> {
+export async function deleteInProblemBank (problemId: string, domainId: string): Promise<{ problemId: string }> {
   const problemItem = problemBankContainer.item(problemId, domainId)
   const deletedProblem = await problemItem.delete<{ id: string }>()
   if (deletedProblem.resource == null) {

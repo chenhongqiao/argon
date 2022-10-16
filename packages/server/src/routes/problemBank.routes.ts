@@ -8,10 +8,10 @@ import {
 
 import {
   createInProblemBank,
-  deleteProblem,
+  deleteInProblemBank,
   fetchDomainProblems,
   fetchFromProblemBank,
-  updateProblem
+  updateInProblemBank
 } from '../services/problem.services'
 
 import {
@@ -24,7 +24,7 @@ import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
-import verifyDomainScope from '../auth/verifyDomainScope'
+import { verifyDomainScope } from '../auth/verifyDomainScope'
 
 export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -115,7 +115,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     async (request, reply) => {
       const { problemId, domainId } = request.params
       const problem = request.body
-      const updated = await updateProblem(problem, problemId, domainId).catch(async (err) => {
+      const updated = await updateInProblemBank(problem, problemId, domainId).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'Problem not found.' })
         } else {
@@ -132,7 +132,6 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
-          200: Type.Object({ problemId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         }
       },
@@ -140,16 +139,14 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      try {
-        const deleted = await deleteProblem(problemId, domainId)
-        return await reply.status(200).send(deleted)
-      } catch (err) {
+      await deleteInProblemBank(problemId, domainId).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'Problem not found.' })
         } else {
           throw err
         }
-      }
+      })
+      return await reply.status(204).send()
     }
   )
 
@@ -160,7 +157,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         body: NewSubmissionSchema,
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
-          201: Type.Object({ submissionId: Type.String() }),
+          202: Type.Object({ submissionId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         },
         preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
@@ -179,7 +176,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
 
       const created = await createSubmission(submission, { id: problem.id, domainId: problem.domainId }, request.user.userId)
       await compileSubmission(created.submissionId)
-      return await reply.status(201).send(created)
+      return await reply.status(202).send(created)
     }
   )
 
