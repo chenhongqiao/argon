@@ -129,6 +129,7 @@ export async function completeVerification (userId: string, verificationId: stri
   if (replaced.resource == null) {
     throw new AzureError('Unexpected CosmosDB return.', replaced)
   }
+  await verificationItem.delete()
   return { userId: replaced.resource.id, statusChanged: true }
 }
 

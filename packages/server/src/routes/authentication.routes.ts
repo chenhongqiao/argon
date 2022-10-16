@@ -96,7 +96,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     {
       schema: {
         params: Type.Object({ userId: Type.String() }),
-        body: Type.String(),
+        body: Type.Object({ token: Type.String() }),
         response: {
           200: Type.Object({ userId: Type.String() }),
           401: Type.Object({ message: Type.String() }),
@@ -105,8 +105,9 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       }
     },
     async (request, reply) => {
-      const verificationId = request.body
-      const verified = await completeVerification(verificationId, request.params.userId).catch(async (err) => {
+      const { token } = request.body
+      const { userId } = request.params
+      const verified = await completeVerification(userId, token).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'User to be verified not found.' })
         } else {

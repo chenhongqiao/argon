@@ -34,7 +34,7 @@ const DBContainers = [
   { id: 'users', partitionKey: '/id' },
   { id: 'usernameIndex', partitionKey: '/id' },
   { id: 'emailIndex', partitionKey: '/id' },
-  { id: 'emailVerifications', partitionKey: '/userId' }]
+  { id: 'emailVerifications', partitionKey: '/userId', defaultTtl: 900 }]
 
 export async function startServer (): Promise<void> {
   const DBInitQueue: Array<Promise<any>> = []
