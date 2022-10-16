@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-export default function verifyTeamScope (scopes: string[]) {
+export default function verifyDomainScope (scopes: string[]) {
   return function handler (request: FastifyRequest, reply: FastifyReply, done) {
     // @ts-expect-error: url of domain resources always includes domainId as a parameter.
     const domainId = request.params.domainId
