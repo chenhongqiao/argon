@@ -60,14 +60,16 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
           throw err
         }
       })
-      const payload: JWTPayload = { userId: authenicated.userId, scopes: authenicated.scopes }
+
+      const { userId, scopes, superAdmin } = authenicated
+      const payload: JWTPayload = { userId, scopes, superAdmin }
       const token = await reply.jwtSign(payload)
       await delay(randomInt(300, 600))
       return await reply.status(200).send({ token })
     }
   )
 
-  publicRoutes.post(
+  publicRoutes.get(
     '/initiate-verification/:userId',
     {
       schema: {

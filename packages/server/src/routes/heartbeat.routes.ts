@@ -5,8 +5,8 @@ import { Type } from '@sinclair/typebox'
 import { version } from '../../package.json'
 
 export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
-  const route = app.withTypeProvider<TypeBoxTypeProvider>()
-  route.get(
+  const publicRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  publicRoutes.get(
     '/',
     {
       schema: {
