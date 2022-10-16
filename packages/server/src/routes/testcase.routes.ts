@@ -7,7 +7,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
 
-import verifyAnyScope from '../auth/verifyAnyScope'
+import { verifyAnyScope } from '../auth/verifyAnyScope'
 
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -46,7 +46,6 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
       schema: {
         params: Type.Object({ testcaseId: Type.String() }),
         response: {
-          200: Type.Object({ testcaseId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         }
       },
@@ -54,14 +53,14 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { testcaseId } = request.params
-      const deleted = await deleteTestcase(testcaseId).catch(async (err) => {
+      await deleteTestcase(testcaseId).catch(async (err) => {
         if (err instanceof NotFoundError) {
           return await reply.status(404).send({ message: 'Testcase not found.' })
         } else {
           throw err
         }
       })
-      return await reply.status(200).send(deleted)
+      return await reply.status(204).send()
     }
   )
   return done()
