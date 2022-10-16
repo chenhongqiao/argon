@@ -8,6 +8,8 @@ import { testcaseRoutes } from './routes/testcase.routes'
 import { heartbeatRoutes } from './routes/heartbeat.routes'
 import { submissionResultRoutes } from './routes/submissionResult.routes'
 import { authenticationRoutes } from './routes/authentication.routes'
+import { domainRoutes } from './routes/domain.routes'
+import { userRoutes } from './routes/user.routes'
 
 import { CosmosDB } from '@project-carbon/shared'
 
@@ -70,6 +72,8 @@ export async function startServer (): Promise<void> {
   await app.register(submissionResultRoutes, { prefix: '/submission-results' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
   await app.register(authenticationRoutes, { prefix: '/authentication' })
+  await app.register(userRoutes, { prefix: '/users' })
+  await app.register(domainRoutes, { prefix: '/domains' })
 
   try {
     const port: number = parseInt(process.env.SERVER_PORT ?? '8000')

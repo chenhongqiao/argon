@@ -144,4 +144,6 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       return await reply.status(200).send(updated)
     }
   )
+
+  return done()
 }

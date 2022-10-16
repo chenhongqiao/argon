@@ -51,4 +51,6 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
       await reply.status(200).send(privateProfile)
     }
   )
+
+  return done()
 }
