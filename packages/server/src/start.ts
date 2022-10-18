@@ -10,8 +10,7 @@ import { authenticationRoutes } from './routes/authentication.routes'
 import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
 
-import { CosmosDB } from '@project-carbon/shared'
-
+import { createContainers } from './tasks/createContainers.tasks'
 import { Sentry } from './connections/sentry.connections'
 
 import fastifyAuth from '@fastify/auth'
@@ -23,21 +22,8 @@ const app = Fastify({
   }
 })
 
-const DbContainers = [
-  { id: 'problemBank', partitionKey: '/domainId' },
-  { id: 'submissions', partitionKey: '/id' },
-  { id: 'domains', partitionKey: '/id' },
-  { id: 'users', partitionKey: '/id' },
-  { id: 'usernameIndex', partitionKey: '/id' },
-  { id: 'emailIndex', partitionKey: '/id' },
-  { id: 'emailVerifications', partitionKey: '/userId', defaultTtl: 900 }]
-
 export async function startServer (): Promise<void> {
-  const DbInitQueue: Array<Promise<any>> = []
-  DbContainers.forEach((container) => {
-    DbInitQueue.push(CosmosDB.containers.createIfNotExists(container))
-  })
-  await Promise.all(DbInitQueue)
+  await createContainers()
 
   await app.register(jwt, {
     secret: process.env.JWT_SECRET ?? ''
