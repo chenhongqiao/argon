@@ -1,4 +1,4 @@
-import { User, NewUser, CosmosDB, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError } from '@project-carbon/shared'
+import { User, NewUser, CosmosDB, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError, UserRole } from '@project-carbon/shared'
 import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -29,7 +29,7 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
       salt,
       hash
     },
-    superAdmin: false,
+    role: UserRole.User,
     verifiedEmail: null,
     id: userId,
     username: newUser.username,
@@ -126,7 +126,7 @@ export async function completeVerification (userId: string, verificationId: stri
   const userItem = usersContainer.item(userId, userId)
   const fetchedUser = await userItem.read<User>()
   if (fetchedUser.resource == null) {
-    throw new AuthorizationError('Invalid verification.', `User: ${userId}`)
+    throw new NotFoundError('User not found.', userId)
   }
   const user = fetchedUser.resource
   if (user.email === user.verifiedEmail) {
@@ -136,7 +136,7 @@ export async function completeVerification (userId: string, verificationId: stri
   const verificationItem = verificationsContainer.item(verificationId, userId)
   const fetchedVerification = await verificationItem.read<EmailVerification>()
   if (fetchedVerification.resource == null || fetchedVerification.resource.userId !== user.id) {
-    throw new AuthorizationError('Invalid verification.', `Token: ${verificationId}`)
+    throw new AuthenticationError('Invalid verification.', { token: verificationId })
   }
   user.verifiedEmail = fetchedVerification.resource.email
   const replaced = await userItem.replace(user)
@@ -147,7 +147,7 @@ export async function completeVerification (userId: string, verificationId: stri
   return { userId: replaced.resource.id, statusChanged: true }
 }
 
-export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{userId: string, scopes: Record<string, string[]>, superAdmin: boolean}> {
+export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{userId: string, scopes: Record<string, string[]>, role: UserRole}> {
   let userIndex = await usernameIndexContainer.item(usernameOrEmail, usernameOrEmail).read<UserIndex>()
 
   if (userIndex.resource == null) {
@@ -178,7 +178,7 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
     if (user.email !== user.verifiedEmail) {
       throw new AuthorizationError('Please verify your email first.', userId)
     }
-    return { userId: user.id, scopes: user.scopes, superAdmin: user.superAdmin }
+    return { userId: user.id, scopes: user.scopes, role: user.role }
   } else {
     throw new AuthenticationError('Authentication failed.', { usernameOrEmail })
   }

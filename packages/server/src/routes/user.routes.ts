@@ -11,7 +11,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     try {
       await request.jwtVerify()
     } catch (err) {
-      await reply.status(401).send('Please login first.')
+      reply.unauthorized('Please authenticate first.')
     }
   })
 
@@ -46,8 +46,8 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { userId } = request.params
-      const { username, name, email, verifiedEmail, scopes, superAdmin } = await fetchUser(userId)
-      const privateProfile: PrivateUserProfile = { username, name, email, verifiedEmail, scopes, id: userId, superAdmin }
+      const { username, name, email, verifiedEmail, scopes, role } = await fetchUser(userId)
+      const privateProfile: PrivateUserProfile = { username, name, email, verifiedEmail, scopes, id: userId, role }
       await reply.status(200).send(privateProfile)
     }
   )

@@ -8,12 +8,18 @@ export const NewUserSchema = Type.Object({
 }, { additionalProperties: false })
 export type NewUser = Static<typeof NewUserSchema>
 
+export enum UserRole {
+  User = 'User',
+  Admin = 'Admin',
+  Judger = 'Judger'
+}
+
 export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password']), Type.Object({
   password: Type.Object({
     hash: Type.String(),
     salt: Type.String()
   }),
-  superAdmin: Type.Boolean(),
+  role: Type.Enum(UserRole),
   id: Type.String(),
   verifiedEmail: Type.Union([Type.String(), Type.Null()]),
   scopes: Type.Record(Type.String(), Type.Array(Type.String()))
