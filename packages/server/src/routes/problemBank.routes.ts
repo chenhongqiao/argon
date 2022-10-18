@@ -25,6 +25,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
 import { verifyDomainScope } from '../auth/domainScope.auth'
+import { Sentry } from '../connections/sentry.connections'
 
 export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -32,7 +33,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     try {
       await request.jwtVerify()
     } catch (err) {
-      await reply.status(401).send('Please login first.')
+      reply.unauthorized('Please authenticate first.')
     }
   })
 
@@ -51,8 +52,13 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     async (request, reply) => {
       const problem = request.body
       const { domainId } = request.params
-      const created = await createInProblemBank(problem, domainId)
-      return await reply.status(201).send(created)
+      try {
+        const created = await createInProblemBank(problem, domainId)
+        return await reply.status(201).send(created)
+      } catch (err) {
+        Sentry.captureException(err)
+        reply.internalServerError('Internal server error.')
+      }
     }
   )
 
@@ -61,23 +67,23 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     {
       schema: {
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
-        response: {
-          200: ProblemSchema,
-          404: Type.Object({ message: Type.String() })
-        }
+        response: { 200: ProblemSchema }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.read'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      const problem = await fetchFromProblemBank(problemId, domainId).catch(async (err) => {
+      try {
+        const problem = await fetchFromProblemBank(problemId, domainId)
+        return await reply.status(200).send(problem)
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'Problem not found.' })
+          reply.notFound('Problem not found.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(200).send(problem)
+      }
     }
   )
 
@@ -115,14 +121,17 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     async (request, reply) => {
       const { problemId, domainId } = request.params
       const problem = request.body
-      const updated = await updateInProblemBank(problem, problemId, domainId).catch(async (err) => {
+      try {
+        const updated = await updateInProblemBank(problem, problemId, domainId)
+        return await reply.status(200).send(updated)
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'Problem not found.' })
+          reply.notFound('Problem not found.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(200).send(updated)
+      }
     }
   )
 
@@ -130,23 +139,23 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
-        response: {
-          404: Type.Object({ message: Type.String() })
-        }
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      await deleteInProblemBank(problemId, domainId).catch(async (err) => {
+      try {
+        await deleteInProblemBank(problemId, domainId)
+        return await reply.status(204).send()
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'Problem not found.' })
+          reply.notFound('Problem not found.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(204).send()
+      }
     }
   )
 
@@ -157,8 +166,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         body: NewSubmissionSchema,
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
-          202: Type.Object({ submissionId: Type.String() }),
-          404: Type.Object({ message: Type.String() })
+          202: Type.Object({ submissionId: Type.String() })
         },
         preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
       }
@@ -166,17 +174,19 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     async (request, reply) => {
       const submission = request.body
       const { domainId, problemId } = request.params
-      const problem = await fetchFromProblemBank(problemId, domainId).catch(async (err) => {
+      try {
+        const problem = await fetchFromProblemBank(problemId, domainId)
+        const created = await createSubmission(submission, { id: problem.id, domainId: problem.domainId }, request.user.userId)
+        await compileSubmission(created.submissionId)
+        return await reply.status(202).send(created)
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'Problem not found.' })
+          reply.notFound('Problem not found.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-
-      const created = await createSubmission(submission, { id: problem.id, domainId: problem.domainId }, request.user.userId)
-      await compileSubmission(created.submissionId)
-      return await reply.status(202).send(created)
+      }
     }
   )
 
@@ -186,28 +196,30 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         params: Type.Object({ domainId: Type.String(), problemId: Type.String(), submissionId: Type.String() }),
         response: {
-          200: SubmissionResultSchema,
-          404: Type.Object({ message: Type.String() })
+          200: SubmissionResultSchema
         },
         preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
       }
     },
     async (request, reply) => {
       const { domainId, submissionId, problemId } = request.params
-      const submission = await fetchSubmission(submissionId).catch(async (err) => {
-        if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'Submission not found.' })
-        } else {
-          throw err
+      try {
+        const submission = await fetchSubmission(submissionId)
+
+        if (submission.problem.id !== problemId || submission.problem.id !== domainId) {
+          return reply.notFound('Submission not found.')
         }
-      })
 
-      if (submission.problem.id !== problemId || submission.problem.id !== domainId) {
-        return await reply.status(404).send({ message: 'Submission not found.' })
+        return await reply.status(200).send(submission)
+      } catch (err) {
+        if (err instanceof NotFoundError) {
+          reply.notFound('Submission not found.')
+        } else {
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
+        }
       }
+    })
 
-      return await reply.status(200).send(submission)
-    }
-  )
   return done()
 }

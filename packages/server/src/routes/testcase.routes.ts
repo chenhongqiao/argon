@@ -8,6 +8,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
 import { verifyAnyScope } from '../auth/anyScope.auth'
+import { Sentry } from '../connections/sentry.connections'
 
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -15,7 +16,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     try {
       await request.jwtVerify()
     } catch (err) {
-      await reply.status(401).send('Please login first.')
+      reply.unauthorized('Please authenticate first.')
     }
   })
 
@@ -30,13 +31,18 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
       preValidation: [privateRoutes.auth([verifyAnyScope(['problemBank.manage'])]) as any]
     },
     async (request, reply) => {
-      const queue: Array<Promise<{testcaseId: string}>> = []
-      const files = await request.saveRequestFiles()
-      files.forEach(testcase => {
-        queue.push(uploadTestcase(testcase.filepath))
-      })
-      const results = await Promise.all(queue)
-      return await reply.status(201).send(results)
+      try {
+        const queue: Array<Promise<{testcaseId: string}>> = []
+        const files = await request.saveRequestFiles()
+        files.forEach(testcase => {
+          queue.push(uploadTestcase(testcase.filepath))
+        })
+        const results = await Promise.all(queue)
+        return await reply.status(201).send(results)
+      } catch (err) {
+        Sentry.captureException(err)
+        reply.internalServerError('Internal server error.')
+      }
     }
   )
 

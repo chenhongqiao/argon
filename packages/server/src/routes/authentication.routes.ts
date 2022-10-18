@@ -10,6 +10,7 @@ import { AuthenticationError, AuthorizationError, ConflictError, delay, NewUserS
 import { randomInt } from 'node:crypto'
 
 import { JWTPayload } from '../types'
+import { Sentry } from '../connections/sentry.connections'
 
 export const authenticationRoutes: FastifyPluginCallback = (app, options, done) => {
   const publicRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -19,21 +20,23 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       schema: {
         body: NewUserSchema,
         response: {
-          201: Type.Object({ userId: Type.String() }),
-          409: Type.Object({ message: Type.String() })
+          201: Type.Object({ userId: Type.String() })
         }
       }
     },
     async (request, reply) => {
       const user = request.body
-      const registered = await registerUser(user).catch(async (err) => {
+      try {
+        const registered = await registerUser(user)
+        return await reply.status(201).send(registered)
+      } catch (err) {
         if (err instanceof ConflictError) {
-          return await reply.status(409).send({ message: err.message })
+          reply.conflict(err.message)
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(201).send(registered)
+      }
     }
   )
 
@@ -44,28 +47,34 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
         response: {
           200: Type.Object({ token: Type.String() }),
-          401: Type.Object({ message: Type.String() }),
-          403: Type.Object({ message: Type.String(), userId: Type.String() })
+          403: Type.Object({
+            message: Type.String(),
+            userId: Type.String(),
+            statusCode: Type.Number(),
+            error: Type.String()
+          })
         }
       }
     },
     async (request, reply) => {
       const { usernameOrEmail, password } = request.body
-      const authenicated = await authenticateUser(usernameOrEmail, password).catch(async (err) => {
+      try {
+        const authenicated = await authenticateUser(usernameOrEmail, password)
+        const { userId, scopes, role } = authenicated
+        const payload: JWTPayload = { userId, scopes, role }
+        const token = await reply.jwtSign(payload)
+        await delay(randomInt(300, 600))
+        return await reply.status(200).send({ token })
+      } catch (err) {
         if (err instanceof AuthenticationError) {
-          return await reply.status(401).send({ message: 'Login failed.' })
+          reply.unauthorized('Authentication failed.')
         } else if (err instanceof AuthorizationError) {
-          return await reply.status(403).send({ message: 'Please verify your email first.', userId: err.resource })
+          await reply.status(403).send({ message: 'Please verify your email first.', userId: err.resource, statusCode: 403, error: 'Forbidden' })
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-
-      const { userId, scopes, superAdmin } = authenicated
-      const payload: JWTPayload = { userId, scopes, superAdmin }
-      const token = await reply.jwtSign(payload)
-      await delay(randomInt(300, 600))
-      return await reply.status(200).send({ token })
+      }
     }
   )
 
@@ -73,23 +82,23 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     '/initiate-verification/:userId',
     {
       schema: {
-        params: Type.Object({ userId: Type.String() }),
-        response: {
-          404: Type.Object({ message: Type.String() })
-        }
+        params: Type.Object({ userId: Type.String() })
       }
     },
     async (request, reply) => {
       const { userId } = request.params
-      const user = await fetchUser(userId)
-      await initiateVerification(userId, user.email).catch(async (err) => {
+      try {
+        const user = await fetchUser(userId)
+        await initiateVerification(userId, user.email)
+        return await reply.status(204).send()
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'User not found.' })
+          reply.notFound('User not found.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(204).send()
+      }
     }
   )
 
@@ -100,23 +109,26 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         params: Type.Object({ userId: Type.String() }),
         body: Type.Object({ token: Type.String() }),
         response: {
-          200: Type.Object({ userId: Type.String() }),
-          401: Type.Object({ message: Type.String() }),
-          404: Type.Object({ message: Type.String() })
+          200: Type.Object({ userId: Type.String() })
         }
       }
     },
     async (request, reply) => {
       const { token } = request.body
       const { userId } = request.params
-      const verified = await completeVerification(userId, token).catch(async (err) => {
+      try {
+        const verified = await completeVerification(userId, token)
+        return await reply.status(200).send({ userId: verified.userId })
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'User to be verified not found.' })
+          reply.notFound('User to be verified not found.')
+        } if (err instanceof AuthenticationError) {
+          reply.unauthorized('Invalid verification.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(200).send({ userId: verified.userId })
+      }
     }
   )
 

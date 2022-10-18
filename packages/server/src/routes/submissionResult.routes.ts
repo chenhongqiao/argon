@@ -7,7 +7,8 @@ import {
 } from '../services/submission.services'
 import {
   CompilingResultSchema,
-  GradingResultSchema
+  GradingResultSchema,
+  UserRole
 } from '@project-carbon/shared'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
@@ -15,6 +16,18 @@ import { Type } from '@sinclair/typebox'
 
 export const submissionResultRoutes: FastifyPluginCallback = (app, options, done) => {
   const judgerRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  judgerRoutes.addHook('onRequest', async (request, reply) => {
+    try {
+      await request.jwtVerify()
+
+      if (request.user.role !== UserRole.Judger) {
+        reply.unauthorized('Please authenticate as a judger first.')
+      }
+    } catch (err) {
+      reply.unauthorized('Please authenticate as a judger first.')
+    }
+  })
+
   judgerRoutes.put(
     '/:submissionId/compiling-result',
     {

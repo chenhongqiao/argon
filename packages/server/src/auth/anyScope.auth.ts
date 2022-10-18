@@ -6,6 +6,7 @@ export function verifyAnyScope (scopes: string[]) {
 
     scopes.forEach((scope) => {
       if (!allScopes.includes(scope)) {
+        reply.statusCode = 403
         return done(new Error('You are not allowed to perform this action.'))
       }
     })

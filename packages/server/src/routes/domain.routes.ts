@@ -5,6 +5,7 @@ import { ConflictError, NewDomainSchema, NotFoundError } from '@project-carbon/s
 import { addDomainMember, createDomain, deleteDomain, removeDomainMember, updateMemberScopes } from '../services/domain.services'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'
+import { Sentry } from '../connections/sentry.connections'
 
 export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -12,7 +13,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     try {
       await request.jwtVerify()
     } catch (err) {
-      await reply.status(401).send('Please login first.')
+      reply.unauthorized('Please authenticate first.')
     }
   })
 
@@ -29,8 +30,13 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const newDomain = request.body
-      const { domainId } = await createDomain(newDomain)
-      return await reply.status(201).send({ domainId })
+      try {
+        const { domainId } = await createDomain(newDomain)
+        return await reply.status(201).send({ domainId })
+      } catch (err) {
+        Sentry.captureException(err)
+        reply.internalServerError('Internal server error.')
+      }
     }
   )
 
@@ -38,23 +44,23 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     '/:domainId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.String() }),
-        response: {
-          404: Type.Object({ message: Type.String() })
-        }
+        params: Type.Object({ domainId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifySuperAdmin]) as any]
     },
     async (request, reply) => {
       const { domainId } = request.params
-      await deleteDomain(domainId).catch(async (err) => {
+      try {
+        await deleteDomain(domainId)
+        return await reply.status(204).send()
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'Domain not found.' })
+          reply.notFound('Domain not found.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(204).send()
+      }
     }
   )
 
@@ -64,9 +70,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       schema: {
         params: Type.Object({ domainId: Type.String() }),
         response: {
-          200: Type.Object({ userId: Type.String(), domainId: Type.String() }),
-          404: Type.Object({ message: Type.String() }),
-          409: Type.Object({ message: Type.String() })
+          200: Type.Object({ userId: Type.String(), domainId: Type.String() })
         },
         body: Type.Object({
           userId: Type.String(),
@@ -78,16 +82,19 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     async (request, reply) => {
       const { domainId } = request.params
       const { userId, scopes } = request.body
-      const added = await addDomainMember(domainId, userId, scopes).catch(async (err) => {
+      try {
+        const added = await addDomainMember(domainId, userId, scopes)
+        return await reply.status(200).send(added)
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: err.message })
+          reply.notFound(err.message)
         } else if (err instanceof ConflictError) {
-          return await reply.status(409).send({ message: 'User already exists in this domain.' })
+          reply.conflict('User already exists in this domain.')
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(200).send(added)
+      }
     }
   )
 
@@ -95,23 +102,23 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     '/:domainId/members/:userId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.String(), userId: Type.String() }),
-        response: {
-          404: Type.Object({ message: Type.String() })
-        }
+        params: Type.Object({ domainId: Type.String(), userId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
     async (request, reply) => {
       const { domainId, userId } = request.params
-      await removeDomainMember(domainId, userId).catch(async (err) => {
+      try {
+        await removeDomainMember(domainId, userId)
+        return await reply.status(204).send()
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: err.message })
+          reply.notFound(err.message)
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(204).send()
+      }
     }
   )
 
@@ -121,9 +128,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       schema: {
         params: Type.Object({ domainId: Type.String(), userId: Type.String() }),
         response: {
-          200: Type.Object({ userId: Type.String(), domainId: Type.String() }),
-          404: Type.Object({ message: Type.String() }),
-          409: Type.Object({ message: Type.String() })
+          200: Type.Object({ userId: Type.String(), domainId: Type.String() })
         },
         body: Type.Object({
           scopes: Type.Array(Type.String())
@@ -134,14 +139,17 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     async (request, reply) => {
       const { domainId, userId } = request.params
       const { scopes } = request.body
-      const updated = await updateMemberScopes(domainId, userId, scopes).catch(async (err) => {
+      try {
+        const updated = await updateMemberScopes(domainId, userId, scopes)
+        return await reply.status(200).send(updated)
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: err.message })
+          reply.notFound(err.message)
         } else {
-          throw err
+          Sentry.captureException(err)
+          reply.internalServerError('Internal server error.')
         }
-      })
-      return await reply.status(200).send(updated)
+      }
     }
   )
 
