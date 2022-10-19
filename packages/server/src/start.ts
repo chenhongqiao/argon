@@ -52,7 +52,7 @@ export async function startServer (): Promise<void> {
     const port: number = parseInt(process.env.SERVER_PORT ?? '8000')
     await app.listen({ port })
   } catch (err) {
-    Sentry.captureException(err)
+    Sentry.captureException(err, { extra: err.context })
     app.log.error(err)
     throw err
   }

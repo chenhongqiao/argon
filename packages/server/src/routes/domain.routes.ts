@@ -34,7 +34,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         const { domainId } = await createDomain(newDomain)
         return await reply.status(201).send({ domainId })
       } catch (err) {
-        Sentry.captureException(err)
+        Sentry.captureException(err, { extra: err.context })
         reply.internalServerError('Internal server error.')
       }
     }
@@ -55,9 +55,9 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         return await reply.status(204).send()
       } catch (err) {
         if (err instanceof NotFoundError) {
-          reply.notFound('Domain not found.')
+          reply.notFound(err.message)
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }
@@ -91,7 +91,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         } else if (err instanceof ConflictError) {
           reply.conflict('User already exists in this domain.')
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }
@@ -115,7 +115,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         if (err instanceof NotFoundError) {
           reply.notFound(err.message)
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }
@@ -146,7 +146,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         if (err instanceof NotFoundError) {
           reply.notFound(err.message)
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }

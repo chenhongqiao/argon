@@ -33,7 +33,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         if (err instanceof ConflictError) {
           reply.conflict(err.message)
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }
@@ -69,9 +69,9 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         if (err instanceof AuthenticationError) {
           reply.unauthorized('Authentication failed.')
         } else if (err instanceof AuthorizationError) {
-          await reply.status(403).send({ message: 'Please verify your email first.', userId: err.resource, statusCode: 403, error: 'Forbidden' })
+          await reply.status(403).send({ message: 'Please verify your email first.', userId: err.context.userId, statusCode: 403, error: 'Forbidden' })
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }
@@ -95,7 +95,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         if (err instanceof NotFoundError) {
           reply.notFound('User not found.')
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }
@@ -125,7 +125,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         } if (err instanceof AuthenticationError) {
           reply.unauthorized('Invalid verification.')
         } else {
-          Sentry.captureException(err)
+          Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('Internal server error.')
         }
       }

@@ -88,14 +88,14 @@ export async function startJudger (): Promise<void> {
           try {
             void handleGradingTask(task, boxId)
           } catch (err) {
-            Sentry.captureException(err)
+            Sentry.captureException(err, { extra: err.context })
             logger.error(err)
           }
         } else if (task.type === JudgerTaskType.Compiling) {
           try {
             void handleCompilingTask(task, boxId)
           } catch (err) {
-            Sentry.captureException(err)
+            Sentry.captureException(err, { extra: err.context })
             logger.error(err)
           }
         }

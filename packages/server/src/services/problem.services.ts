@@ -23,7 +23,7 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
   if (fetched.resource != null) {
     return fetched.resource
   } if (fetched.statusCode === 404) {
-    throw new NotFoundError('Problem not found.', problemId)
+    throw new NotFoundError('Problem not found.', { problemId })
   } else {
     throw new AzureError('Unexpected CosmosDB return.', fetched)
   }
@@ -36,7 +36,7 @@ export async function updateInProblemBank (problem: Problem, problemId: string, 
   if (updated.resource != null) {
     return { problemId: updated.resource.id }
   } if (updated.statusCode === 404) {
-    throw new NotFoundError('Problem not found.', problemId)
+    throw new NotFoundError('Problem not found.', { problemId })
   } else {
     throw new AzureError('Unexpected CosmosDB return.', updated)
   }
@@ -45,15 +45,15 @@ export async function updateInProblemBank (problem: Problem, problemId: string, 
 export async function deleteInProblemBank (problemId: string, domainId: string): Promise<{ problemId: string }> {
   const problemItem = problemBankContainer.item(problemId, domainId)
   const deletedProblem = await problemItem.delete<{ id: string }>()
-  if (deletedProblem.resource == null) {
+  if (deletedProblem.statusCode >= 400) {
     if (deletedProblem.statusCode === 404) {
-      throw new NotFoundError('Problem not found.', problemId)
+      throw new NotFoundError('Problem not found.', { problemId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', deletedProblem)
     }
   }
 
-  return { problemId: deletedProblem.resource.id }
+  return { problemId: deletedProblem.item.id }
 }
 
 export async function fetchDomainProblems (domainId: string): Promise<Problem[]> {

@@ -40,7 +40,7 @@ export async function compileSubmission (submissionId: string): Promise<void> {
   const fetched = await submissionItem.read<CompilingSubmission>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', submissionId)
+      throw new NotFoundError('Submission not found.', { submissionId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', fetched)
     }
@@ -54,7 +54,7 @@ export async function compileSubmission (submissionId: string): Promise<void> {
   }
   const batch = await messageSender.createMessageBatch()
   if (!batch.tryAddMessage({ body: task })) {
-    throw new DataError('Task too big to fit in the queue.', JSON.stringify(submission))
+    throw new DataError('Task too big to fit in the queue.', task)
   }
   await messageSender.sendMessages(batch)
 }
@@ -64,7 +64,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
   const fetchedSubmission = await submissionItem.read<CompilingSubmission>()
   if (fetchedSubmission.resource == null) {
     if (fetchedSubmission.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', submissionId)
+      throw new NotFoundError('Submission not found.', { submissionId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', fetchedSubmission)
     }
@@ -94,7 +94,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
         language: submission.language
       }
       if (!batch.tryAddMessage({ body: task })) {
-        throw new DataError('Task too big to fit in the queue.', JSON.stringify(task))
+        throw new DataError('Task too big to fit in the queue.', task)
       }
       submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
     })
@@ -121,7 +121,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
   const fetched = await submissionItem.read<CompilingSubmission|GradingSubmission|GradedSubmission>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', submissionId)
+      throw new NotFoundError('Submission not found.', { submissionId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', fetched)
     }
@@ -164,7 +164,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
   const fetched = await submissionItem.read<GradingSubmission|FailedSubmission>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', submissionId)
+      throw new NotFoundError('Submission not found.', { submissionId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', fetched)
     }
@@ -172,7 +172,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
   const submission = fetched.resource
   if (submission.status === SubmissionStatus.Grading) {
     if (submission.testcases[testcaseIndex] == null) {
-      throw new NotFoundError('Testcase not found.', testcaseIndex.toString())
+      throw new NotFoundError('Testcase not found by index.', { testcaseIndex, submissionId })
     }
     if (submission.testcases[testcaseIndex].result == null) {
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
@@ -191,7 +191,7 @@ export async function fetchSubmission (submissionId: string): Promise<Submission
   const fetched = await submissionItem.read<SubmissionResult>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', submissionId)
+      throw new NotFoundError('Submission not found.', { submissionId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', fetched)
     }

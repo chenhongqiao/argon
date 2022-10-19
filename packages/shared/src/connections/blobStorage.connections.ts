@@ -50,7 +50,7 @@ export async function downloadToDisk (
     return { path }
   } catch (err) {
     if (err.statusCode === 404) {
-      throw new NotFoundError('Blob not found.', err.request.url)
+      throw new NotFoundError('Blob not found.', { url: err.request.url })
     } else {
       throw err
     }
@@ -66,7 +66,7 @@ export async function downloadBuffer (blobInfo: BlobInfo): Promise<{ data: Buffe
     return { data }
   } catch (err) {
     if (err.statusCode === 404) {
-      throw new NotFoundError('Blob not found.', err.request.url)
+      throw new NotFoundError('Blob not found.', { url: err.request.url })
     } else {
       throw err
     }
@@ -81,7 +81,7 @@ export async function deleteBlob (blobInfo: BlobInfo): Promise<void> {
     await blob.delete()
   } catch (err) {
     if (err.statusCode === 404) {
-      throw new NotFoundError('Blob not found.', err.request.url)
+      throw new NotFoundError('Blob not found.', { url: err.request.url })
     } else {
       throw err
     }
@@ -96,7 +96,7 @@ export async function deleteBlobIfExists (blobInfo: BlobInfo): Promise<void> {
     await blob.deleteIfExists()
   } catch (err) {
     if (err.statusCode === 404) {
-      throw new NotFoundError('Blob not found.', err.request.url)
+      throw new NotFoundError('Blob not found.', { url: err.request.url })
     } else {
       throw err
     }
@@ -116,7 +116,7 @@ export async function getBlobHash (blobInfo: BlobInfo): Promise<{ md5: string }>
     }
   } catch (err) {
     if (err.statusCode === 404) {
-      throw new NotFoundError('Blob not found', err.request.url)
+      throw new NotFoundError('Blob not found.', { url: err.request.url })
     } else {
       throw err
     }

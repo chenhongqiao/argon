@@ -13,7 +13,7 @@ export async function compileSubmission (task: CompilingTask, boxId: number): Pr
   const submissionFetchResult = await submissionItem.read<CompilingSubmission>()
   if (submissionFetchResult.resource == null) {
     if (submissionFetchResult.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', submissionId)
+      throw new NotFoundError('Submission not found.', { submissionId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', submissionFetchResult)
     }

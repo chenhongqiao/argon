@@ -48,9 +48,9 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
     await usernameIndexContainer.items.create(usernameIndex)
   } catch (err) {
     if (err.code === 409) {
-      throw new ConflictError('Username exists.', user.username)
+      throw new ConflictError('Username exists.', { user })
     } else {
-      throw new AzureError('Error while creating username mapping.', err)
+      throw err
     }
   }
 
@@ -59,9 +59,9 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
   } catch (err) {
     if (err.code === 409) {
       await usernameIndexContainer.item(user.username, user.username).delete()
-      throw new ConflictError('Email exists.', user.email)
+      throw new ConflictError('Email exists.', { user })
     } else {
-      throw new AzureError('Error while creating Email mapping.', err)
+      throw err
     }
   }
 
@@ -80,7 +80,7 @@ export async function fetchUser (userId: string): Promise<User> {
   if (fetched.resource != null) {
     return fetched.resource
   } if (fetched.statusCode === 404) {
-    throw new NotFoundError('User not found.', userId)
+    throw new NotFoundError('User not found.', { userId })
   } else {
     throw new AzureError('Unexpected CosmosDB return.', fetched)
   }
@@ -93,7 +93,7 @@ export async function updateUser (user: User, userId: string): Promise<{ userId:
   if (updated.resource != null) {
     return { userId: updated.resource.id }
   } if (updated.statusCode === 404) {
-    throw new NotFoundError('User not found.', userId)
+    throw new NotFoundError('User not found.', { userId })
   } else {
     throw new AzureError('Unexpected CosmosDB return.', updated)
   }
@@ -126,7 +126,7 @@ export async function completeVerification (userId: string, verificationId: stri
   const userItem = usersContainer.item(userId, userId)
   const fetchedUser = await userItem.read<User>()
   if (fetchedUser.resource == null) {
-    throw new NotFoundError('User not found.', userId)
+    throw new NotFoundError('User not found.', { userId })
   }
   const user = fetchedUser.resource
   if (user.email === user.verifiedEmail) {
@@ -176,7 +176,7 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
   const hash = (await pbkdf2Async(password, user.password.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.password.hash) {
     if (user.email !== user.verifiedEmail) {
-      throw new AuthorizationError('Please verify your email first.', userId)
+      throw new AuthorizationError('Please verify your email first.', { userId })
     }
     return { userId: user.id, scopes: user.scopes, role: user.role }
   } else {

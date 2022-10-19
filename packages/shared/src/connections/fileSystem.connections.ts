@@ -16,7 +16,7 @@ export async function readFile (path: string): Promise<FileData> {
   } catch (err) {
     const code: string = err.code.toString()
     if (code === 'ENONET') {
-      throw new NotFoundError(`${code} File not found`, path)
+      throw new NotFoundError(`${code} File not found`, { path })
     } else {
       throw err
     }
@@ -33,7 +33,7 @@ export async function writeFile (
   } catch (err) {
     const code: string = err.code.toString()
     if (code === 'ENONET') {
-      throw new NotFoundError(`${code} Parent directory does not exist`, path)
+      throw new NotFoundError(`${code} Parent directory does not exist`, { path })
     } else {
       throw err
     }

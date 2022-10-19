@@ -1,53 +1,53 @@
 export class NotFoundError extends Error {
-  resource = '';
+  context: Record<string, any>
 
-  constructor (message: string, resource: string) {
+  constructor (message: string, context: object) {
     super(message)
 
-    this.resource = resource
+    this.context = context
 
     Object.setPrototypeOf(this, NotFoundError.prototype)
   }
 }
 
 export class ConflictError extends Error {
-  resource = '';
+  context: Record<string, any>
 
-  constructor (message: string, resource: string) {
+  constructor (message: string, context: object) {
     super(message)
 
-    this.resource = resource
+    this.context = context
 
     Object.setPrototypeOf(this, ConflictError.prototype)
   }
 }
 
 export class AuthorizationError extends Error {
-  resource = ''
+  context: Record<string, any>
 
-  constructor (message: string, resource: string) {
+  constructor (message: string, context: object) {
     super(message)
 
-    this.resource = resource
+    this.context = context
 
     Object.setPrototypeOf(this, AuthorizationError.prototype)
   }
 }
 
 export class AuthenticationError extends Error {
-  credential = {};
+  context: Record<string, any>
 
-  constructor (message: string, credential: object) {
+  constructor (message: string, context: object) {
     super(message)
 
-    this.credential = credential
+    this.context = context
 
     Object.setPrototypeOf(this, AuthenticationError.prototype)
   }
 }
 
 export class AzureError extends Error {
-  context = {};
+  context: Record<string, any>;
 
   constructor (message: string, context: object) {
     super(message)
@@ -59,12 +59,12 @@ export class AzureError extends Error {
 }
 
 export class DataError extends Error {
-  resource = '';
+  context: Record<string, any>;
 
-  constructor (message: string, resource: string) {
+  constructor (message: string, context: object) {
     super(message)
 
-    this.resource = resource
+    this.context = context
 
     Object.setPrototypeOf(this, DataError.prototype)
   }

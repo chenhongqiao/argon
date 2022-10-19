@@ -20,7 +20,7 @@ export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
       try {
         return await reply.status(200).send({ version, online: true })
       } catch (err) {
-        Sentry.captureException(err)
+        Sentry.captureException(err, { extra: err.context })
         reply.internalServerError('Internal server error.')
       }
     }

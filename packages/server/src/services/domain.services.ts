@@ -6,7 +6,8 @@ import { fetchUser, updateUser } from './user.services'
 const domainsContainer = CosmosDB.container('domains')
 
 export async function createDomain (newDomain: NewDomain): Promise<{domainId: string}> {
-  const created = await domainsContainer.items.create(newDomain)
+  const domain: Omit<Domain, 'id'> = { ...newDomain, members: [] }
+  const created = await domainsContainer.items.create(domain)
   if (created.resource == null) {
     throw new AzureError('No resource ID returned while creating user.', created)
   }
@@ -19,7 +20,7 @@ export async function deleteDomain (domainId: string): Promise<{ domainId: strin
   const fetched = await domainItem.read<Domain>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
-      throw new NotFoundError('Domain not found.', domainId)
+      throw new NotFoundError('Domain not found.', { domainId })
     } else {
       throw new AzureError('Unexpected CosmosDB return.', fetched)
     }
@@ -31,7 +32,7 @@ export async function deleteDomain (domainId: string): Promise<{ domainId: strin
     removedMembers.push(removeDomainMember(domainId, userId))
   })
 
-  await Promise.all(removedMembers)
+  await Promise.allSettled(removedMembers)
 
   const deletedProblems: Array<Promise<{problemId: string}>> = []
   const domainProblems = await fetchDomainProblems(domainId)
@@ -39,14 +40,14 @@ export async function deleteDomain (domainId: string): Promise<{ domainId: strin
     deletedProblems.push(deleteInProblemBank(problem.id, domainId))
   })
 
-  await Promise.all(deletedProblems)
+  await Promise.allSettled(deletedProblems)
 
-  const deleted = await domainItem.delete<{ id: string }>()
-  if (deleted.resource == null) {
-    throw new AzureError('Unexpected CosmosDB return.', deleted)
+  const deletedDomain = await domainItem.delete<{ id: string }>()
+  if (deletedDomain.statusCode >= 400) {
+    throw new AzureError('Unexpected CosmosDB return.', deletedDomain)
   }
 
-  return { domainId: deleted.resource.id }
+  return { domainId: deletedDomain.item.id }
 }
 
 export async function addDomainMember (domainId: string, userId: string, scopes: string[]): Promise<{domainId: string, userId: string}> {
@@ -55,14 +56,14 @@ export async function addDomainMember (domainId: string, userId: string, scopes:
   const domainItem = domainsContainer.item(domainId, domainId)
   const fetchedDomain = await domainItem.read<Domain>()
   if (fetchedDomain.statusCode === 404) {
-    throw new NotFoundError('Domain not found.', userId)
+    throw new NotFoundError('Domain not found.', { userId })
   } else if (fetchedDomain.resource == null) {
     throw new AzureError('Unexpected CosmosDB return.', fetchedDomain)
   }
   const domain = fetchedDomain.resource
 
   if (Boolean(domain.members.includes(userId)) || user.scopes[domainId] != null) {
-    throw new ConflictError('User already exists in domain.', `${userId} in ${domainId}`)
+    throw new ConflictError('User already exists in domain.', { userId, domainId })
   }
 
   domain.members.push(userId)
@@ -84,7 +85,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
   const domainItem = domainsContainer.item(domainId, domainId)
   const fetchedDomain = await domainItem.read<Domain>()
   if (fetchedDomain.statusCode === 404) {
-    throw new NotFoundError('Domain not found.', userId)
+    throw new NotFoundError('Domain not found.', { domainId })
   } else if (fetchedDomain.resource == null) {
     throw new AzureError('Unexpected CosmosDB return.', fetchedDomain)
   }
@@ -113,7 +114,7 @@ export async function updateMemberScopes (domainId: string, userId: string, scop
   const user = await fetchUser(userId)
 
   if (user.scopes[domainId] == null) {
-    throw new NotFoundError('User not part of this domain', `${userId} in ${domainId}`)
+    throw new NotFoundError('User not part of this domain', { userId, domainId })
   }
 
   user.scopes[domainId] = scopes

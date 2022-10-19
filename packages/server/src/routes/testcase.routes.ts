@@ -40,7 +40,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
         const results = await Promise.all(queue)
         return await reply.status(201).send(results)
       } catch (err) {
-        Sentry.captureException(err)
+        Sentry.captureException(err, { extra: err.context })
         reply.internalServerError('Internal server error.')
       }
     }

@@ -53,7 +53,7 @@ export async function initSandbox (
     workDir = (await exec(`isolate --box-id=${boxId} --cg --init`)).stdout
   } catch (err) {
     if (Boolean((err.message?.startsWith('Box already exists')))) {
-      throw new ConflictError('Box already exists', `sandbox ${boxId}`)
+      throw new ConflictError('Box already exists', { boxId })
     } else {
       throw err
     }
