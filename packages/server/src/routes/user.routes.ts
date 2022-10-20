@@ -4,6 +4,7 @@ import { Type } from '@sinclair/typebox'
 import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile } from '@project-carbon/shared'
 import { fetchUser } from '../services/user.services'
 import { verifyUserOwnsership } from '../auth/userOwnership.auth'
+import { Sentry } from '../connections/sentry.connections'
 
 export const userRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -27,9 +28,14 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { userId } = request.params
-      const { username, name } = await fetchUser(userId)
-      const publicProfile: PublicUserProfile = { username, name }
-      await reply.status(200).send(publicProfile)
+      try {
+        const { username, name } = await fetchUser(userId)
+        const publicProfile: PublicUserProfile = { username, name }
+        await reply.status(200).send(publicProfile)
+      } catch (err) {
+        Sentry.captureException(err, { extra: err.context })
+        reply.internalServerError('A server error occurred while handling the request.')
+      }
     }
   )
 
@@ -46,9 +52,14 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { userId } = request.params
-      const { username, name, email, verifiedEmail, scopes, role } = await fetchUser(userId)
-      const privateProfile: PrivateUserProfile = { username, name, email, verifiedEmail, scopes, id: userId, role }
-      await reply.status(200).send(privateProfile)
+      try {
+        const { username, name, email, verifiedEmail, scopes, role } = await fetchUser(userId)
+        const privateProfile: PrivateUserProfile = { username, name, email, verifiedEmail, scopes, id: userId, role }
+        await reply.status(200).send(privateProfile)
+      } catch (err) {
+        Sentry.captureException(err, { extra: err.context })
+        reply.internalServerError('A server error occurred while handling the request.')
+      }
     }
   )
 

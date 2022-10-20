@@ -1,5 +1,4 @@
 import Fastify from 'fastify'
-import multipart from '@fastify/multipart'
 import jwt from '@fastify/jwt'
 
 import { problemBankRoutes } from './routes/problemBank.routes'
@@ -32,13 +31,6 @@ export async function startServer (): Promise<void> {
   await app.register(sensible)
 
   await app.register(fastifyAuth)
-
-  await app.register(multipart, {
-    prefix: '/testcases',
-    limits: {
-      fileSize: 20971520
-    }
-  })
 
   await app.register(problemBankRoutes, { prefix: '/problem-bank' })
   await app.register(testcaseRoutes, { prefix: '/testcases' })

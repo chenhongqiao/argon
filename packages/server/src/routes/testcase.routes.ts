@@ -10,8 +10,17 @@ import { Type } from '@sinclair/typebox'
 import { verifyAnyScope } from '../auth/anyScope.auth'
 import { Sentry } from '../connections/sentry.connections'
 
+import multipart from '@fastify/multipart'
+
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  void app.register(multipart, {
+    limits: {
+      fileSize: 20971520,
+      files: 50
+    }
+  })
+
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {
       await request.jwtVerify()
@@ -40,8 +49,16 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
         const results = await Promise.all(queue)
         return await reply.status(201).send(results)
       } catch (err) {
-        Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred while handling the request.')
+        if (err instanceof app.multipartErrors.InvalidMultipartContentTypeError) {
+          reply.badRequest('Request must be multipart.')
+        } else if (err instanceof app.multipartErrors.FilesLimitError) {
+          reply.payloadTooLarge('Too many files in one request.')
+        } else if (err instanceof app.multipartErrors.RequestFileTooLargeError) {
+          reply.payloadTooLarge('Testcase too large to be processed.')
+        } else {
+          Sentry.captureException(err, { extra: err.context })
+          reply.internalServerError('A server error occurred while handling the request.')
+        }
       }
     }
   )
@@ -59,14 +76,17 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { testcaseId } = request.params
-      await deleteTestcase(testcaseId).catch(async (err) => {
+      try {
+        await deleteTestcase(testcaseId)
+        return await reply.status(204).send()
+      } catch (err) {
         if (err instanceof NotFoundError) {
-          return await reply.status(404).send({ message: 'Testcase not found.' })
+          reply.notFound('Testcase not found.')
         } else {
-          throw err
+          Sentry.captureException(err, { extra: err.context })
+          reply.internalServerError('A server error occurred while handling the request.')
         }
-      })
-      return await reply.status(204).send()
+      }
     }
   )
   return done()
