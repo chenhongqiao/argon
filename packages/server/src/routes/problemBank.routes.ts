@@ -57,7 +57,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         return await reply.status(201).send(created)
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('Internal server error.')
+        reply.internalServerError('A server error occurred while handling the request.')
       }
     }
   )
@@ -81,7 +81,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           reply.notFound('Problem not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('Internal server error.')
+          reply.internalServerError('A server error occurred while handling the request.')
         }
       }
     }
@@ -129,7 +129,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           reply.notFound('Problem not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('Internal server error.')
+          reply.internalServerError('A server error occurred while handling the request.')
         }
       }
     }
@@ -153,7 +153,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           reply.notFound('Problem not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('Internal server error.')
+          reply.internalServerError('A server error occurred while handling the request.')
         }
       }
     }
@@ -184,7 +184,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           reply.notFound('Problem not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('Internal server error.')
+          reply.internalServerError('A server error occurred while handling the request.')
         }
       }
     }
@@ -216,7 +216,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           reply.notFound('Submission not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('Internal server error.')
+          reply.internalServerError('A server error occurred while handling the request.')
         }
       }
     })

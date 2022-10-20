@@ -9,7 +9,7 @@ export function verifyUserOwnsership (request: FastifyRequest, reply: FastifyRep
   }
   if (userId !== request.user.userId) {
     reply.statusCode = 403
-    return done(new Error('You are not allowed to perform this action.'))
+    return done(new Error('Resource not owned by user.'))
   }
 
   return done()

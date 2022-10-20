@@ -11,7 +11,7 @@ export function verifyDomainScope (scopes: string[]) {
     scopes.forEach((scope) => {
       if (!request.user.scopes[domainId].includes(scope)) {
         reply.statusCode = 403
-        return done(new Error('You are not allowed to perform this action.'))
+        return done(new Error('Insufficient domain scope.'))
       }
     })
 
