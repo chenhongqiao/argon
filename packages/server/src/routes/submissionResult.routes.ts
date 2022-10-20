@@ -9,7 +9,7 @@ import {
   CompilingResultSchema,
   GradingResultSchema,
   UserRole
-} from '@project-carbon/shared'
+} from '@cocs/shared'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'

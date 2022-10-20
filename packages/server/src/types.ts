@@ -1,5 +1,5 @@
 import '@fastify/jwt'
-import { UserRole } from '@project-carbon/shared'
+import { UserRole } from '@cocs/shared'
 
 export interface JWTPayload {
   userId: string

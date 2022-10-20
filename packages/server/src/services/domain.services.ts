@@ -1,4 +1,4 @@
-import { NewDomain, Domain, CosmosDB, AzureError, NotFoundError, ConflictError } from '@project-carbon/shared'
+import { NewDomain, Domain, CosmosDB, AzureError, NotFoundError, ConflictError } from '@cocs/shared'
 import { deleteInProblemBank, fetchDomainProblems } from './problem.services'
 
 import { fetchUser, updateUser } from './user.services'

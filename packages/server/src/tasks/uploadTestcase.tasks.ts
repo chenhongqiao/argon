@@ -1,6 +1,6 @@
 import { parentPort, workerData } from 'node:worker_threads'
 
-import { uploadBuffer, cleanTestcase, readFile } from '@project-carbon/shared'
+import { uploadBuffer, cleanTestcase, readFile } from '@cocs/shared'
 
 const { testcasePath, testcaseId, domainId } = workerData
 readFile(testcasePath).then((result) => {

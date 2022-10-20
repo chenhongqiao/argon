@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { Worker } from 'node:worker_threads'
 
-import { AuthorizationError, deleteBlob, getMetaData } from '@project-carbon/shared'
+import { AuthorizationError, deleteBlob, getMetaData } from '@cocs/shared'
 
 import path = require('node:path')
 

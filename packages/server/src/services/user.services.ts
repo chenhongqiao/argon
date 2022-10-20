@@ -1,4 +1,4 @@
-import { User, NewUser, CosmosDB, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError, UserRole } from '@project-carbon/shared'
+import { User, NewUser, CosmosDB, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError, UserRole } from '@cocs/shared'
 import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'

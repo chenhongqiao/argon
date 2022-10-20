@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
-import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile } from '@project-carbon/shared'
+import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile } from '@cocs/shared'
 import { fetchUser } from '../services/user.services'
 import { verifyUserOwnsership } from '../auth/userOwnership.auth'
 import { Sentry } from '../connections/sentry.connections'

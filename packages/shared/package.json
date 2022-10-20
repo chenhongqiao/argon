@@ -1,5 +1,5 @@
 {
-  "name": "@project-carbon/shared",
+  "name": "@cocs/shared",
   "version": "0.1.4",
   "description": "Carbon Online Contest Server Shared Modules",
   "author": "Harry Chen",

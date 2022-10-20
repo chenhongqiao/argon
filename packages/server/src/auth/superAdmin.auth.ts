@@ -1,4 +1,4 @@
-import { UserRole } from '@project-carbon/shared'
+import { UserRole } from '@cocs/shared'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export function verifySuperAdmin (request: FastifyRequest, reply: FastifyReply, done): void {

@@ -20,7 +20,7 @@ import {
   Problem,
   SubmissionStatus,
   SubmissionResult
-} from '@project-carbon/shared'
+} from '@cocs/shared'
 
 import { fetchFromProblemBank } from './problem.services'
 

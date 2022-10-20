@@ -5,7 +5,7 @@ import {
   NewSubmissionSchema,
   SubmissionResultSchema,
   AuthorizationError
-} from '@project-carbon/shared'
+} from '@cocs/shared'
 
 import {
   createInProblemBank,

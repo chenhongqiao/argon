@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs'
 
 import { runInSandbox } from './sandbox.services'
 
-import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, CosmosDB, CompilingSubmission, NotFoundError, AzureError } from '@project-carbon/shared'
+import { uploadFromDisk, readFile, languageConfigs, CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, CosmosDB, CompilingSubmission, NotFoundError, AzureError } from '@cocs/shared'
 
 const submissionsContainer = CosmosDB.container('submissions')
 

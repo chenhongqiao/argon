@@ -10,7 +10,7 @@ import {
   SandboxSystemError,
   SandboxTimeExceeded,
   SandboxMemoryExceeded
-} from '@project-carbon/shared'
+} from '@cocs/shared'
 
 interface SandboxMeta {
   status?: string

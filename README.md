@@ -12,15 +12,15 @@ Project Carbon is currently under heavy development as [TeamsCode](https://www.t
 
 This monorepo contains 3 packages.
 
-### [@project-carbon/server](https://www.npmjs.com/package/@project-carbon/server)
+### [@cocs/server](https://www.npmjs.com/package/@cocs/server)
 
 This package contains the server portion of the contest platform. It interacts with the user and the judger. Written in TypeScript.
 
-### [@project-carbon/judger](https://www.npmjs.com/package/@project-carbon/judger)
+### [@cocs/judger](https://www.npmjs.com/package/@cocs/judger)
 
 This package contains the code to be used on judgers. It executes submissions in sandboxes and grade their outputs. Written in TypeScript.
 
-### [@project-carbon/shared](https://www.npmjs.com/package/@project-carbon/shared)
+### [@cocs/shared](https://www.npmjs.com/package/@cocs/shared)
 
 Modules utilized by both the server and the judger. Not designed to be used as a standalone package. Written in TypeScript.
 

@@ -4,7 +4,7 @@ import {
   NewProblem,
   NotFoundError,
   Problem
-} from '@project-carbon/shared'
+} from '@cocs/shared'
 import { verifyTestcaseDomain } from './testcase.services'
 
 const problemBankContainer = CosmosDB.container('problemBank')
