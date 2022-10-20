@@ -8,7 +8,7 @@ import path = require('node:path')
 export async function uploadTestcase (testcasePath: string): Promise<{testcaseId: string}> {
   const testcaseId = randomUUID()
   return await new Promise((resolve, reject) => {
-    const worker = new Worker(path.join(__dirname, '../workers/uploadTestcase.worker.js'), {
+    const worker = new Worker(path.join(__dirname, '../tasks/uploadTestcase.tasks.js'), {
       workerData: { testcasePath, testcaseId }
     })
     worker.on('message', resolve)
