@@ -5,11 +5,18 @@ import {
   NotFoundError,
   Problem
 } from '@project-carbon/shared'
+import { verifyTestcaseDomain } from './testcase.services'
 
 const problemBankContainer = CosmosDB.container('problemBank')
 
 export async function createInProblemBank (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
   const problem: Omit<Problem, 'id'> = { ...newProblem, domainId }
+  const testcasesVerifyQueue: Array<Promise<{testcaseId: string}>> = []
+  problem.testcases.forEach((testcase) => {
+    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
+    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
+  })
+  await Promise.all(testcasesVerifyQueue)
   const createdProblem = await problemBankContainer.items.create(problem)
   if (createdProblem.resource == null) {
     throw new AzureError('No resource ID returned.', createdProblem)

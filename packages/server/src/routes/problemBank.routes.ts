@@ -3,7 +3,8 @@ import {
   NotFoundError,
   ProblemSchema,
   NewSubmissionSchema,
-  SubmissionResultSchema
+  SubmissionResultSchema,
+  AuthorizationError
 } from '@project-carbon/shared'
 
 import {
@@ -56,8 +57,12 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         const created = await createInProblemBank(problem, domainId)
         return await reply.status(201).send(created)
       } catch (err) {
-        Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred while handling the request.')
+        if (err instanceof NotFoundError || err instanceof AuthorizationError) {
+          reply.notFound('One or more of the testcases does not exist.')
+        } else {
+          Sentry.captureException(err, { extra: err.context })
+          reply.internalServerError('A server error occurred while handling the request.')
+        }
       }
     }
   )

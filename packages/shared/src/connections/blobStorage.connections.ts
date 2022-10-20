@@ -25,7 +25,8 @@ export async function uploadFromDisk (
 export async function uploadBuffer (
   data: Buffer,
   blobInfo: BlobInfo,
-  contentType?: string
+  contentType?: string,
+  metaData?: Record<string, string>
 ): Promise<BlobInfo> {
   const { containerName, blobName } = blobInfo
   const container = client.getContainerClient(containerName)
@@ -34,6 +35,9 @@ export async function uploadBuffer (
     await blob.uploadData(data, { blobHTTPHeaders: { blobContentType: contentType } })
   } else {
     await blob.uploadData(data)
+  }
+  if (metaData != null) {
+    await blob.setMetadata(metaData)
   }
   return { blobName, containerName }
 }
@@ -57,13 +61,31 @@ export async function downloadToDisk (
   }
 }
 
-export async function downloadBuffer (blobInfo: BlobInfo): Promise<{ data: Buffer }> {
+export async function downloadBuffer (blobInfo: BlobInfo): Promise<{ data: Buffer, metaData: Record<string, string> | undefined }> {
   const { containerName, blobName } = blobInfo
   const container = client.getContainerClient(containerName)
   const blob = container.getBlockBlobClient(blobName)
+
   try {
     const data = await blob.downloadToBuffer()
-    return { data }
+    return { data, metaData: (await blob.getProperties()).metadata }
+  } catch (err) {
+    if (err.statusCode === 404) {
+      throw new NotFoundError('Blob not found.', { url: err.request.url })
+    } else {
+      throw err
+    }
+  }
+}
+
+export async function getMetaData (blobInfo: BlobInfo): Promise<Record<string, string>> {
+  const { containerName, blobName } = blobInfo
+  const container = client.getContainerClient(containerName)
+  const blob = container.getBlockBlobClient(blobName)
+
+  try {
+    const properties = await blob.getProperties()
+    return properties.metadata ?? {}
   } catch (err) {
     if (err.statusCode === 404) {
       throw new NotFoundError('Blob not found.', { url: err.request.url })

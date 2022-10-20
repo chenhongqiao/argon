@@ -2,10 +2,10 @@ import { parentPort, workerData } from 'node:worker_threads'
 
 import { uploadBuffer, cleanTestcase, readFile } from '@project-carbon/shared'
 
-const { testcasePath, testcaseId } = workerData
+const { testcasePath, testcaseId, domainId } = workerData
 readFile(testcasePath).then((result) => {
   const cleaned = cleanTestcase(result.data)
-  uploadBuffer(cleaned, { containerName: 'testcases', blobName: testcaseId }, 'text/plain').then((result) => {
+  uploadBuffer(cleaned, { containerName: 'testcases', blobName: testcaseId }, 'text/plain', { domainId }).then((result) => {
     parentPort?.postMessage({ testcaseId: result.blobName })
   }).catch((err) => {
     throw err
