@@ -38,6 +38,12 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
 
 export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string }> {
   const problemWithId = { ...problem, problemId, domainId }
+  const testcasesVerifyQueue: Array<Promise<{testcaseId: string}>> = []
+  problemWithId.testcases.forEach((testcase) => {
+    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
+    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
+  })
+  await Promise.all(testcasesVerifyQueue)
   const problemItem = problemBankContainer.item(problemId, domainId)
   const updated = await problemItem.replace(problemWithId)
   if (updated.resource != null) {

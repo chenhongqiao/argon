@@ -132,7 +132,13 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         return await reply.status(200).send(updated)
       } catch (err) {
         if (err instanceof NotFoundError) {
-          reply.notFound('Problem not found.')
+          if (err.message === 'Blob not found.') {
+            reply.notFound('One or more of the testcases does not exist.')
+          } else {
+            reply.notFound('Problem not found.')
+          }
+        } else if (err instanceof AuthorizationError) {
+          reply.notFound('One or more of the testcases does not exist.')
         } else {
           Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('A server error occurred while handling the request.')
