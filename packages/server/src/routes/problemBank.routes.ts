@@ -119,9 +119,10 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
           200: Type.Object({ problemId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         },
-        params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
-        preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
-      }
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
+      },
+      preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
+
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
@@ -172,9 +173,9 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
           202: Type.Object({ submissionId: Type.String() })
-        },
-        preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
-      }
+        }
+      },
+      preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
     },
     async (request, reply) => {
       const submission = request.body
@@ -202,16 +203,16 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         params: Type.Object({ domainId: Type.String(), problemId: Type.String(), submissionId: Type.String() }),
         response: {
           200: SubmissionResultSchema
-        },
-        preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
-      }
+        }
+      },
+      preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
     },
     async (request, reply) => {
       const { domainId, submissionId, problemId } = request.params
       try {
         const submission = await fetchSubmission(submissionId)
 
-        if (submission.problem.id !== problemId || submission.problem.id !== domainId) {
+        if (submission.problem.id !== problemId || submission.problem.domainId !== domainId) {
           return reply.notFound('Submission not found.')
         }
 
