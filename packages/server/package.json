@@ -1,6 +1,6 @@
 {
   "name": "@cocs/server",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Carbon Online Contest Server Backend",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
