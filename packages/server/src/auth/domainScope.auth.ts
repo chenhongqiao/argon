@@ -9,7 +9,7 @@ export function verifyDomainScope (scopes: string[]) {
       return done(new Error('Resource not associated with a domain.'))
     }
     scopes.forEach((scope) => {
-      if (!request.user.scopes[domainId].includes(scope)) {
+      if (request.user.scopes[domainId] == null || !request.user.scopes[domainId].includes(scope)) {
         reply.statusCode = 403
         return done(new Error('Insufficient domain scope.'))
       }
