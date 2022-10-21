@@ -40,6 +40,7 @@ async function handleGradingTask (task: GradingTask, boxId: number): Promise<voi
         request: 30000
       }
     })
+    logger.info(task, 'Task completed.')
   } catch (err) {
     logger.error(err)
   }
@@ -61,6 +62,7 @@ async function handleCompilingTask (task: CompilingTask, boxId: number): Promise
         request: 30000
       }
     })
+    logger.info(task, 'Task completed.')
   } catch (err) {
     logger.error(err)
   }
@@ -88,6 +90,7 @@ export async function startJudger (): Promise<void> {
         message => message.body
       )
       tasks.forEach(task => {
+        logger.info(task, 'New task received.')
         const boxId = availableBoxes.values().next().value
         availableBoxes.delete(boxId)
         if (task.type === JudgerTaskType.Grading) {
