@@ -78,6 +78,13 @@ export async function downloadBuffer (blobInfo: BlobInfo): Promise<{ data: Buffe
   }
 }
 
+export async function blobExists (blobInfo: BlobInfo): Promise<boolean> {
+  const { containerName, blobName } = blobInfo
+  const container = client.getContainerClient(containerName)
+  const blob = container.getBlockBlobClient(blobName)
+  return await blob.exists()
+}
+
 export async function getMetaData (blobInfo: BlobInfo): Promise<Record<string, string>> {
   const { containerName, blobName } = blobInfo
   const container = client.getContainerClient(containerName)
