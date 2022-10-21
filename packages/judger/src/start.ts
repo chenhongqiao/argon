@@ -33,6 +33,9 @@ async function handleGradingTask (task: GradingTask, boxId: number): Promise<voi
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     await got.put(new URL(`/submission-results/${task.submissionId}/testcase-result/${task.testcaseIndex}`, serverBaseURL).href, {
       json: result,
+      headers: {
+        Authorization: `Bearer ${process.env.JUDGER_TOKEN ?? ''}`
+      },
       timeout: {
         request: 30000
       }
@@ -51,6 +54,9 @@ async function handleCompilingTask (task: CompilingTask, boxId: number): Promise
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     await got.put(new URL(`/submission-results/${task.submissionId}/compiling-result`, serverBaseURL).href, {
       json: result,
+      headers: {
+        Authorization: `Bearer ${process.env.JUDGER_TOKEN ?? ''}`
+      },
       timeout: {
         request: 30000
       }

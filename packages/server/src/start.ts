@@ -8,6 +8,7 @@ import { submissionResultRoutes } from './routes/submissionResult.routes'
 import { authenticationRoutes } from './routes/authentication.routes'
 import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
+import { judgerRoutes } from './routes/judger.routes'
 
 import { createContainers } from './tasks/createContainers.tasks'
 import { Sentry } from './connections/sentry.connections'
@@ -39,6 +40,7 @@ export async function startServer (): Promise<void> {
   await app.register(authenticationRoutes, { prefix: '/authentication' })
   await app.register(userRoutes, { prefix: '/users' })
   await app.register(domainRoutes, { prefix: '/domains' })
+  await app.register(judgerRoutes, { prefix: '/judger' })
 
   try {
     const port: number = parseInt(process.env.SERVER_PORT ?? '8000')

@@ -86,6 +86,18 @@ export async function fetchUser (userId: string): Promise<User> {
   }
 }
 
+export async function userIdExists (userId: string): Promise<boolean> {
+  const userItem = usersContainer.item(userId, userId)
+  const fetched = await userItem.read<User>()
+  if (fetched.resource != null) {
+    return true
+  } if (fetched.statusCode === 404) {
+    return false
+  } else {
+    throw new AzureError('Unexpected CosmosDB return.', fetched)
+  }
+}
+
 export async function updateUser (user: User, userId: string): Promise<{ userId: string }> {
   const userWithId = { ...user, userId }
   const userItem = usersContainer.item(userId, userId)
