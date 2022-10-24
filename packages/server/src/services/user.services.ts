@@ -67,8 +67,8 @@ export async function registerUser (newUser: NewUser): Promise<{userId: string, 
 
   const created = await usersContainer.items.create(user)
   if (created.resource == null) {
-    await usernameIndexContainer.item(user.username, user.username).delete()
-    await emailIndexContainer.item(user.email, user.email).delete()
+    await usernameIndexContainer.item(user.username, user.username).delete().catch()
+    await emailIndexContainer.item(user.email, user.email).delete().catch()
     throw new AzureError('No resource ID returned while creating user.', created)
   }
   return { userId: created.resource.id, email: user.email }
