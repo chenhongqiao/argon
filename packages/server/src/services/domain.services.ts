@@ -95,6 +95,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
     domain.members.splice(domain.members.indexOf(userId), 1)
   }
 
+  const oldScopes = user.scopes[domainId]
   if (user.scopes[domainId] != null) {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete user.scopes[domainId]
@@ -104,6 +105,8 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
 
   const updatedDomain = await domainItem.replace(domain)
   if (updatedDomain.resource == null) {
+    user.scopes[domainId] = oldScopes
+    await updateUser(user, userId)
     throw new AzureError('Unexpected CosmosDB return.', updatedDomain)
   }
 
