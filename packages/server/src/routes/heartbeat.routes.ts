@@ -21,7 +21,7 @@ export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
         return await reply.status(200).send({ version, online: true })
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred while handling the request.')
+        reply.internalServerError('A server error occurred when handling the request.')
       }
     }
   )

@@ -34,7 +34,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
         await reply.status(200).send(publicProfile)
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred while handling the request.')
+        reply.internalServerError('A server error occurred when handling the request.')
       }
     }
   )
@@ -58,7 +58,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
         await reply.status(200).send(privateProfile)
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred while handling the request.')
+        reply.internalServerError('A server error occurred when handling the request.')
       }
     }
   )

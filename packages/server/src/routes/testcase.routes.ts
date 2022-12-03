@@ -59,7 +59,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.payloadTooLarge('Testcase too large to be processed.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
@@ -87,7 +87,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound('Testcase not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }

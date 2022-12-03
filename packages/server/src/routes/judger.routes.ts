@@ -41,7 +41,7 @@ export const judgerRoutes: FastifyPluginCallback = (app, options, done) => {
         return await reply.status(200).send({ token })
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred while handling the request.')
+        reply.internalServerError('A server error occurred when handling the request.')
       }
     }
   )

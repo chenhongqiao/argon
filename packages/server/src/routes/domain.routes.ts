@@ -35,7 +35,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         return await reply.status(201).send({ domainId })
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred while handling the request.')
+        reply.internalServerError('A server error occurred when handling the request.')
       }
     }
   )
@@ -58,7 +58,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound(err.message)
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
@@ -92,7 +92,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.conflict('User already exists in this domain.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
@@ -116,7 +116,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound(err.message)
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
@@ -147,7 +147,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound(err.message)
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }

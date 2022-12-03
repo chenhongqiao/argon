@@ -34,7 +34,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
           reply.conflict(err.message)
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
@@ -72,7 +72,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
           await reply.status(403).send({ message: 'Please verify your email first.', userId: err.context.userId, statusCode: 403, error: 'Forbidden' })
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
@@ -96,7 +96,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
           reply.notFound('User not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
@@ -126,7 +126,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
           reply.unauthorized('Invalid verification.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred while handling the request.')
+          reply.internalServerError('A server error occurred when handling the request.')
         }
       }
     }
