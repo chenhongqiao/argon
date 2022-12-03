@@ -6,7 +6,7 @@
 
 A fast and scalable online competitive programming contest server powered by cloud native computing. 
 
-Project Carbon is currently under heavy development as [TeamsCode](https://www.teamscode.org)'s next-generation contest platform. Not all features are implemented and it's yet far from a finished product. This contest platform is expected to appear in TeamsCode's Spring 2023 contest if not later.
+COCS is currently under heavy development as [TeamsCode](https://www.teamscode.org)'s next-generation contest platform. Not all features are implemented and it's yet far from a finished product. This contest platform is expected to appear in TeamsCode's Spring 2023 contest if not later.
 
 ## Packages
 
