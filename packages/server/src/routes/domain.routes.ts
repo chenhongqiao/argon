@@ -13,7 +13,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     try {
       await request.jwtVerify()
     } catch (err) {
-      reply.unauthorized('Please authenticate first.')
+      reply.unauthorized('Authentication is required for domain operations.')
     }
   })
 
@@ -35,7 +35,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         return await reply.status(201).send({ domainId })
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred when handling the request.')
+        reply.internalServerError('A server error occurred when creating a domain.')
       }
     }
   )
@@ -58,7 +58,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound(err.message)
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling the request.')
+          reply.internalServerError('A server error occurred when deleting a domain.')
         }
       }
     }
@@ -92,7 +92,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.conflict('User already exists in this domain.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling the request.')
+          reply.internalServerError('A server error occurred when adding domain members.')
         }
       }
     }
@@ -116,7 +116,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound(err.message)
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling the request.')
+          reply.internalServerError('A server error occurred when removing a domain member.')
         }
       }
     }
@@ -147,7 +147,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound(err.message)
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling the request.')
+          reply.internalServerError('A server error occurred when updating member scopes.')
         }
       }
     }

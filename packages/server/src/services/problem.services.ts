@@ -32,7 +32,7 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
   } if (fetched.statusCode === 404) {
     throw new NotFoundError('Problem not found.', { problemId })
   } else {
-    throw new AzureError('Unexpected CosmosDB return.', fetched)
+    throw new AzureError('Unexpected CosmosDB return when reading from problem bank.', fetched)
   }
 }
 
@@ -51,7 +51,7 @@ export async function updateInProblemBank (problem: Problem, problemId: string, 
   } if (updated.statusCode === 404) {
     throw new NotFoundError('Problem not found.', { problemId })
   } else {
-    throw new AzureError('Unexpected CosmosDB return.', updated)
+    throw new AzureError('Unexpected CosmosDB return when updating a problem in problem bank.', updated)
   }
 }
 
@@ -62,7 +62,7 @@ export async function deleteInProblemBank (problemId: string, domainId: string):
     if (deletedProblem.statusCode === 404) {
       throw new NotFoundError('Problem not found.', { problemId })
     } else {
-      throw new AzureError('Unexpected CosmosDB return.', deletedProblem)
+      throw new AzureError('Unexpected CosmosDB return when deleting a problem in problem bank.', deletedProblem)
     }
   }
 

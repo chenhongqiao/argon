@@ -9,7 +9,7 @@ export async function createDomain (newDomain: NewDomain): Promise<{domainId: st
   const domain: Omit<Domain, 'id'> = { ...newDomain, members: [] }
   const created = await domainsContainer.items.create(domain)
   if (created.resource == null) {
-    throw new AzureError('No resource ID returned while creating user.', created)
+    throw new AzureError('No resource ID returned when creating domain.', created)
   }
 
   return { domainId: created.resource.id }
@@ -22,7 +22,7 @@ export async function deleteDomain (domainId: string): Promise<{ domainId: strin
     if (fetched.statusCode === 404) {
       throw new NotFoundError('Domain not found.', { domainId })
     } else {
-      throw new AzureError('Unexpected CosmosDB return.', fetched)
+      throw new AzureError('Unexpected CosmosDB return when reading the domain to be deleted.', fetched)
     }
   }
   const domain = fetched.resource
@@ -44,7 +44,7 @@ export async function deleteDomain (domainId: string): Promise<{ domainId: strin
 
   const deletedDomain = await domainItem.delete<{ id: string }>()
   if (deletedDomain.statusCode >= 400) {
-    throw new AzureError('Unexpected CosmosDB return.', deletedDomain)
+    throw new AzureError('Unexpected CosmosDB return when deleting the domain.', deletedDomain)
   }
 
   return { domainId: deletedDomain.item.id }
@@ -58,7 +58,7 @@ export async function addDomainMember (domainId: string, userId: string, scopes:
   if (fetchedDomain.statusCode === 404) {
     throw new NotFoundError('Domain not found.', { userId })
   } else if (fetchedDomain.resource == null) {
-    throw new AzureError('Unexpected CosmosDB return.', fetchedDomain)
+    throw new AzureError('Unexpected CosmosDB return when reading the domain to be added with the new member.', fetchedDomain)
   }
   const domain = fetchedDomain.resource
 
@@ -76,7 +76,7 @@ export async function addDomainMember (domainId: string, userId: string, scopes:
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete user.scopes[domainId]
     await updateUser(user, userId)
-    throw new AzureError('Unexpected CosmosDB return.', updatedDomain)
+    throw new AzureError('Unexpected CosmosDB return when updating the domain after a member was added.', updatedDomain)
   }
 
   return { userId: updatedUser.userId, domainId: updatedDomain.resource.id }
@@ -90,7 +90,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
   if (fetchedDomain.statusCode === 404) {
     throw new NotFoundError('Domain not found.', { domainId })
   } else if (fetchedDomain.resource == null) {
-    throw new AzureError('Unexpected CosmosDB return.', fetchedDomain)
+    throw new AzureError('Unexpected CosmosDB return when reading the domain with the member to be removed.', fetchedDomain)
   }
   const domain = fetchedDomain.resource
 
@@ -110,7 +110,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
   if (updatedDomain.resource == null) {
     user.scopes[domainId] = oldScopes
     await updateUser(user, userId)
-    throw new AzureError('Unexpected CosmosDB return.', updatedDomain)
+    throw new AzureError('Unexpected CosmosDB return when updating the domain with the member removed.', updatedDomain)
   }
 
   return { userId: updatedUser.userId, domainId: updatedDomain.resource.id }

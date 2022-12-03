@@ -25,7 +25,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     try {
       await request.jwtVerify()
     } catch (err) {
-      reply.unauthorized('Please authenticate first.')
+      reply.unauthorized('Authentication is required to manage testcases.')
     }
   })
 
@@ -59,7 +59,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.payloadTooLarge('Testcase too large to be processed.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling the request.')
+          reply.internalServerError('A server error occurred when creating a testcase.')
         }
       }
     }
@@ -87,7 +87,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
           reply.notFound('Testcase not found.')
         } else {
           Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling the request.')
+          reply.internalServerError('A server error occurred when deleting a testcase.')
         }
       }
     }

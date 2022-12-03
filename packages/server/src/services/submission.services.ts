@@ -42,7 +42,7 @@ export async function compileSubmission (submissionId: string): Promise<void> {
     if (fetched.statusCode === 404) {
       throw new NotFoundError('Submission not found.', { submissionId })
     } else {
-      throw new AzureError('Unexpected CosmosDB return.', fetched)
+      throw new AzureError('Unexpected CosmosDB return .', fetched)
     }
   }
   const submission = fetched.resource

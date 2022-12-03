@@ -21,10 +21,10 @@ export const submissionResultRoutes: FastifyPluginCallback = (app, options, done
       await request.jwtVerify()
 
       if (request.user.role !== UserRole.Judger) {
-        reply.unauthorized('Please authenticate as a judger first.')
+        reply.unauthorized('Judger authentication is required to update submission results.')
       }
     } catch (err) {
-      reply.unauthorized('Please authenticate as a judger first.')
+      reply.unauthorized('Judger authentication is required to update submission results.')
     }
   })
 

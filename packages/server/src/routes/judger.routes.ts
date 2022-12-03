@@ -17,7 +17,7 @@ export const judgerRoutes: FastifyPluginCallback = (app, options, done) => {
     try {
       await request.jwtVerify()
     } catch (err) {
-      reply.unauthorized('Please authenticate first.')
+      reply.unauthorized('Authentication is required for judger operations.')
     }
   })
   privateRoutes.get(
@@ -41,7 +41,7 @@ export const judgerRoutes: FastifyPluginCallback = (app, options, done) => {
         return await reply.status(200).send({ token })
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred when handling the request.')
+        reply.internalServerError('A server error occurred when creating token for judgers.')
       }
     }
   )
