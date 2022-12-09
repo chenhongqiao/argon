@@ -2,7 +2,8 @@ import { destroySandbox, initSandbox } from './services/sandbox.services'
 import { gradeSubmission } from './services/grade.services'
 import { compileSubmission } from './services/compile.services'
 
-import { messageReceiver, GradingTask, CompilingTask, JudgerTaskType, delay } from '@cocs/shared'
+import { GradingTask, CompilingTask, JudgerTaskType } from '@cocs/types'
+import { messageReceiver, delay } from '@cocs/libraries'
 
 import os = require('node:os')
 import { randomUUID } from 'node:crypto'

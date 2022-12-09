@@ -1,4 +1,5 @@
-import { User, NewUser, CosmosDB, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError, UserRole } from '@cocs/shared'
+import { User, NewUser, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError, UserRole } from '@cocs/types'
+import { CosmosDB } from '@cocs/libraries'
 import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'

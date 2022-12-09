@@ -5,7 +5,7 @@ import {
   NewSubmissionSchema,
   SubmissionResultSchema,
   AuthorizationError
-} from '@cocs/shared'
+} from '@cocs/types'
 
 import {
   createInProblemBank,

@@ -5,7 +5,9 @@ import { registerUser, initiateVerification, fetchUser, completeVerification, au
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
-import { AuthenticationError, AuthorizationError, ConflictError, delay, NewUserSchema, NotFoundError } from '@cocs/shared'
+import { AuthenticationError, AuthorizationError, ConflictError, NewUserSchema, NotFoundError }
+  from '@cocs/types'
+import { delay } from '@cocs/libraries'
 
 import { randomInt } from 'node:crypto'
 

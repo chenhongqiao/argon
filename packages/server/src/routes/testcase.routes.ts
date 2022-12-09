@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 
 import { deleteTestcase, uploadTestcase, verifyTestcaseDomain } from '../services/testcase.services'
-import { AuthorizationError, NotFoundError } from '@cocs/shared'
+import { AuthorizationError, NotFoundError } from '@cocs/types'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 

@@ -1,18 +1,4 @@
-import { Constraints } from '../types/judger/general.types'
-
-export enum SubmissionLang {
-  C='C',
-  CPP='C++',
-}
-
-interface LanguageConfig {
-  srcFile: string
-  binaryFile: string
-  displayName: string
-  compileCommand: string
-  executeCommand: string
-  constraints: Constraints
-}
+import { SubmissionLang, LanguageConfig } from '@cocs/types'
 
 export const languageConfigs: Record<SubmissionLang, LanguageConfig> = {
   [SubmissionLang.CPP]: {

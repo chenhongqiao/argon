@@ -11,22 +11,9 @@
     "outDir": "./dist",
     "lib": [
       "es2021"
-    ],
-    "resolveJsonModule": true
+    ]
   },
   "include": [
-    "./src",
-    "./package.json"
-  ],
-  "references": [
-    {
-      "path": "../libraries"
-    },
-    {
-      "path": "../types"
-    },
-    {
-      "path": "../configs"
-    }
+    "./src"
   ]
 }

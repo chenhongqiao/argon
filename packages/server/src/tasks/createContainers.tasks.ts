@@ -1,4 +1,4 @@
-import { CosmosDB } from '@cocs/shared'
+import { CosmosDB } from '@cocs/libraries'
 
 export async function createContainers (): Promise<any[]> {
   const DbContainers = [

@@ -3,14 +3,14 @@ import { exec } from '../utils/system.utils'
 import {
   ConflictError,
   NotFoundError,
-  readFile,
   Constraints,
   SandboxStatus,
   SandboxRuntimeError,
   SandboxSystemError,
   SandboxTimeExceeded,
   SandboxMemoryExceeded
-} from '@cocs/shared'
+} from '@cocs/types'
+import { readFile } from '@cocs/libraries'
 
 interface SandboxMeta {
   status?: string

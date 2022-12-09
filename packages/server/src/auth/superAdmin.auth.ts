@@ -1,4 +1,4 @@
-import { UserRole } from '@cocs/shared'
+import { UserRole } from '@cocs/types'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export function verifySuperAdmin (request: FastifyRequest, reply: FastifyReply, done): void {

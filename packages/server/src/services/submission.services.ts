@@ -4,7 +4,6 @@ import {
   CompilingStatus,
   CompilingTask,
   CompilingSubmission,
-  CosmosDB,
   DataError,
   FailedSubmission,
   GradedSubmission,
@@ -13,14 +12,14 @@ import {
   GradingResult,
   GradingSubmission,
   JudgerTaskType,
-  languageConfigs,
-  messageSender,
   NewSubmission,
   NotFoundError,
   Problem,
   SubmissionStatus,
   SubmissionResult
-} from '@cocs/shared'
+} from '@cocs/types'
+import { CosmosDB, messageSender } from '@cocs/libraries'
+import { languageConfigs } from '@cocs/configs'
 
 import { fetchFromProblemBank } from './problem.services'
 
@@ -151,7 +150,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
     const gradedSubmission: GradedSubmission = {
       ...baseSubmission,
       status: SubmissionStatus.Graded,
-      // @ts-expect-error: since we've previously checked that the number of graded testcase is equal to the number of total testcases, we can assume that all testcases have a result property.
+      // @ts-expect-error
       testcases: testcases,
       score
     }

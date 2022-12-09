@@ -1,7 +1,19 @@
-import { Constraints, JudgerTaskType } from './general.types'
-import { SubmissionLang } from '../../configs/language.configs'
-
+import { Constraints, JudgerTaskType } from './judger.types'
 import { Static, Type } from '@sinclair/typebox'
+
+export enum SubmissionLang {
+  C='C',
+  CPP='C++',
+}
+
+export interface LanguageConfig {
+  srcFile: string
+  binaryFile: string
+  displayName: string
+  compileCommand: string
+  executeCommand: string
+  constraints: Constraints
+}
 
 export interface CompilingTask {
   type: JudgerTaskType.Compiling

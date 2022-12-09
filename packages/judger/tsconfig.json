@@ -20,7 +20,10 @@
   ],
   "references": [
     {
-      "path": "../shared"
+      "path": "../types"
+    },
+    {
+      "path": "../configs"
     }
   ]
 }

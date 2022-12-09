@@ -1,10 +1,10 @@
 import {
   AzureError,
-  CosmosDB,
   NewProblem,
   NotFoundError,
   Problem
-} from '@cocs/shared'
+} from '@cocs/types'
+import { CosmosDB } from '@cocs/libraries'
 import { verifyTestcaseDomain } from './testcase.services'
 
 const problemBankContainer = CosmosDB.container('problemBank')

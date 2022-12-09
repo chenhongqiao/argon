@@ -1,5 +1,5 @@
 import { promises as fs } from 'node:fs'
-import { NotFoundError } from '../classes/error.classes'
+import { NotFoundError } from '@cocs/types'
 
 interface FileData {
   data: Buffer
