@@ -1,5 +1,5 @@
 import '@fastify/jwt'
-import { UserRole } from '@cocs/types'
+import { UserRole } from '@aocs/types'
 
 export interface JWTPayload {
   userId: string

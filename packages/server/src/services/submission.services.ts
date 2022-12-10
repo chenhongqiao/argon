@@ -17,9 +17,9 @@ import {
   Problem,
   SubmissionStatus,
   SubmissionResult
-} from '@cocs/types'
-import { CosmosDB, messageSender } from '@cocs/libraries'
-import { languageConfigs } from '@cocs/configs'
+} from '@aocs/types'
+import { CosmosDB, messageSender } from '@aocs/libraries'
+import { languageConfigs } from '@aocs/configs'
 
 import { fetchFromProblemBank } from './problem.services'
 

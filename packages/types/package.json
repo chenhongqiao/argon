@@ -1,7 +1,7 @@
 {
-  "name": "@cocs/types",
+  "name": "@aocs/types",
   "version": "0.1.7",
-  "description": "Carbon Online Contest Server Shared Types",
+  "description": "Argon Online Contest Server Shared Types",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "main": "./dist/src/index.js",

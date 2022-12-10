@@ -1,8 +1,8 @@
 import {
   SandboxStatus, GradingStatus, GradingTask, GradingResult
-} from '@cocs/types'
-import { downloadToDisk, getBlobHash } from '@cocs/libraries'
-import { languageConfigs } from '@cocs/configs'
+} from '@aocs/types'
+import { downloadToDisk, getBlobHash } from '@aocs/libraries'
+import { languageConfigs } from '@aocs/configs'
 
 import path = require('node:path')
 

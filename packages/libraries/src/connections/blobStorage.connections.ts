@@ -2,7 +2,7 @@ import { BlobServiceClient } from '@azure/storage-blob'
 
 import { FileInfo } from './fileSystem.connections'
 
-import { NotFoundError } from '@cocs/types'
+import { NotFoundError } from '@aocs/types'
 
 const client = BlobServiceClient.fromConnectionString(process.env.BLOB_STORAGE_STRING ?? '')
 

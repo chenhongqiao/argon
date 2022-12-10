@@ -1,5 +1,5 @@
-import { NewDomain, Domain, AzureError, NotFoundError, ConflictError } from '@cocs/types'
-import { CosmosDB } from '@cocs/libraries'
+import { NewDomain, Domain, AzureError, NotFoundError, ConflictError } from '@aocs/types'
+import { CosmosDB } from '@aocs/libraries'
 import { deleteInProblemBank, fetchDomainProblems } from './problem.services'
 
 import { fetchUser, updateUser } from './user.services'

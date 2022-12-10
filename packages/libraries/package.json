@@ -1,7 +1,7 @@
 {
-  "name": "@cocs/libraries",
+  "name": "@aocs/libraries",
   "version": "0.1.7",
-  "description": "Carbon Online Contest Server Shared Libraries",
+  "description": "Argon Online Contest Server Shared Libraries",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "main": "./dist/src/index.js",

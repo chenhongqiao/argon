@@ -9,8 +9,8 @@ import {
   SandboxSystemError,
   SandboxTimeExceeded,
   SandboxMemoryExceeded
-} from '@cocs/types'
-import { readFile } from '@cocs/libraries'
+} from '@aocs/types'
+import { readFile } from '@aocs/libraries'
 
 interface SandboxMeta {
   status?: string

@@ -1,5 +1,5 @@
-import { User, NewUser, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError, UserRole } from '@cocs/types'
-import { CosmosDB } from '@cocs/libraries'
+import { User, NewUser, ConflictError, AzureError, NotFoundError, AuthenticationError, AuthorizationError, UserRole } from '@aocs/types'
+import { CosmosDB } from '@aocs/libraries'
 import { randomUUID, randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -127,7 +127,7 @@ export async function initiateVerification (userId: string, email: string): Prom
   const verification = created.resource
   const verificationEmail: emailClient.MailDataRequired = {
     to: verification.email,
-    from: { name: 'Carbon Online Contest Server', email: 'noreply@cocs.io' },
+    from: { name: 'Argon Online Contest Server', email: 'noreply@aocs.io' },
     subject: 'Please verify your email',
     html: `User: ${verification.userId}<br>Token: ${verification.id}`
   }

@@ -1,6 +1,6 @@
 import { parentPort, workerData } from 'node:worker_threads'
 
-import { cleanTestcase, readFile } from '@cocs/libraries'
+import { cleanTestcase, readFile } from '@aocs/libraries'
 
 import { createHash } from 'node:crypto'
 

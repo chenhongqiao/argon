@@ -231,22 +231,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cocs/configs@workspace:*, @cocs/configs@workspace:packages/configs":
+"@aocs/configs@workspace:*, @aocs/configs@workspace:packages/configs":
   version: 0.0.0-use.local
-  resolution: "@cocs/configs@workspace:packages/configs"
+  resolution: "@aocs/configs@workspace:packages/configs"
   dependencies:
-    "@cocs/types": "workspace:*"
+    "@aocs/types": "workspace:*"
     typescript: ^4.3.2
   languageName: unknown
   linkType: soft
 
-"@cocs/judger@workspace:packages/judger":
+"@aocs/judger@workspace:packages/judger":
   version: 0.0.0-use.local
-  resolution: "@cocs/judger@workspace:packages/judger"
+  resolution: "@aocs/judger@workspace:packages/judger"
   dependencies:
-    "@cocs/configs": "workspace:*"
-    "@cocs/libraries": "workspace:*"
-    "@cocs/types": "workspace:*"
+    "@aocs/configs": "workspace:*"
+    "@aocs/libraries": "workspace:*"
+    "@aocs/types": "workspace:*"
     "@sentry/node": ^7.5.1
     got: ^11.8.0
     pino: ^8.1.0
@@ -254,9 +254,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@cocs/libraries@workspace:*, @cocs/libraries@workspace:packages/libraries":
+"@aocs/libraries@workspace:*, @aocs/libraries@workspace:packages/libraries":
   version: 0.0.0-use.local
-  resolution: "@cocs/libraries@workspace:packages/libraries"
+  resolution: "@aocs/libraries@workspace:packages/libraries"
   dependencies:
     "@azure/cosmos": ^3.16.1
     "@azure/logger": ^1.0.3
@@ -266,13 +266,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@cocs/server@workspace:packages/server":
+"@aocs/server@workspace:packages/server":
   version: 0.0.0-use.local
-  resolution: "@cocs/server@workspace:packages/server"
+  resolution: "@aocs/server@workspace:packages/server"
   dependencies:
-    "@cocs/configs": "workspace:*"
-    "@cocs/libraries": "workspace:*"
-    "@cocs/types": "workspace:*"
+    "@aocs/configs": "workspace:*"
+    "@aocs/libraries": "workspace:*"
+    "@aocs/types": "workspace:*"
     "@fastify/auth": ^4.1.0
     "@fastify/jwt": ^6.3.1
     "@fastify/multipart": ^6.0.0
@@ -287,9 +287,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@cocs/types@workspace:*, @cocs/types@workspace:packages/types":
+"@aocs/types@workspace:*, @aocs/types@workspace:packages/types":
   version: 0.0.0-use.local
-  resolution: "@cocs/types@workspace:packages/types"
+  resolution: "@aocs/types@workspace:packages/types"
   dependencies:
     "@sinclair/typebox": ^0.25.0
   languageName: unknown

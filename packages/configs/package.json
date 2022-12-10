@@ -1,7 +1,7 @@
 {
-  "name": "@cocs/configs",
+  "name": "@aocs/configs",
   "version": "0.1.7",
-  "description": "Carbon Online Contest Server Configurations",
+  "description": "Argon Online Contest Server Configurations",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "main": "./dist/src/index.js",
@@ -14,7 +14,7 @@
     "prepack": "tsc --build ."
   },
   "dependencies": {
-    "@cocs/types": "workspace:*"
+    "@aocs/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^4.3.2"

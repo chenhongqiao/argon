@@ -9,7 +9,7 @@ import {
   CompilingResultSchema,
   GradingResultSchema,
   UserRole
-} from '@cocs/types'
+} from '@aocs/types'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'

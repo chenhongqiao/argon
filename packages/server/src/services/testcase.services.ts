@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { Worker } from 'node:worker_threads'
 
-import { AuthorizationError } from '@cocs/types'
-import { blobExists, deleteBlob, getMetaData } from '@cocs/libraries'
+import { AuthorizationError } from '@aocs/types'
+import { blobExists, deleteBlob, getMetaData } from '@aocs/libraries'
 
 import path = require('node:path')
 

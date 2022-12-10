@@ -6,8 +6,8 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
 import { AuthenticationError, AuthorizationError, ConflictError, NewUserSchema, NotFoundError }
-  from '@cocs/types'
-import { delay } from '@cocs/libraries'
+  from '@aocs/types'
+import { delay } from '@aocs/libraries'
 
 import { randomInt } from 'node:crypto'
 
