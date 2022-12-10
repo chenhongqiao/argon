@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
-import { ConflictError, NewDomainSchema, NotFoundError } from '@aocs/types'
+import { ConflictError, NewDomainSchema, NotFoundError } from '@argoncs/types'
 import { addDomainMember, createDomain, deleteDomain, removeDomainMember, updateMemberScopes } from '../services/domain.services'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'

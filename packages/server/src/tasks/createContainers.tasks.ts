@@ -1,4 +1,4 @@
-import { CosmosDB } from '@aocs/libraries'
+import { CosmosDB } from '@argoncs/libraries'
 
 export async function createContainers (): Promise<any[]> {
   const DbContainers = [

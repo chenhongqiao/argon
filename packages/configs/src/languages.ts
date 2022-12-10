@@ -1,4 +1,4 @@
-import { SubmissionLang, LanguageConfig } from '@aocs/types'
+import { SubmissionLang, LanguageConfig } from '@argoncs/types'
 
 export const languageConfigs: Record<SubmissionLang, LanguageConfig> = {
   [SubmissionLang.CPP]: {

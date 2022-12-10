@@ -1,4 +1,4 @@
-import { UserRole } from '@aocs/types'
+import { UserRole } from '@argoncs/types'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export function verifySuperAdmin (request: FastifyRequest, reply: FastifyReply, done): void {

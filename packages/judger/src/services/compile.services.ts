@@ -3,9 +3,9 @@ import { promises as fs } from 'node:fs'
 
 import { runInSandbox } from './sandbox.services'
 
-import { CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, CompilingSubmission, NotFoundError, AzureError } from '@aocs/types'
-import { uploadFromDisk, readFile, CosmosDB } from '@aocs/libraries'
-import { languageConfigs } from '@aocs/configs'
+import { CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus, CompilingSubmission, NotFoundError, AzureError } from '@argoncs/types'
+import { uploadFromDisk, readFile, CosmosDB } from '@argoncs/libraries'
+import { languageConfigs } from '@argoncs/configs'
 
 const submissionsContainer = CosmosDB.container('submissions')
 

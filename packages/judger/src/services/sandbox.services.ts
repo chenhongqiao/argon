@@ -9,8 +9,8 @@ import {
   SandboxSystemError,
   SandboxTimeExceeded,
   SandboxMemoryExceeded
-} from '@aocs/types'
-import { readFile } from '@aocs/libraries'
+} from '@argoncs/types'
+import { readFile } from '@argoncs/libraries'
 
 interface SandboxMeta {
   status?: string

@@ -1,4 +1,4 @@
-# Argon Online Contest Server
+# Argon Contest Server
 
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/chenhongqiao/project-carbon.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/chenhongqiao/project-carbon/context:javascript)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
@@ -12,15 +12,15 @@ COCS is currently under heavy development as [TeamsCode](https://www.teamscode.o
 
 This monorepo contains 3 packages.
 
-### [@aocs/server](https://www.npmjs.com/package/@aocs/server)
+### [@argoncs/server](https://www.npmjs.com/package/@argoncs/server)
 
 This package contains the server portion of the contest platform. It interacts with the user and the judger. Written in TypeScript.
 
-### [@aocs/judger](https://www.npmjs.com/package/@aocs/judger)
+### [@argoncs/judger](https://www.npmjs.com/package/@argoncs/judger)
 
 This package contains the code to be used on judgers. It executes submissions in sandboxes and grade their outputs. Written in TypeScript.
 
-### [@aocs/shared](https://www.npmjs.com/package/@aocs/shared)
+### [@argoncs/shared](https://www.npmjs.com/package/@argoncs/shared)
 
 Modules utilized by both the server and the judger. Not designed to be used as a standalone package. Written in TypeScript.
 

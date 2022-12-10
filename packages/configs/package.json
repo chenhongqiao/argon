@@ -1,7 +1,7 @@
 {
-  "name": "@aocs/configs",
+  "name": "@argoncs/configs",
   "version": "0.1.7",
-  "description": "Argon Online Contest Server Configurations",
+  "description": "Argon Contest Server Configurations",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "main": "./dist/src/index.js",
@@ -14,7 +14,7 @@
     "prepack": "tsc --build ."
   },
   "dependencies": {
-    "@aocs/types": "workspace:*"
+    "@argoncs/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^4.3.2"

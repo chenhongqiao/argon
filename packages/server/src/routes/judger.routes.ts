@@ -7,7 +7,7 @@ import { Sentry } from '../connections/sentry.connections'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { userIdExists } from '../services/user.services'
 import { JWTPayload } from '../types'
-import { UserRole } from '@aocs/types'
+import { UserRole } from '@argoncs/types'
 
 import { randomUUID } from 'crypto'
 

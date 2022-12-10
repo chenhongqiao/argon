@@ -2,8 +2,8 @@ import { destroySandbox, initSandbox } from './services/sandbox.services'
 import { gradeSubmission } from './services/grade.services'
 import { compileSubmission } from './services/compile.services'
 
-import { GradingTask, CompilingTask, JudgerTaskType } from '@aocs/types'
-import { messageReceiver, delay } from '@aocs/libraries'
+import { GradingTask, CompilingTask, JudgerTaskType } from '@argoncs/types'
+import { messageReceiver, delay } from '@argoncs/libraries'
 
 import os = require('node:os')
 import { randomUUID } from 'node:crypto'

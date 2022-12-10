@@ -1,6 +1,6 @@
 import { parentPort, workerData } from 'node:worker_threads'
 
-import { uploadBuffer, cleanTestcase, readFile } from '@aocs/libraries'
+import { uploadBuffer, cleanTestcase, readFile } from '@argoncs/libraries'
 
 const { testcasePath, testcaseId, domainId } = workerData
 readFile(testcasePath).then((result) => {

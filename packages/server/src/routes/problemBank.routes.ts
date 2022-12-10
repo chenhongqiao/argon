@@ -5,7 +5,7 @@ import {
   NewSubmissionSchema,
   SubmissionResultSchema,
   AuthorizationError
-} from '@aocs/types'
+} from '@argoncs/types'
 
 import {
   createInProblemBank,

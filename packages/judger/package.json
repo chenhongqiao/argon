@@ -1,9 +1,9 @@
 {
-  "name": "@aocs/judger",
+  "name": "@argoncs/judger",
   "version": "0.1.7",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
-  "description": "Argon Online Contest Server Judger",
+  "description": "Argon Contest Server Judger",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
   "repository": "github:chenhongqiao/cocs",
@@ -17,9 +17,9 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
-    "@aocs/configs": "workspace:*",
-    "@aocs/libraries": "workspace:*",
-    "@aocs/types": "workspace:*",
+    "@argoncs/configs": "workspace:*",
+    "@argoncs/libraries": "workspace:*",
+    "@argoncs/types": "workspace:*",
     "@sentry/node": "^7.5.1",
     "got": "^11.8.0",
     "pino": "^8.1.0"

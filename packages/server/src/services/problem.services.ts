@@ -3,8 +3,8 @@ import {
   NewProblem,
   NotFoundError,
   Problem
-} from '@aocs/types'
-import { CosmosDB } from '@aocs/libraries'
+} from '@argoncs/types'
+import { CosmosDB } from '@argoncs/libraries'
 import { verifyTestcaseDomain } from './testcase.services'
 
 const problemBankContainer = CosmosDB.container('problemBank')

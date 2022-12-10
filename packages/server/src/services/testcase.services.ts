@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { Worker } from 'node:worker_threads'
 
-import { AuthorizationError } from '@aocs/types'
-import { blobExists, deleteBlob, getMetaData } from '@aocs/libraries'
+import { AuthorizationError } from '@argoncs/types'
+import { blobExists, deleteBlob, getMetaData } from '@argoncs/libraries'
 
 import path = require('node:path')
 

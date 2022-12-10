@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
-import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile } from '@aocs/types'
+import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile } from '@argoncs/types'
 import { fetchUser } from '../services/user.services'
 import { verifyUserOwnsership } from '../auth/userOwnership.auth'
 import { Sentry } from '../connections/sentry.connections'
