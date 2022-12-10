@@ -6,7 +6,7 @@
   "description": "Argon Contest Server Judger",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
-  "repository": "github:chenhongqiao/cocs",
+  "repository": "github:chenhongqiao/argon",
   "engines": {
     "node": ">=16.0.0"
   },

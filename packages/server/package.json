@@ -6,7 +6,7 @@
   "license": "AGPL-3.0",
   "types": "./dist/src/index.d.ts",
   "main": "./dist/src/index.js",
-  "repository": "github:chenhongqiao/cocs",
+  "repository": "github:chenhongqiao/argon",
   "engines": {
     "node": ">=16.0.0"
   },

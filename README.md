@@ -1,12 +1,11 @@
 # Argon Contest Server
 
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/chenhongqiao/project-carbon.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/chenhongqiao/project-carbon/context:javascript)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 A fast and scalable online competitive programming contest server powered by cloud native computing. 
 
-COCS is currently under heavy development as [TeamsCode](https://www.teamscode.org)'s next-generation contest platform. Not all features are implemented and it's yet far from a finished product. This contest platform is expected to appear in TeamsCode's Spring 2023 contest if not later.
+Argon is currently under heavy development as [TeamsCode](https://www.teamscode.org)'s next-generation contest platform. Not all features are implemented and it's yet far from a finished product. This contest platform is expected to appear in TeamsCode's Spring 2023 contest if not later.
 
 ## Packages
 
@@ -14,15 +13,23 @@ This monorepo contains 3 packages.
 
 ### [@argoncs/server](https://www.npmjs.com/package/@argoncs/server)
 
-This package contains the server portion of the contest platform. It interacts with the user and the judger. Written in TypeScript.
+This package contains the server portion of the contest platform. It interacts with the user and the judger.
 
 ### [@argoncs/judger](https://www.npmjs.com/package/@argoncs/judger)
 
-This package contains the code to be used on judgers. It executes submissions in sandboxes and grade their outputs. Written in TypeScript.
+This package contains the code to be used on judgers. It executes submissions in sandboxes and grade their outputs.
 
-### [@argoncs/shared](https://www.npmjs.com/package/@argoncs/shared)
+### [@argoncs/types](https://www.npmjs.com/package/@argoncs/types)
 
-Modules utilized by both the server and the judger. Not designed to be used as a standalone package. Written in TypeScript.
+Type and class definitions utilized by both the server and the judger. Not designed to be used as a standalone package.
+
+### [@argoncs/libraries](https://www.npmjs.com/package/@argoncs/libraries)
+
+Utilities and libraries used by both the server and the judger to interact with the infrastructure (such as DB and Object Storage).
+
+### [@argoncs/configs](https://www.npmjs.com/package/@argoncs/configs)
+
+Configurations shared between the server and the judger.
 
 ## Contribution
 
