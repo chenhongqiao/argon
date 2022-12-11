@@ -24,6 +24,9 @@
     },
     {
       "path": "../configs"
+    },
+    {
+      "path": "../libraries"
     }
   ]
 }
