@@ -10,7 +10,7 @@ import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
 import { judgerRoutes } from './routes/judger.routes'
 
-import { createContainers } from './tasks/createContainers.tasks'
+import { createContainers } from './utils/container.utils'
 import { Sentry } from './connections/sentry.connections'
 
 import fastifyAuth from '@fastify/auth'
