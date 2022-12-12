@@ -15,10 +15,9 @@ export async function createDomain (newDomain: NewDomain): Promise<{ domainId: s
   return { domainId: insertedId.toString() }
 }
 
-export async function deleteDomain (domainId: string): Promise<{ domainId: string }> {
+export async function deleteDomain (domainId: string): Promise<void> {
   const session = mongoClient.startSession()
   try {
-    let deletedDomain = ''
     await session.withTransaction(async () => {
       const { value: domain } = await domainCollection.findOneAndDelete({ _id: new ObjectId(domainId) })
       if (domain == null) {
@@ -31,18 +30,14 @@ export async function deleteDomain (domainId: string): Promise<{ domainId: strin
       })
       await Promise.allSettled(removedMembers)
 
-      const deletedProblems: Array<Promise<{ problemId: string }>> = []
+      const deletedProblems: Array<Promise<void>> = []
       const domainProblems = await fetchDomainProblems(domainId)
       domainProblems.forEach((problem) => {
         deletedProblems.push(deleteInProblemBank(problem.id, domainId))
       })
 
       await Promise.allSettled(deletedProblems)
-
-      deletedDomain = domain._id.toString()
     })
-
-    return { domainId: deletedDomain }
   } finally {
     await session.endSession()
   }
