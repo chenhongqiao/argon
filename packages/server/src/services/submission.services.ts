@@ -25,7 +25,7 @@ import { fetchFromProblemBank } from './problem.services'
 
 const submissionsContainer = CosmosDB.container('submissions')
 
-export async function createSubmission (submission: NewSubmission, problem: {id: string, domainId: string}, userId: string, contestId?: string): Promise<{ submissionId: string}> {
+export async function createSubmission (submission: NewSubmission, problem: { id: string, domainId: string }, userId: string, contestId?: string): Promise<{ submissionId: string }> {
   const newSubmission: Omit<CompilingSubmission, 'id'> = { ...submission, status: SubmissionStatus.Compiling, userId, problem, contestId }
   const created = await submissionsContainer.items.create(newSubmission)
   if (created.resource != null) {
@@ -78,7 +78,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       // Fetch Contest Problem
       // TODO
     }
-    const submissionTestcases: Array<{points: number, input: string, output: string}> = []
+    const submissionTestcases: Array<{ points: number, input: string, output: string }> = []
     // @ts-expect-error: TODO
     problem.testcases.forEach((testcase, index) => {
       const task: GradingTask = {
@@ -117,7 +117,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
 
 export async function completeGrading (submissionId: string, log?: string): Promise<void> {
   const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetched = await submissionItem.read<CompilingSubmission|GradingSubmission|GradedSubmission>()
+  const fetched = await submissionItem.read<CompilingSubmission | GradingSubmission | GradedSubmission>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
       throw new NotFoundError('Submission not found.', { submissionId })
@@ -151,7 +151,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
       ...baseSubmission,
       status: SubmissionStatus.Graded,
       // @ts-expect-error
-      testcases: testcases,
+      testcases,
       score
     }
     await submissionItem.replace(gradedSubmission)
@@ -160,7 +160,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
 
 export async function handleGradingResult (gradingResult: GradingResult, submissionId: string, testcaseIndex: number): Promise<void> {
   const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetched = await submissionItem.read<GradingSubmission|FailedSubmission>()
+  const fetched = await submissionItem.read<GradingSubmission | FailedSubmission>()
   if (fetched.resource == null) {
     if (fetched.statusCode === 404) {
       throw new NotFoundError('Submission not found.', { submissionId })

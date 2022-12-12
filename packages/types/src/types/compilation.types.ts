@@ -2,8 +2,8 @@ import { Constraints, JudgerTaskType } from './judger.types'
 import { Static, Type } from '@sinclair/typebox'
 
 export enum SubmissionLang {
-  C='C',
-  CPP='C++',
+  C = 'C',
+  CPP = 'C++',
 }
 
 export interface LanguageConfig {

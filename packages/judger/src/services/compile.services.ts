@@ -9,7 +9,7 @@ import { languageConfigs } from '@argoncs/configs'
 
 const submissionsContainer = CosmosDB.container('submissions')
 
-export async function compileSubmission (task: CompilingTask, boxId: number): Promise<CompileSucceeded|CompileFailed> {
+export async function compileSubmission (task: CompilingTask, boxId: number): Promise<CompileSucceeded | CompileFailed> {
   const { submissionId } = task
   const submissionItem = submissionsContainer.item(submissionId, submissionId)
   const submissionFetchResult = await submissionItem.read<CompilingSubmission>()

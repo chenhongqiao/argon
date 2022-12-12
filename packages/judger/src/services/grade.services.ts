@@ -55,7 +55,7 @@ export async function gradeSubmission (
         blobName: task.testcase.output
       }
     )
-    const outputHash: {md5: string} = await new Promise((resolve, reject) => {
+    const outputHash: { md5: string } = await new Promise((resolve, reject) => {
       const worker = new Worker(path.join(__dirname, '../tasks/calculateTestcaseHash.tasks.js'), {
         workerData: { testcasePath: path.join(workDir, 'out.txt') }
       })

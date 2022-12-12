@@ -11,7 +11,7 @@ const problemBankContainer = CosmosDB.container('problemBank')
 
 export async function createInProblemBank (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
   const problem: Omit<Problem, 'id'> = { ...newProblem, domainId }
-  const testcasesVerifyQueue: Array<Promise<{testcaseId: string}>> = []
+  const testcasesVerifyQueue: Array<Promise<{ testcaseId: string }>> = []
   problem.testcases.forEach((testcase) => {
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
@@ -38,7 +38,7 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
 
 export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string }> {
   const problemWithId = { ...problem, problemId, domainId }
-  const testcasesVerifyQueue: Array<Promise<{testcaseId: string}>> = []
+  const testcasesVerifyQueue: Array<Promise<{ testcaseId: string }>> = []
   problemWithId.testcases.forEach((testcase) => {
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))

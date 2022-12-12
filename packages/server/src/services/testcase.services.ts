@@ -6,7 +6,7 @@ import { blobExists, deleteBlob, getMetaData } from '@argoncs/libraries'
 
 import path = require('node:path')
 
-export async function uploadTestcase (testcasePath: string, domainId: string): Promise<{testcaseId: string}> {
+export async function uploadTestcase (testcasePath: string, domainId: string): Promise<{ testcaseId: string }> {
   let testcaseId = randomUUID()
   while (Boolean(await blobExists({ containerName: 'testcases', blobName: testcaseId }))) {
     testcaseId = randomUUID()
@@ -25,7 +25,7 @@ export async function uploadTestcase (testcasePath: string, domainId: string): P
   })
 }
 
-export async function verifyTestcaseDomain (testcaseId: string, domainId: string): Promise<{testcaseId: string}> {
+export async function verifyTestcaseDomain (testcaseId: string, domainId: string): Promise<{ testcaseId: string }> {
   const meta = await getMetaData({ containerName: 'testcases', blobName: testcaseId })
   if (meta.domainid == null || meta.domainid !== domainId) {
     throw new AuthorizationError('Testcase does not belong to this domain', { domainId, testcaseId })
@@ -33,7 +33,7 @@ export async function verifyTestcaseDomain (testcaseId: string, domainId: string
   return { testcaseId }
 }
 
-export async function deleteTestcase (testcaseId: string): Promise<{testcaseId: string}> {
+export async function deleteTestcase (testcaseId: string): Promise<{ testcaseId: string }> {
   await deleteBlob({ containerName: 'testcases', blobName: testcaseId })
-  return { testcaseId: testcaseId }
+  return { testcaseId }
 }

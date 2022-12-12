@@ -43,7 +43,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     async (request, reply) => {
       const { domainId } = request.params
       try {
-        const queue: Array<Promise<{testcaseId: string}>> = []
+        const queue: Array<Promise<{ testcaseId: string }>> = []
         const files = await request.saveRequestFiles()
         files.forEach(testcase => {
           queue.push(uploadTestcase(testcase.filepath, domainId))
