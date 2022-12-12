@@ -2,9 +2,32 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Shared Modules",
+      "label": "Build Shared Libraries",
       "type": "typescript",
-      "tsconfig": "packages/shared/tsconfig.json",
+      "tsconfig": "packages/libraries/tsconfig.json",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": {
+        "kind": "build",
+      }
+    },
+    {
+      "label": "Build Configurations",
+      "type": "typescript",
+      "tsconfig": "packages/configs/tsconfig.json",
+      "dependsOn": "Build Shared Types",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": {
+        "kind": "build",
+      }
+    },
+    {
+      "label": "Build Shared Types",
+      "type": "typescript",
+      "tsconfig": "packages/types/tsconfig.json",
       "problemMatcher": [
         "$tsc"
       ],
@@ -16,7 +39,11 @@
       "label": "Build Server",
       "type": "typescript",
       "tsconfig": "packages/server/tsconfig.json",
-      "dependsOn": "Build Shared Modules",
+      "dependsOn": [
+        "Build Shared Types",
+        "Build Shared Libraries",
+        "Build Configurations"
+      ],
       "problemMatcher": [
         "$tsc"
       ],
@@ -28,7 +55,11 @@
       "label": "Build Judger",
       "type": "typescript",
       "tsconfig": "packages/judger/tsconfig.json",
-      "dependsOn": "Build Shared Modules",
+      "dependsOn": [
+        "Build Shared Types",
+        "Build Shared Libraries",
+        "Build Configurations"
+      ],
       "problemMatcher": [
         "$tsc"
       ],
