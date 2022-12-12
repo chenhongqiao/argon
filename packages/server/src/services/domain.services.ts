@@ -4,12 +4,13 @@ import { deleteInProblemBank, fetchDomainProblems } from './problem.services'
 
 import { fetchUser, updateUser } from './user.services'
 
-type DomainDB = Omit<Domain, 'id'> & { _id?: ObjectId }
+type DomainDB = Omit<Domain, 'id' | 'members'> & { _id?: ObjectId, members: ObjectId[] }
 
 const domainCollection = mongoDB.collection<DomainDB>('domains')
 
 export async function createDomain (newDomain: NewDomain): Promise<{ domainId: string }> {
-  const domain: Domain = { ...newDomain, members: [] }
+  const domain: DomainDB = { ...newDomain, members: [] }
+  delete domain._id
   const { insertedId } = await domainCollection.insertOne(domain)
   return { domainId: insertedId.toString() }
 }
@@ -26,7 +27,7 @@ export async function deleteDomain (domainId: string): Promise<{ domainId: strin
 
       const removedMembers: Array<Promise<{ domainId: string, userId: string }>> = []
       domain.members.forEach((userId) => {
-        removedMembers.push(removeDomainMember(domainId, userId))
+        removedMembers.push(removeDomainMember(domainId, userId.toString()))
       })
       await Promise.allSettled(removedMembers)
 
@@ -62,7 +63,7 @@ export async function addDomainMember (domainId: string, userId: string, scopes:
     let updatedDomain: string = ''
     await session.withTransaction(async () => {
       updatedUser = (await updateUser(user, userId)).userId
-      const { upsertedCount, upsertedId } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $addToSet: { members: userId } })
+      const { upsertedCount, upsertedId } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $addToSet: { members: new ObjectId(userId) } })
       if (upsertedCount === 0) {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
