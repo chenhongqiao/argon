@@ -20,14 +20,11 @@ export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password'])
     salt: Type.String()
   }),
   role: Type.Enum(UserRole),
-  _id: Type.String(),
+  id: Type.String(),
   verifiedEmail: Type.Union([Type.String(), Type.Null()]),
   scopes: Type.Record(Type.String(), Type.Array(Type.String()))
 })])
 export type User = Static<typeof UserSchema>
-
-export const UserDBSchema = Type.Intersect([Type.Omit(UserSchema, ['_id']), Type.Object({ _id: Type.Optional(Type.String()) })])
-export type UserDB = Static<typeof UserDBSchema>
 
 export const PublicUserProfileSchema = Type.Pick(UserSchema, ['username', 'name'])
 export type PublicUserProfile = Static<typeof PublicUserProfileSchema>

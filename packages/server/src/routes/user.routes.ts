@@ -54,7 +54,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
       const { userId } = request.params
       try {
         const { username, name, email, verifiedEmail, scopes, role } = await fetchUser(userId)
-        const privateProfile: PrivateUserProfile = { username, name, email, verifiedEmail, scopes, _id: userId, role }
+        const privateProfile: PrivateUserProfile = { username, name, email, verifiedEmail, scopes, id: userId, role }
         await reply.status(200).send(privateProfile)
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
