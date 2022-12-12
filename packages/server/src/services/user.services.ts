@@ -62,7 +62,8 @@ export async function fetchUser (userId: string): Promise<User> {
   if (user == null) {
     throw new NotFoundError('User not found.', { userId })
   }
-  return { ...user, id: user._id.toString() }
+  const { _id, ...userContent } = user
+  return { ...userContent, id: _id.toString() }
 }
 
 export async function userIdExists (userId: string): Promise<boolean> {
