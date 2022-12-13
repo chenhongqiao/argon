@@ -10,13 +10,11 @@ import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
 import { judgerRoutes } from './routes/judger.routes'
 
-import { createContainers } from './utils/container.utils'
 import { createCollectionIndexes } from './utils/collection.utils'
 import { Sentry } from './connections/sentry.connections'
 
 import fastifyAuth from '@fastify/auth'
 import sensible from '@fastify/sensible'
-import { mongoClient } from '@argoncs/libraries'
 
 const app = Fastify({
   logger: {
@@ -25,9 +23,7 @@ const app = Fastify({
 })
 
 export async function startServer (): Promise<void> {
-  await createContainers()
   await createCollectionIndexes()
-  await mongoClient.connect()
 
   await app.register(jwt, {
     secret: process.env.JWT_SECRET ?? ''
