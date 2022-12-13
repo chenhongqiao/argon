@@ -37,7 +37,6 @@ export async function createTestingSubmission (submission: NewSubmission, domain
   }
 
   const { insertedId } = await submissionCollection.insertOne(pendingSubmission)
-  await queueSubmission(insertedId.toString())
   return { submissionId: insertedId.toString() }
 }
 

@@ -3,8 +3,10 @@ import {
   NotFoundError,
   ProblemSchema,
   NewSubmissionSchema,
-  SubmissionResultSchema,
-  AuthorizationError
+  AuthorizationError,
+  SubmissionType,
+  TestingSubmissionSchema,
+  ContestSubmissionSchema
 } from '@argoncs/types'
 
 import {
@@ -16,8 +18,8 @@ import {
 } from '../services/problem.services'
 
 import {
-  compileSubmission,
-  createSubmission,
+  queueSubmission,
+  createTestingSubmission,
   fetchSubmission
 } from '../services/submission.services'
 
@@ -193,8 +195,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       const { domainId, problemId } = request.params
       try {
         const problem = await fetchFromProblemBank(problemId, domainId)
-        const created = await createSubmission(submission, { id: problem.id, domainId: problem.domainId }, request.user.userId)
-        await compileSubmission(created.submissionId)
+        const created = await createTestingSubmission(submission, problem.domainId, problem.id, request.user.userId)
+        await queueSubmission(created.submissionId)
         return await reply.status(202).send(created)
       } catch (err) {
         if (err instanceof NotFoundError) {
@@ -213,7 +215,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         params: Type.Object({ domainId: Type.String(), problemId: Type.String(), submissionId: Type.String() }),
         response: {
-          200: SubmissionResultSchema
+          200: Type.Union([TestingSubmissionSchema, ContestSubmissionSchema])
         }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
@@ -223,7 +225,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       try {
         const submission = await fetchSubmission(submissionId)
 
-        if (submission.problem.id !== problemId || submission.problem.domainId !== domainId) {
+        if (submission.type !== SubmissionType.Testing || submission.problemId !== problemId || submission.domainId !== domainId) {
           return reply.notFound('Submission not found.')
         }
 
