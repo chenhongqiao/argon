@@ -47,6 +47,7 @@ export async function queueSubmission (submissionId: string): Promise<void> {
   const task: CompilingTask = {
     submissionId: submission.id,
     type: JudgerTaskType.Compiling,
+    source: submission.source,
     language: submission.language,
     constraints: languageConfigs[submission.language].constraints
   }

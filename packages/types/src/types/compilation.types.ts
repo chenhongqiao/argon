@@ -19,6 +19,7 @@ export interface CompilingTask {
   type: JudgerTaskType.Compiling
   constraints: Constraints
   language: SubmissionLang
+  source: string
   submissionId: string
 }
 
