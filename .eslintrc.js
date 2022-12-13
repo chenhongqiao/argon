@@ -5,6 +5,7 @@ module.exports = {
   },
   rules: {
     'no-extra-boolean-cast': 'off',
+    '@typescript-eslint/naming-convention': 'off'
   },
   extends: 'standard-with-typescript',
 };
