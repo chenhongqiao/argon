@@ -1,83 +1,68 @@
 import {
-  AzureError,
   NewProblem,
   NotFoundError,
   Problem
 } from '@argoncs/types'
-import { CosmosDB } from '@argoncs/libraries'
+import { mongoDB, ObjectId } from '@argoncs/libraries'
 import { verifyTestcaseDomain } from './testcase.services'
 
-const problemBankContainer = CosmosDB.container('problemBank')
+type ProblemDB = Omit<Problem, 'id' | 'domainId'> & { _id?: ObjectId, domains_id: ObjectId }
+
+const problemBankCollection = mongoDB.collection<ProblemDB>('problemBank')
 
 export async function createInProblemBank (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
-  const problem: Omit<Problem, 'id'> = { ...newProblem, domainId }
+  const problem: ProblemDB = { ...newProblem, domains_id: new ObjectId(domainId) }
   const testcasesVerifyQueue: Array<Promise<{ testcaseId: string }>> = []
   problem.testcases.forEach((testcase) => {
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
   })
   await Promise.all(testcasesVerifyQueue)
-  const createdProblem = await problemBankContainer.items.create(problem)
-  if (createdProblem.resource == null) {
-    throw new AzureError('No resource ID returned.', createdProblem)
-  }
-  return { problemId: createdProblem.resource.id }
+  const { insertedId } = await problemBankCollection.insertOne(problem)
+  return { problemId: insertedId.toString() }
 }
 
 export async function fetchFromProblemBank (problemId: string, domainId: string): Promise<Problem> {
-  const problemItem = problemBankContainer.item(problemId, domainId)
-  const fetched = await problemItem.read<Problem>()
-  if (fetched.resource != null) {
-    return fetched.resource
-  } if (fetched.statusCode === 404) {
-    throw new NotFoundError('Problem not found.', { problemId })
-  } else {
-    throw new AzureError('Unexpected CosmosDB return when reading from problem bank.', fetched)
+  const problem = await problemBankCollection.findOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) })
+  if (problem == null) {
+    throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
   }
+  const { _id, domains_id, ...problemContent } = problem
+  return { ...problemContent, id: _id.toString(), domainId: domains_id.toString() }
 }
 
-export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string }> {
-  const problemWithId = { ...problem, problemId, domainId }
+export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string, domainId: string }> {
   const testcasesVerifyQueue: Array<Promise<{ testcaseId: string }>> = []
-  problemWithId.testcases.forEach((testcase) => {
+  problem.testcases.forEach((testcase) => {
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
   })
   await Promise.all(testcasesVerifyQueue)
-  const problemItem = problemBankContainer.item(problemId, domainId)
-  const updated = await problemItem.replace(problemWithId)
-  if (updated.resource != null) {
-    return { problemId: updated.resource.id }
-  } if (updated.statusCode === 404) {
-    throw new NotFoundError('Problem not found.', { problemId })
-  } else {
-    throw new AzureError('Unexpected CosmosDB return when updating a problem in problem bank.', updated)
+
+  const { domainId: providedDomainId, id: providedId, ...problemContent } = problem
+  const problemDB: ProblemDB = { ...problemContent, domains_id: new ObjectId(domainId), _id: new ObjectId(problemId) }
+  const { upsertedCount, upsertedId } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problemDB })
+  if (upsertedCount === 0) {
+    throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
   }
+
+  return { problemId: upsertedId.toString(), domainId }
 }
 
-export async function deleteInProblemBank (problemId: string, domainId: string): Promise<{ problemId: string }> {
-  const problemItem = problemBankContainer.item(problemId, domainId)
-  const deletedProblem = await problemItem.delete<{ id: string }>()
-  if (deletedProblem.statusCode >= 400) {
-    if (deletedProblem.statusCode === 404) {
-      throw new NotFoundError('Problem not found.', { problemId })
-    } else {
-      throw new AzureError('Unexpected CosmosDB return when deleting a problem in problem bank.', deletedProblem)
-    }
-  }
+export async function deleteInProblemBank (problemId: string, domainId: string): Promise<void> {
+  const { deletedCount } = await problemBankCollection.deleteOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) })
 
-  return { problemId: deletedProblem.item.id }
+  if (deletedCount === 0) {
+    throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
+  }
 }
 
 export async function fetchDomainProblems (domainId: string): Promise<Problem[]> {
-  const query = {
-    query: 'SELECT * FROM p WHERE p.domainId = @domainId',
-    parameters: [
-      {
-        name: '@domainId',
-        value: domainId
-      }
-    ]
-  }
-  return (await problemBankContainer.items.query(query).fetchAll()).resources
+  const problems = await problemBankCollection.aggregate([
+    { $match: { domains_id: new ObjectId(domainId) } },
+    { $set: { id: '$_id', domainId: '$domains_id' } },
+    { $project: { _id: 0, domains_id: 0 } }
+  ]).toArray() as Problem[]
+
+  return problems
 }
