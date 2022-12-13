@@ -1,50 +1,49 @@
 import {
-  AzureError,
   CompilingResult,
   CompilingStatus,
   CompilingTask,
-  CompilingSubmission,
   DataError,
-  FailedSubmission,
-  GradedSubmission,
-  GradingStatus,
   GradingTask,
   GradingResult,
-  GradingSubmission,
   JudgerTaskType,
   NewSubmission,
   NotFoundError,
   Problem,
   SubmissionStatus,
-  SubmissionResult
+  ContestSubmission,
+  TestingSubmission,
+  SubmissionType,
+  TestingSubmissionWithoutIds,
+  ContestSubmissionWithoutIds,
+  GradingStatus
 } from '@argoncs/types'
-import { CosmosDB, messageSender } from '@argoncs/libraries'
+import { messageSender, mongoDB, ObjectId } from '@argoncs/libraries'
 import { languageConfigs } from '@argoncs/configs'
 
 import { fetchFromProblemBank } from './problem.services'
 
-const submissionsContainer = CosmosDB.container('submissions')
+type TestingSubmissionDB = TestingSubmissionWithoutIds & { _id?: ObjectId, domains_id: ObjectId, problemBank_id: ObjectId }
+type ContestSubmissionDB = ContestSubmissionWithoutIds & { _id?: ObjectId, contests_id: ObjectId, contestProblems_id: ObjectId }
 
-export async function createSubmission (submission: NewSubmission, problem: { id: string, domainId: string }, userId: string, contestId?: string): Promise<{ submissionId: string }> {
-  const newSubmission: Omit<CompilingSubmission, 'id'> = { ...submission, status: SubmissionStatus.Compiling, userId, problem, contestId }
-  const created = await submissionsContainer.items.create(newSubmission)
-  if (created.resource != null) {
-    return { submissionId: created.resource.id }
+const submissionCollection = mongoDB.collection<TestingSubmissionDB | ContestSubmissionDB>('submissions')
+
+export async function createTestingSubmission (submission: NewSubmission, domainId: string, problemId: string, userId: string): Promise<{ submissionId: string }> {
+  const pendingSubmission: TestingSubmissionDB = {
+    ...submission,
+    status: SubmissionStatus.Pending,
+    domains_id: new ObjectId(domainId),
+    problemBank_id: new ObjectId(problemId),
+    type: SubmissionType.Testing
   }
-  throw new AzureError('No resource ID returned.', created)
+
+  const { insertedId } = await submissionCollection.insertOne(pendingSubmission)
+  await queueSubmission(insertedId.toString())
+  return { submissionId: insertedId.toString() }
 }
 
-export async function compileSubmission (submissionId: string): Promise<void> {
-  const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetched = await submissionItem.read<CompilingSubmission>()
-  if (fetched.resource == null) {
-    if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', { submissionId })
-    } else {
-      throw new AzureError('Unexpected CosmosDB return .', fetched)
-    }
-  }
-  const submission = fetched.resource
+export async function queueSubmission (submissionId: string): Promise<void> {
+  const submission = await fetchSubmission(submissionId)
+
   const task: CompilingTask = {
     submissionId: submission.id,
     type: JudgerTaskType.Compiling,
@@ -58,143 +57,123 @@ export async function compileSubmission (submissionId: string): Promise<void> {
   await messageSender.sendMessages(batch)
 }
 
+export async function markSubmissionAsCompiling (submissionId: string): Promise<void> {
+  await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+    $set: {
+      status: SubmissionStatus.Compiling
+    }
+  })
+}
+
 export async function handleCompileResult (compileResult: CompilingResult, submissionId: string): Promise<void> {
-  const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetchedSubmission = await submissionItem.read<CompilingSubmission>()
-  if (fetchedSubmission.resource == null) {
-    if (fetchedSubmission.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', { submissionId })
-    } else {
-      throw new AzureError('Unexpected CosmosDB return.', fetchedSubmission)
-    }
-  }
-  const submission = fetchedSubmission.resource
-  if (compileResult.status === CompilingStatus.Succeeded) {
-    const batch = await messageSender.createMessageBatch()
-    let problem: Problem
-    if (submission.contestId == null) {
-      problem = await fetchFromProblemBank(submission.problem.id, submission.problem.domainId)
-    } else {
-      // Fetch Contest Problem
-      // TODO
-    }
-    const submissionTestcases: Array<{ points: number, input: string, output: string }> = []
-    // @ts-expect-error: TODO
-    problem.testcases.forEach((testcase, index) => {
-      const task: GradingTask = {
-        constraints: problem.constraints,
-        type: JudgerTaskType.Grading,
-        submissionId,
-        testcase: {
-          input: testcase.input,
-          output: testcase.output
-        },
-        testcaseIndex: index,
-        language: submission.language
+  const submission = await fetchSubmission(submissionId)
+
+  if (submission.status === SubmissionStatus.Compiling) {
+    if (compileResult.status === CompilingStatus.Succeeded) {
+      const batch = await messageSender.createMessageBatch()
+      let problem: Problem
+      if (submission.type === SubmissionType.Testing) {
+        problem = await fetchFromProblemBank(submission.problemId, submission.domainId)
+      } else {
+        // Fetch Contest Problem
+        // TODO
       }
-      if (!batch.tryAddMessage({ body: task })) {
-        throw new DataError('Task too big to fit in the queue.', task)
-      }
-      submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
-    })
-    const gradingSubmission: GradingSubmission = {
-      ...submission,
-      status: SubmissionStatus.Grading,
-      gradedCases: 0,
-      testcases: submissionTestcases
+      const submissionTestcases: Array<{ points: number, input: string, output: string }> = []
+      // @ts-expect-error: TODO
+      problem.testcases.forEach((testcase, index) => {
+        const task: GradingTask = {
+          constraints: problem.constraints,
+          type: JudgerTaskType.Grading,
+          submissionId,
+          testcase: {
+            input: testcase.input,
+            output: testcase.output
+          },
+          testcaseIndex: index,
+          language: submission.language
+        }
+        if (!batch.tryAddMessage({ body: task })) {
+          throw new DataError('Task too big to fit in the queue.', task)
+        }
+        submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
+      })
+
+      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+        $set: {
+          status: SubmissionStatus.Grading,
+          gradedCases: 0,
+          testcases: submissionTestcases
+        }
+      })
+      await messageSender.sendMessages(batch)
+    } else {
+      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+        $set: {
+          status: SubmissionStatus.CompileFailed,
+          log: compileResult.log
+        }
+      })
     }
-    await submissionItem.replace(gradingSubmission)
-    await messageSender.sendMessages(batch)
-  } else {
-    const failedSubmission: FailedSubmission = {
-      ...submission,
-      status: SubmissionStatus.CompileFailed,
-      log: compileResult.log
-    }
-    await submissionItem.replace(failedSubmission)
   }
 }
 
 export async function completeGrading (submissionId: string, log?: string): Promise<void> {
-  const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetched = await submissionItem.read<CompilingSubmission | GradingSubmission | GradedSubmission>()
-  if (fetched.resource == null) {
-    if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', { submissionId })
+  const submission = await fetchSubmission(submissionId)
+
+  if (submission.status === SubmissionStatus.Compiling || submission.status === SubmissionStatus.Pending) {
+    await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, { $set: { status: SubmissionStatus.Terminated, log } })
+  } else if (submission.status === SubmissionStatus.Grading) {
+    if (submission.gradedCases !== submission.testcases.length) {
+      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, { $set: { status: SubmissionStatus.Terminated, log } })
     } else {
-      throw new AzureError('Unexpected CosmosDB return.', fetched)
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      const score = submission.testcases.reduce((accumulator: number, testcase) => accumulator + (testcase.score ?? 0), 0)
+      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+        $set: {
+          score,
+          status: SubmissionStatus.Graded
+        },
+        $unset: {
+          gradedCases: ''
+        }
+      })
     }
-  }
-  const submission = fetched.resource
-
-  if (submission.status === SubmissionStatus.Graded) {
-    return
-  }
-  if (submission.status === SubmissionStatus.Compiling || submission.gradedCases !== submission.testcases.length) {
-    const failedSubmission: FailedSubmission = {
-      ...submission,
-      status: SubmissionStatus.Terminated,
-      log
-    }
-    await submissionItem.replace(failedSubmission)
-  } else {
-    let score = 0
-    submission.testcases.forEach(testcase => {
-      if (testcase.result != null && testcase.result.status === GradingStatus.Accepted) {
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        score += testcase.points
-      }
-    })
-
-    const { testcases, ...baseSubmission } = submission
-    const gradedSubmission: GradedSubmission = {
-      ...baseSubmission,
-      status: SubmissionStatus.Graded,
-      // @ts-expect-error
-      testcases,
-      score
-    }
-    await submissionItem.replace(gradedSubmission)
   }
 }
 
 export async function handleGradingResult (gradingResult: GradingResult, submissionId: string, testcaseIndex: number): Promise<void> {
-  const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetched = await submissionItem.read<GradingSubmission | FailedSubmission>()
-  if (fetched.resource == null) {
-    if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', { submissionId })
-    } else {
-      throw new AzureError('Unexpected CosmosDB return.', fetched)
-    }
-  }
-  const submission = fetched.resource
+  const submission = await fetchSubmission(submissionId)
+
   if (submission.status === SubmissionStatus.Grading) {
     if (submission.testcases[testcaseIndex] == null) {
       throw new NotFoundError('Testcase not found by index.', { testcaseIndex, submissionId })
     }
-    if (submission.testcases[testcaseIndex].result == null) {
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-      submission.gradedCases += 1
-    }
+    const score = gradingResult.status === GradingStatus.Accepted ? submission.testcases[testcaseIndex].score : 0
     submission.testcases[testcaseIndex].result = gradingResult
-    await submissionItem.replace(submission)
+    await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+      $set: {
+        'testcases.$[index].result': gradingResult,
+        'testcases.$[index].score': score
+      }
+    },
+    { arrayFilters: [{ index: testcaseIndex }] })
+
     if (submission.gradedCases === submission.testcases.length) {
       await completeGrading(submissionId)
     }
   }
 }
 
-export async function fetchSubmission (submissionId: string): Promise<SubmissionResult> {
-  const submissionItem = submissionsContainer.item(submissionId, submissionId)
-  const fetched = await submissionItem.read<SubmissionResult>()
-  if (fetched.resource == null) {
-    if (fetched.statusCode === 404) {
-      throw new NotFoundError('Submission not found.', { submissionId })
-    } else {
-      throw new AzureError('Unexpected CosmosDB return.', fetched)
-    }
+export async function fetchSubmission (submissionId: string): Promise<TestingSubmission | ContestSubmission> {
+  const submission = await submissionCollection.findOne({ _id: new ObjectId(submissionId) })
+  if (submission == null) {
+    throw new NotFoundError('Submission does not exist.', { submissionId })
   }
-
-  return fetched.resource
+  if (submission.type === SubmissionType.Testing) {
+    const { _id, domains_id, problemBank_id, ...submissionContent } = submission
+    return { ...submissionContent, id: _id.toString(), domainId: domains_id.toString(), problemId: problemBank_id.toString() }
+  } else {
+    const { _id, contests_id, contestProblems_id, ...submissionContent } = submission
+    return { ...submissionContent, id: _id.toString(), contestId: contests_id.toString(), problemId: contestProblems_id.toString() }
+  }
 }

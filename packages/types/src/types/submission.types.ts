@@ -4,14 +4,8 @@ import { SubmissionLang } from './compilation.types'
 
 import { GradingResultSchema } from './grading.types'
 
-export const NewSubmissionSchema = Type.Object({
-  language: Type.Enum(SubmissionLang),
-  source: Type.String()
-})
-
-export type NewSubmission = Static<typeof NewSubmissionSchema>
-
 export enum SubmissionStatus {
+  Pending = 'Pending',
   Compiling = 'Compiling',
   Grading = 'Grading',
   CompileFailed = 'CompileFailed',
@@ -19,50 +13,104 @@ export enum SubmissionStatus {
   Terminated = 'Terminated'
 }
 
-const BaseSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
-  id: Type.String(),
-  userId: Type.String(),
-  problem: Type.Object({
-    id: Type.String(),
-    domainId: Type.String()
-  }),
-  contestId: Type.Optional(Type.String())
+export enum SubmissionType {
+  Contest = 'Contest',
+  Testing = 'Testing'
+}
+
+export const NewSubmissionSchema = Type.Object({
+  language: Type.Enum(SubmissionLang),
+  source: Type.String()
+})
+export type NewSubmission = Static<typeof NewSubmissionSchema>
+
+export const BaseContestSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
+  type: Type.Literal(SubmissionType.Contest),
+  problemId: Type.String(),
+  contestId: Type.String()
 })])
 
-export const CompilingSubmissionSchema = Type.Intersect([BaseSubmissionSchema, Type.Object({
+const BaseContestSubmissionWithoutIdsSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
+  type: Type.Literal(SubmissionType.Contest)
+})])
+
+export const BaseTestingSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
+  type: Type.Literal(SubmissionType.Testing),
+  problemId: Type.String(),
+  domainId: Type.String()
+})])
+
+const BaseTestingSubmissionWithoutIdsSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
+  type: Type.Literal(SubmissionType.Testing)
+})])
+
+const PendingSubmissionSchema = Type.Object({
+  status: Type.Literal(SubmissionStatus.Pending)
+})
+
+const CompilingSubmissionSchema = Type.Object({
   status: Type.Literal(SubmissionStatus.Compiling)
-})])
-export type CompilingSubmission = Static<typeof CompilingSubmissionSchema>
+})
 
-export const GradingSubmissionSchema = Type.Intersect([BaseSubmissionSchema, Type.Object({
+const GradingSubmissionSchema = Type.Object({
   status: Type.Literal(SubmissionStatus.Grading),
   gradedCases: Type.Number(),
   testcases: Type.Array(Type.Object({
     input: Type.String(),
     output: Type.String(),
     points: Type.Number(),
+    score: Type.Optional(Type.Number()),
     result: Type.Optional(GradingResultSchema)
   }))
-})])
-export type GradingSubmission = Static<typeof GradingSubmissionSchema>
+})
 
-export const FailedSubmissionSchema = Type.Intersect([BaseSubmissionSchema, Type.Object({
+const FailedSubmissionSchema = Type.Object({
   status: Type.Union([Type.Literal(SubmissionStatus.CompileFailed), Type.Literal(SubmissionStatus.Terminated)]),
   log: Type.Optional(Type.String())
-})])
-export type FailedSubmission = Static<typeof FailedSubmissionSchema>
+})
 
-export const GradedSubmissionSchema = Type.Intersect([BaseSubmissionSchema, Type.Object({
+const GradedSubmissionSchema = Type.Object({
   status: Type.Literal(SubmissionStatus.Graded),
   score: Type.Number(),
   testcases: Type.Array(Type.Object({
     input: Type.String(),
     output: Type.String(),
     points: Type.Number(),
+    score: Type.Number(),
     result: GradingResultSchema
   }))
-})])
-export type GradedSubmission = Static<typeof GradedSubmissionSchema>
+})
 
-export const SubmissionResultSchema = Type.Union([CompilingSubmissionSchema, GradedSubmissionSchema, GradingSubmissionSchema, FailedSubmissionSchema])
-export type SubmissionResult = Static<typeof SubmissionResultSchema>
+export const ContestSubmissionSchema = Type.Union([
+  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([FailedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })])])
+export type ContestSubmission = Static<typeof ContestSubmissionSchema>
+
+export const TestingSubmissionSchema = Type.Union([
+  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([FailedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })])])
+export type TestingSubmission = Static<typeof TestingSubmissionSchema>
+
+const ContestSubmissionWithoutIdsSchema = Type.Union([
+  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
+  Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
+  Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
+  Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
+  Type.Intersect([FailedSubmissionSchema, BaseContestSubmissionWithoutIdsSchema])
+])
+export type ContestSubmissionWithoutIds = Static<typeof ContestSubmissionWithoutIdsSchema>
+
+const TestingSubmissionWithoutIdsSchema = Type.Union([
+  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
+  Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
+  Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
+  Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
+  Type.Intersect([FailedSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema])
+])
+export type TestingSubmissionWithoutIds = Static<typeof TestingSubmissionWithoutIdsSchema>

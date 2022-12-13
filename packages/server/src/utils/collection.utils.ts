@@ -26,6 +26,13 @@ const collections: Collection[] = [
     indexes: [
       { keys: { createdAt: 1 }, options: { expireAfterSeconds: 900 } }
     ]
+  },
+  {
+    name: 'problemBank',
+    indexes: [
+      { keys: { domains_id: 1 }, options: {} },
+      { keys: { domains_id: 1, _id: 1 }, options: { unique: true } }
+    ]
   }
 ]
 
