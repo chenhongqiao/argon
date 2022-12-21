@@ -28,7 +28,7 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
   const user: UserDB = {
     name: newUser.name,
     email: newUser.email,
-    password: {
+    credential: {
       salt,
       hash
     },
@@ -70,13 +70,12 @@ export async function userIdExists (userId: string): Promise<boolean> {
   return Boolean(userCollection.countDocuments({ _id: new ObjectId(userId) }))
 }
 
-export async function updateUser (user: User, userId: string): Promise<{ userId: string }> {
+export async function updateUser (user: User, userId: string): Promise<void> {
   const { id: _, ...userWithoutId } = user
-  const { upsertedId, matchedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: userWithoutId })
+  const { matchedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: userWithoutId })
   if (matchedCount === 0) {
     throw new NotFoundError('User not found.', { userId })
   }
-  return { userId: upsertedId.toString() }
 }
 
 export async function initiateVerification (userId: string, email: string): Promise<void> {
@@ -93,15 +92,7 @@ export async function initiateVerification (userId: string, email: string): Prom
   await emailClient.send(verificationEmail)
 }
 
-export async function completeVerification (userId: string, token: string): Promise<{ userId: string, statusChanged: boolean }> {
-  const user = await userCollection.findOne({ _id: new ObjectId(userId) })
-  if (user == null) {
-    throw new NotFoundError('User does not exist.', { userId })
-  }
-  if (user.email === user.verifiedEmail) {
-    return { userId: user._id.toString(), statusChanged: false }
-  }
-
+export async function completeVerification (userId: string, token: string): Promise<{ statusChanged: boolean }> {
   const id = token.slice(0, 24)
   const secret = token.slice(24)
 
@@ -109,9 +100,21 @@ export async function completeVerification (userId: string, token: string): Prom
   if (verification == null || verification.secret !== secret) {
     throw new AuthenticationError('Invalid verification.', { userId, token })
   }
-  user.verifiedEmail = verification?.email
-  const { upsertedId } = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: user })
-  return { userId: upsertedId.toString(), statusChanged: true }
+  const { modifiedCount, matchedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, {
+    $set: {
+      verifiedEmail: verification.email
+    }
+  })
+
+  if (matchedCount === 0) {
+    throw new NotFoundError('User does not exist.', { userId })
+  }
+
+  if (modifiedCount > 0) {
+    return { statusChanged: true }
+  } else {
+    return { statusChanged: false }
+  }
 }
 
 export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{ userId: string, scopes: Record<string, string[]>, role: UserRole }> {
@@ -120,8 +123,8 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
     throw new AuthenticationError('Authentication failed.', { usernameOrEmail })
   }
 
-  const hash = (await pbkdf2Async(password, user.password.salt, 100000, 512, 'sha512')).toString('base64')
-  if (hash === user.password.hash) {
+  const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
+  if (hash === user.credential.hash) {
     if (user.email !== user.verifiedEmail) {
       throw new AuthorizationError('Please verify your email first.', { userId: user._id })
     }

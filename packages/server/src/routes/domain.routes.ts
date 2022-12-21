@@ -95,9 +95,6 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         params: Type.Object({ domainId: Type.String() }),
-        response: {
-          200: Type.Object({ userId: Type.String(), domainId: Type.String() })
-        },
         body: Type.Object({
           userId: Type.String(),
           scopes: Type.Array(Type.String())
@@ -109,8 +106,8 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       const { domainId } = request.params
       const { userId, scopes } = request.body
       try {
-        const added = await addDomainMember(domainId, userId, scopes)
-        return await reply.status(200).send(added)
+        await addDomainMember(domainId, userId, scopes)
+        return await reply.status(204).send()
       } catch (err) {
         if (err instanceof NotFoundError) {
           reply.notFound(err.message)
@@ -153,9 +150,6 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         params: Type.Object({ domainId: Type.String(), userId: Type.String() }),
-        response: {
-          200: Type.Object({ userId: Type.String(), domainId: Type.String() })
-        },
         body: Type.Object({
           scopes: Type.Array(Type.String())
         })
@@ -166,8 +160,8 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       const { domainId, userId } = request.params
       const { scopes } = request.body
       try {
-        const updated = await updateMemberScopes(domainId, userId, scopes)
-        return await reply.status(200).send(updated)
+        await updateMemberScopes(domainId, userId, scopes)
+        return await reply.status(204).send()
       } catch (err) {
         if (err instanceof NotFoundError) {
           reply.notFound(err.message)

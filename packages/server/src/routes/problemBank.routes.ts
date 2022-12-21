@@ -123,7 +123,6 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         body: ProblemSchema,
         response: {
-          200: Type.Object({ problemId: Type.String() }),
           404: Type.Object({ message: Type.String() })
         },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
@@ -135,8 +134,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       const { problemId, domainId } = request.params
       const problem = request.body
       try {
-        const updated = await updateInProblemBank(problem, problemId, domainId)
-        return await reply.status(200).send(updated)
+        await updateInProblemBank(problem, problemId, domainId)
+        return await reply.status(204).send()
       } catch (err) {
         if (err instanceof NotFoundError) {
           if (err.message === 'Blob not found.') {

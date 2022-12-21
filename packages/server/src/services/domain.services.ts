@@ -24,7 +24,7 @@ export async function deleteDomain (domainId: string): Promise<void> {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
 
-      const removedMembers: Array<Promise<{ domainId: string, userId: string }>> = []
+      const removedMembers: Array<Promise<void>> = []
       domain.members.forEach((userId) => {
         removedMembers.push(removeDomainMember(domainId, userId.toString()))
       })
@@ -43,7 +43,7 @@ export async function deleteDomain (domainId: string): Promise<void> {
   }
 }
 
-export async function addDomainMember (domainId: string, userId: string, scopes: string[]): Promise<{ domainId: string, userId: string }> {
+export async function addDomainMember (domainId: string, userId: string, scopes: string[]): Promise<void> {
   const user = await fetchUser(userId)
 
   if (user.scopes[domainId] != null) {
@@ -54,23 +54,19 @@ export async function addDomainMember (domainId: string, userId: string, scopes:
 
   const session = mongoClient.startSession()
   try {
-    let updatedUser: string = ''
-    let updatedDomain: string = ''
     await session.withTransaction(async () => {
-      updatedUser = (await updateUser(user, userId)).userId
-      const { upsertedCount, upsertedId } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $addToSet: { members: new ObjectId(userId) } })
-      if (upsertedCount === 0) {
+      await updateUser(user, userId)
+      const { matchedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $addToSet: { members: new ObjectId(userId) } })
+      if (matchedCount === 0) {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
-      updatedDomain = upsertedId.toString()
     })
-    return { userId: updatedUser, domainId: updatedDomain }
   } finally {
     await session.endSession()
   }
 }
 
-export async function removeDomainMember (domainId: string, userId: string): Promise<{ domainId: string, userId: string }> {
+export async function removeDomainMember (domainId: string, userId: string): Promise<void> {
   const user = await fetchUser(userId)
 
   if (user.scopes[domainId] != null) {
@@ -80,23 +76,19 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
 
   const session = mongoClient.startSession()
   try {
-    let updatedUser: string = ''
-    let updatedDomain: string = ''
     await session.withTransaction(async () => {
-      updatedUser = (await updateUser(user, userId)).userId
-      const { upsertedCount, upsertedId } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $pull: { members: userId } })
-      if (upsertedCount === 0) {
+      await updateUser(user, userId)
+      const { matchedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $pull: { members: userId } })
+      if (matchedCount === 0) {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
-      updatedDomain = upsertedId.toString()
     })
-    return { userId: updatedUser, domainId: updatedDomain }
   } finally {
     await session.endSession()
   }
 }
 
-export async function updateMemberScopes (domainId: string, userId: string, scopes: string[]): Promise<{ domainId: string, userId: string }> {
+export async function updateMemberScopes (domainId: string, userId: string, scopes: string[]): Promise<void> {
   const user = await fetchUser(userId)
 
   if (user.scopes[domainId] == null) {
@@ -105,9 +97,7 @@ export async function updateMemberScopes (domainId: string, userId: string, scop
 
   user.scopes[domainId] = scopes
 
-  const updatedUser = await updateUser(user, userId)
-
-  return { userId: updatedUser.userId, domainId }
+  await updateUser(user, userId)
 }
 
 export async function fetchDomain (domainId: string): Promise<Domain> {

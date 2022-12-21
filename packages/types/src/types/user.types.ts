@@ -15,7 +15,7 @@ export enum UserRole {
 }
 
 export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password']), Type.Object({
-  password: Type.Object({
+  credential: Type.Object({
     hash: Type.String(),
     salt: Type.String()
   }),
@@ -29,5 +29,5 @@ export type User = Static<typeof UserSchema>
 export const PublicUserProfileSchema = Type.Pick(UserSchema, ['username', 'name', 'id'])
 export type PublicUserProfile = Static<typeof PublicUserProfileSchema>
 
-export const PrivateUserProfileSchema = Type.Omit(UserSchema, ['password'])
+export const PrivateUserProfileSchema = Type.Omit(UserSchema, ['credential'])
 export type PrivateUserProfile = Static<typeof PrivateUserProfileSchema>

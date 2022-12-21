@@ -25,15 +25,13 @@ export async function uploadTestcase (testcasePath: string, domainId: string): P
   })
 }
 
-export async function verifyTestcaseDomain (testcaseId: string, domainId: string): Promise<{ testcaseId: string }> {
+export async function verifyTestcaseDomain (testcaseId: string, domainId: string): Promise<void> {
   const meta = await getMetaData({ containerName: 'testcases', blobName: testcaseId })
   if (meta.domainid == null || meta.domainid !== domainId) {
     throw new AuthorizationError('Testcase does not belong to this domain', { domainId, testcaseId })
   }
-  return { testcaseId }
 }
 
-export async function deleteTestcase (testcaseId: string): Promise<{ testcaseId: string }> {
+export async function deleteTestcase (testcaseId: string): Promise<void> {
   await deleteBlob({ containerName: 'testcases', blobName: testcaseId })
-  return { testcaseId }
 }

@@ -12,7 +12,7 @@ const problemBankCollection = mongoDB.collection<ProblemDB>('problemBank')
 
 export async function createInProblemBank (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
   const problem: ProblemDB = { ...newProblem, domains_id: new ObjectId(domainId) }
-  const testcasesVerifyQueue: Array<Promise<{ testcaseId: string }>> = []
+  const testcasesVerifyQueue: Array<Promise<void>> = []
   problem.testcases.forEach((testcase) => {
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
@@ -31,8 +31,8 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
   return { ...problemContent, id: _id.toString(), domainId: domains_id.toString() }
 }
 
-export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<{ problemId: string, domainId: string }> {
-  const testcasesVerifyQueue: Array<Promise<{ testcaseId: string }>> = []
+export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<void> {
+  const testcasesVerifyQueue: Array<Promise<void>> = []
   problem.testcases.forEach((testcase) => {
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
     testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
@@ -41,12 +41,10 @@ export async function updateInProblemBank (problem: Problem, problemId: string, 
 
   const { domainId: providedDomainId, id: providedId, ...problemContent } = problem
   const problemDB: ProblemDB = { ...problemContent, domains_id: new ObjectId(domainId), _id: new ObjectId(problemId) }
-  const { upsertedCount, upsertedId } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problemDB })
-  if (upsertedCount === 0) {
+  const { matchedCount } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problemDB })
+  if (matchedCount === 0) {
     throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
   }
-
-  return { problemId: upsertedId.toString(), domainId }
 }
 
 export async function deleteInProblemBank (problemId: string, domainId: string): Promise<void> {
