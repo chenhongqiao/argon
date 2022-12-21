@@ -20,7 +20,7 @@ interface EmailVerificationDB {
 type UserDB = Omit<User, 'id'> & { _id?: ObjectId }
 
 const userCollection = mongoDB.collection<UserDB>('users')
-const verificationCollection = mongoDB.collection<EmailVerificationDB>('emailVerifications')
+const verificationCollection = mongoDB.collection<EmailVerificationDB>('verifications')
 
 export async function registerUser (newUser: NewUser): Promise<{ userId: string, email: string }> {
   const salt = (await randomBytesAsync(32)).toString('base64')

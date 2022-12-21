@@ -22,7 +22,7 @@ const collections: Collection[] = [
     ]
   },
   {
-    name: 'emailVerifications',
+    name: 'verifications',
     indexes: [
       { keys: { createdAt: 1 }, options: { expireAfterSeconds: 900 } }
     ]
