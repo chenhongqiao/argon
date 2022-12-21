@@ -11,4 +11,7 @@ RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /etc/apt/keyring
 RUN add-apt-repository ppa:chenhongqiao/argon
 
 RUN apt-get update && apt-get install -y nodejs mongodb-mongosh nano vim redis-tools iputils-ping isolate build-essential docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+RUN mkdir -p /etc/docker && printf "{\"storage-driver\": \"vfs\"}" > /etc/docker/daemon.json
+
 RUN corepack enable
