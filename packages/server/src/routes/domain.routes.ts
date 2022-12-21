@@ -1,13 +1,39 @@
 import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
-import { ConflictError, NewDomainSchema, NotFoundError } from '@argoncs/types'
-import { addDomainMember, createDomain, deleteDomain, removeDomainMember, updateMemberScopes } from '../services/domain.services'
+import { ConflictError, DomainDetailSchema, NewDomainSchema, NotFoundError } from '@argoncs/types'
+import { addDomainMember, createDomain, deleteDomain, fetchDomainDetail, removeDomainMember, updateMemberScopes } from '../services/domain.services'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'
 import { Sentry } from '../connections/sentry.connections'
 
 export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
+  const publicRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  publicRoutes.get(
+    '/:domainId',
+    {
+      schema: {
+        params: Type.Object({ domainId: Type.String() }),
+        response: {
+          200: DomainDetailSchema
+        }
+      }
+    },
+    async (request, reply) => {
+      const { domainId } = request.params
+      try {
+        const domainDetail = await fetchDomainDetail(domainId)
+        return domainDetail
+      } catch (err) {
+        if (err instanceof NotFoundError) {
+          reply.notFound(err.message)
+        } else {
+          Sentry.captureException(err, { extra: err.context })
+          reply.internalServerError('A server error occurred when loading the domain detail.')
+        }
+      }
+    })
+
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {

@@ -1,4 +1,4 @@
-import { NewDomain, Domain, NotFoundError, ConflictError } from '@argoncs/types'
+import { NewDomain, Domain, NotFoundError, ConflictError, DomainDetail } from '@argoncs/types'
 import { mongoClient, mongoDB, ObjectId } from '@argoncs/libraries'
 import { deleteInProblemBank, fetchDomainProblems } from './problem.services'
 
@@ -108,4 +108,38 @@ export async function updateMemberScopes (domainId: string, userId: string, scop
   const updatedUser = await updateUser(user, userId)
 
   return { userId: updatedUser.userId, domainId }
+}
+
+export async function fetchDomain (domainId: string): Promise<Domain> {
+  const domain = await domainCollection.findOne({ _id: new ObjectId(domainId) })
+  if (domain == null) {
+    throw new NotFoundError('Domain does not exist.', { domainId })
+  }
+
+  const { _id, members, ...domainContent } = domain
+  return { ...domainContent, id: _id.toString(), members: members.map(userId => userId.toString()) }
+}
+
+export async function fetchDomainDetail (domainId: string): Promise<DomainDetail> {
+  const domain = await domainCollection.aggregate([
+    { $match: { _id: new ObjectId(domainId) } },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'members',
+        foreignField: '_id',
+        as: 'members',
+        pipeline: [
+          { $set: { id: '$_id' } },
+          { $project: { username: 1, name: 1, id: 1 } }
+        ]
+      }
+    },
+    { $set: { id: '$_id' } }
+  ]).toArray()[0] as DomainDetail | undefined
+  if (domain == null) {
+    throw new NotFoundError('Domain does not exist.', { domainId })
+  }
+
+  return domain
 }
