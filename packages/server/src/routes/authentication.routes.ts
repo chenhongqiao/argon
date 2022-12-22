@@ -120,7 +120,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       const { userId } = request.params
       try {
         const { statusChanged } = await completeVerification(userId, token)
-        return await reply.status(204).send({ statusChanged })
+        return await reply.status(200).send({ statusChanged })
       } catch (err) {
         if (err instanceof NotFoundError) {
           reply.notFound('User to be verified not found.')
