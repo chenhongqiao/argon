@@ -31,17 +31,17 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
   return { ...problemContent, id: _id.toString(), domainId: domains_id.toString() }
 }
 
-export async function updateInProblemBank (problem: Problem, problemId: string, domainId: string): Promise<void> {
-  const testcasesVerifyQueue: Array<Promise<void>> = []
-  problem.testcases.forEach((testcase) => {
-    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
-    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
-  })
-  await Promise.all(testcasesVerifyQueue)
+export async function updateInProblemBank (problem: Partial<NewProblem>, problemId: string, domainId: string): Promise<void> {
+  if (problem.testcases != null) {
+    const testcasesVerifyQueue: Array<Promise<void>> = []
+    problem.testcases.forEach((testcase) => {
+      testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
+      testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
+    })
+    await Promise.all(testcasesVerifyQueue)
+  }
 
-  const { domainId: providedDomainId, id: providedId, ...problemContent } = problem
-  const problemDB: ProblemDB = { ...problemContent, domains_id: new ObjectId(domainId), _id: new ObjectId(problemId) }
-  const { matchedCount } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problemDB })
+  const { matchedCount } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problem })
   if (matchedCount === 0) {
     throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
   }

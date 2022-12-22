@@ -121,7 +121,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId',
     {
       schema: {
-        body: ProblemSchema,
+        body: Type.Partial(NewProblemSchema),
         response: {
           404: Type.Object({ message: Type.String() })
         },

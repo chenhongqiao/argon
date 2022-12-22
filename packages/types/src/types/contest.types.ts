@@ -6,7 +6,7 @@ export const NewContestSchema = Type.Object({
   startTime: Type.Number(),
   endTime: Type.Number(),
   teamSize: Type.Number()
-})
+}, { additionalProperties: false })
 export type NewContest = Static<typeof NewContestSchema>
 
 export const ContestSchema = Type.Intersect([NewContestSchema, Type.Object({
