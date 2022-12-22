@@ -4,7 +4,7 @@ import { PublicUserProfileSchema } from './user.types'
 export const NewDomainSchema = Type.Object({
   name: Type.String(),
   description: Type.String()
-})
+}, { additionalProperties: false })
 export type NewDomain = Static<typeof NewDomainSchema>
 
 export const DomainSchema = Type.Intersect([NewDomainSchema, Type.Object({

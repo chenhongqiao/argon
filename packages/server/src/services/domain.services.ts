@@ -15,6 +15,13 @@ export async function createDomain (newDomain: NewDomain): Promise<{ domainId: s
   return { domainId: insertedId.toString() }
 }
 
+export async function updateDomain (domainId: string, domain: Partial<NewDomain>): Promise<void> {
+  const { matchedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $set: domain })
+  if (matchedCount === 0) {
+    throw new NotFoundError('Domain does not exist.', { domainId })
+  }
+}
+
 export async function deleteDomain (domainId: string): Promise<void> {
   const session = mongoClient.startSession()
   try {

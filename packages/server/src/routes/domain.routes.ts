@@ -2,7 +2,7 @@ import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { ConflictError, DomainDetailSchema, NewDomainSchema, NotFoundError } from '@argoncs/types'
-import { addDomainMember, createDomain, deleteDomain, fetchDomainDetail, removeDomainMember, updateMemberScopes } from '../services/domain.services'
+import { addDomainMember, createDomain, deleteDomain, fetchDomainDetail, removeDomainMember, updateDomain, updateMemberScopes } from '../services/domain.services'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'
 import { Sentry } from '../connections/sentry.connections'
@@ -62,6 +62,31 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })
         reply.internalServerError('A server error occurred when creating a domain.')
+      }
+    }
+  )
+
+  privateRoutes.put(
+    '/:domainId',
+    {
+      schema: {
+        body: Type.Partial(NewDomainSchema),
+        params: Type.Object({ domainId: Type.String() })
+      },
+      preValidation: [privateRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
+    },
+    async (request, reply) => {
+      const { domainId } = request.params
+      try {
+        await updateDomain(domainId, request.body)
+        return await reply.status(204).send()
+      } catch (err) {
+        if (err instanceof NotFoundError) {
+          reply.notFound(err.message)
+        } else {
+          Sentry.captureException(err, { extra: err.context })
+          reply.internalServerError('A server error occurred when updating a domain.')
+        }
       }
     }
   )
