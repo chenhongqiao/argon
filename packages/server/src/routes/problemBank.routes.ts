@@ -122,9 +122,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     {
       schema: {
         body: Type.Partial(NewProblemSchema),
-        response: {
-          404: Type.Object({ message: Type.String() })
-        },
+        response: { 200: Type.Object({ modified: Type.Boolean() }) },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
@@ -134,8 +132,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       const { problemId, domainId } = request.params
       const problem = request.body
       try {
-        await updateInProblemBank(problem, problemId, domainId)
-        return await reply.status(204).send()
+        const { modified } = await updateInProblemBank(problemId, domainId, problem)
+        return await reply.status(200).send({ modified })
       } catch (err) {
         if (err instanceof NotFoundError) {
           if (err.message === 'Blob not found.') {

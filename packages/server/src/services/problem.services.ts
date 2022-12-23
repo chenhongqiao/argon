@@ -31,7 +31,7 @@ export async function fetchFromProblemBank (problemId: string, domainId: string)
   return { ...problemContent, id: _id.toString(), domainId: domains_id.toString() }
 }
 
-export async function updateInProblemBank (problem: Partial<NewProblem>, problemId: string, domainId: string): Promise<void> {
+export async function updateInProblemBank (problemId: string, domainId: string, problem: Partial<NewProblem>): Promise<{ modified: boolean }> {
   if (problem.testcases != null) {
     const testcasesVerifyQueue: Array<Promise<void>> = []
     problem.testcases.forEach((testcase) => {
@@ -41,10 +41,12 @@ export async function updateInProblemBank (problem: Partial<NewProblem>, problem
     await Promise.all(testcasesVerifyQueue)
   }
 
-  const { matchedCount } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problem })
+  const { matchedCount, modifiedCount } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problem })
   if (matchedCount === 0) {
     throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
   }
+
+  return { modified: modifiedCount > 0 }
 }
 
 export async function deleteInProblemBank (problemId: string, domainId: string): Promise<void> {

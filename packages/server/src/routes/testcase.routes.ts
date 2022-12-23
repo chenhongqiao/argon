@@ -69,10 +69,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     '/:domainId/:testcaseId',
     {
       schema: {
-        params: Type.Object({ testcaseId: Type.String(), domainId: Type.String() }),
-        response: {
-          404: Type.Object({ message: Type.String() })
-        }
+        params: Type.Object({ testcaseId: Type.String(), domainId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
     },
