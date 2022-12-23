@@ -1,11 +1,11 @@
-import { NewDomain, Domain, NotFoundError, ConflictError, DomainDetail } from '@argoncs/types'
+import { NewDomain, Domain, NotFoundError, User, DomainDetail } from '@argoncs/types'
 import { mongoClient, mongoDB, ObjectId } from '@argoncs/libraries'
 import { deleteInProblemBank, fetchDomainProblems } from './problem.services'
 
-import { fetchUser, updateUser } from './user.services'
-
 type DomainDB = Omit<Domain, 'id' | 'members'> & { _id?: ObjectId, members: ObjectId[] }
+type UserDB = Omit<User, 'id'> & { _id?: ObjectId }
 
+const userCollection = mongoDB.collection<UserDB>('users')
 const domainCollection = mongoDB.collection<DomainDB>('domains')
 
 export async function createDomain (newDomain: NewDomain): Promise<{ domainId: string }> {
@@ -15,11 +15,13 @@ export async function createDomain (newDomain: NewDomain): Promise<{ domainId: s
   return { domainId: insertedId.toString() }
 }
 
-export async function updateDomain (domainId: string, domain: Partial<NewDomain>): Promise<void> {
-  const { matchedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $set: domain })
+export async function updateDomain (domainId: string, domain: Partial<NewDomain>): Promise<{ modified: boolean }> {
+  const { matchedCount, modifiedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $set: domain })
   if (matchedCount === 0) {
     throw new NotFoundError('Domain does not exist.', { domainId })
   }
+
+  return { modified: modifiedCount > 0 }
 }
 
 export async function deleteDomain (domainId: string): Promise<void> {
@@ -31,7 +33,7 @@ export async function deleteDomain (domainId: string): Promise<void> {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
 
-      const removedMembers: Array<Promise<void>> = []
+      const removedMembers: Array<Promise<{ modified: boolean }>> = []
       domain.members.forEach((userId) => {
         removedMembers.push(removeDomainMember(domainId, userId.toString()))
       })
@@ -50,61 +52,54 @@ export async function deleteDomain (domainId: string): Promise<void> {
   }
 }
 
-export async function addDomainMember (domainId: string, userId: string, scopes: string[]): Promise<void> {
-  const user = await fetchUser(userId)
-
-  if (user.scopes[domainId] != null) {
-    throw new ConflictError('User is already a member of the domain.', { domainId, userId })
-  }
-
-  user.scopes[domainId] = scopes
-
+export async function addOrUpdateDomainMember (domainId: string, userId: string, scopes: string[]): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
   try {
+    let modifiedCount = 0
     await session.withTransaction(async () => {
-      await updateUser(user, userId)
-      const { matchedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $addToSet: { members: new ObjectId(userId) } })
-      if (matchedCount === 0) {
+      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ _id: new ObjectId(userId) },
+        { $set: { 'scopes.$[domain]': scopes } },
+        { arrayFilters: [{ domain: domainId }] })
+      if (matchedUser === 0) {
+        throw new NotFoundError('User does not exist.', { userId })
+      }
+      modifiedCount += modifiedUser
+
+      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $addToSet: { members: new ObjectId(userId) } })
+      if (matchedDomain === 0) {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
+      modifiedCount += modifiedDomain
     })
+    return { modified: modifiedCount > 0 }
   } finally {
     await session.endSession()
   }
 }
 
-export async function removeDomainMember (domainId: string, userId: string): Promise<void> {
-  const user = await fetchUser(userId)
-
-  if (user.scopes[domainId] != null) {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete user.scopes[domainId]
-  }
-
+export async function removeDomainMember (domainId: string, userId: string): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
   try {
+    let modifiedCount = 0
     await session.withTransaction(async () => {
-      await updateUser(user, userId)
-      const { matchedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $pull: { members: userId } })
-      if (matchedCount === 0) {
+      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ _id: new ObjectId(userId) },
+        { $unset: { 'scopes.$[domain]': '' } },
+        { arrayFilters: [{ domain: domainId }] })
+      if (matchedUser === 0) {
+        throw new NotFoundError('User does not exist.', { userId })
+      }
+      modifiedCount += modifiedUser
+
+      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $pull: { members: userId } })
+      if (matchedDomain === 0) {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
+      modifiedCount += modifiedDomain
     })
+    return { modified: modifiedCount > 0 }
   } finally {
     await session.endSession()
   }
-}
-
-export async function updateMemberScopes (domainId: string, userId: string, scopes: string[]): Promise<void> {
-  const user = await fetchUser(userId)
-
-  if (user.scopes[domainId] == null) {
-    throw new NotFoundError('User is not part of this domain', { userId, domainId })
-  }
-
-  user.scopes[domainId] = scopes
-
-  await updateUser(user, userId)
 }
 
 export async function fetchDomain (domainId: string): Promise<Domain> {

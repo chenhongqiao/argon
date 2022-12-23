@@ -2,7 +2,7 @@ import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { ConflictError, DomainDetailSchema, NewDomainSchema, NotFoundError } from '@argoncs/types'
-import { addDomainMember, createDomain, deleteDomain, fetchDomainDetail, removeDomainMember, updateDomain, updateMemberScopes } from '../services/domain.services'
+import { addOrUpdateDomainMember, createDomain, deleteDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'
 import { Sentry } from '../connections/sentry.connections'
@@ -71,15 +71,16 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
     {
       schema: {
         body: Type.Partial(NewDomainSchema),
-        params: Type.Object({ domainId: Type.String() })
+        params: Type.Object({ domainId: Type.String() }),
+        response: { 200: Type.Object({ modified: Type.Boolean() }) }
       },
       preValidation: [privateRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
     async (request, reply) => {
       const { domainId } = request.params
       try {
-        await updateDomain(domainId, request.body)
-        return await reply.status(204).send()
+        const { modified } = await updateDomain(domainId, request.body)
+        return await reply.status(200).send({ modified })
       } catch (err) {
         if (err instanceof NotFoundError) {
           reply.notFound(err.message)
@@ -131,7 +132,7 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       const { domainId } = request.params
       const { userId, scopes } = request.body
       try {
-        await addDomainMember(domainId, userId, scopes)
+        await addOrUpdateDomainMember(domainId, userId, scopes)
         return await reply.status(204).send()
       } catch (err) {
         if (err instanceof NotFoundError) {
@@ -177,7 +178,8 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         params: Type.Object({ domainId: Type.String(), userId: Type.String() }),
         body: Type.Object({
           scopes: Type.Array(Type.String())
-        })
+        }),
+        response: { 200: Type.Object({ modified: Type.Boolean() }) }
       },
       preValidation: [privateRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
@@ -185,8 +187,8 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
       const { domainId, userId } = request.params
       const { scopes } = request.body
       try {
-        await updateMemberScopes(domainId, userId, scopes)
-        return await reply.status(204).send()
+        const { modified } = await addOrUpdateDomainMember(domainId, userId, scopes)
+        return await reply.status(200).send({ modified })
       } catch (err) {
         if (err instanceof NotFoundError) {
           reply.notFound(err.message)

@@ -70,12 +70,13 @@ export async function userIdExists (userId: string): Promise<boolean> {
   return Boolean(userCollection.countDocuments({ _id: new ObjectId(userId) }))
 }
 
-export async function updateUser (user: User, userId: string): Promise<void> {
-  const { id: _, ...userWithoutId } = user
-  const { matchedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: userWithoutId })
+export async function updateUser (userId: string, user: Partial<NewUser>): Promise<{ modified: boolean }> {
+  const { matchedCount, modifiedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: user })
   if (matchedCount === 0) {
     throw new NotFoundError('User not found.', { userId })
   }
+
+  return { modified: modifiedCount > 0 }
 }
 
 export async function initiateVerification (userId: string, email: string): Promise<void> {
@@ -92,7 +93,7 @@ export async function initiateVerification (userId: string, email: string): Prom
   await emailClient.send(verificationEmail)
 }
 
-export async function completeVerification (userId: string, token: string): Promise<{ statusChanged: boolean }> {
+export async function completeVerification (userId: string, token: string): Promise<{ modified: boolean }> {
   const id = token.slice(0, 24)
   const secret = token.slice(24)
 
@@ -110,11 +111,7 @@ export async function completeVerification (userId: string, token: string): Prom
     throw new NotFoundError('User does not exist.', { userId })
   }
 
-  if (modifiedCount > 0) {
-    return { statusChanged: true }
-  } else {
-    return { statusChanged: false }
-  }
+  return { modified: modifiedCount > 0 }
 }
 
 export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{ userId: string, scopes: Record<string, string[]>, role: UserRole }> {

@@ -111,7 +111,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         params: Type.Object({ userId: Type.String() }),
         body: Type.Object({ token: Type.String() }),
         response: {
-          200: Type.Object({ statusChanged: Type.Boolean() })
+          200: Type.Object({ modified: Type.Boolean() })
         }
       }
     },
@@ -119,8 +119,8 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       const { token } = request.body
       const { userId } = request.params
       try {
-        const { statusChanged } = await completeVerification(userId, token)
-        return await reply.status(200).send({ statusChanged })
+        const { modified } = await completeVerification(userId, token)
+        return await reply.status(200).send({ modified })
       } catch (err) {
         if (err instanceof NotFoundError) {
           reply.notFound('User to be verified not found.')
