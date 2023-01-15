@@ -33,6 +33,21 @@
       "envFile": "${workspaceFolder}/.env",
       "preLaunchTask": "Build Judger",
       "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Libraries",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/packages/libraries/src/index.ts",
+      "outFiles": [
+        "${workspaceFolder}/packages/libraries/dist/**/*.js"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "preLaunchTask": "Build Shared Libraries",
+      "outputCapture": "std"
     }
   ]
 }
