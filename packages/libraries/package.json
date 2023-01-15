@@ -14,12 +14,15 @@
     "prepack": "tsc --build ."
   },
   "devDependencies": {
+    "@types/minio": "^7.0.15",
     "typescript": "^4.3.2"
   },
   "dependencies": {
     "@azure/logger": "^1.0.3",
     "@azure/service-bus": "^7.5.1",
     "@azure/storage-blob": "^12.10.0",
+    "connection-string-parser": "^1.0.4",
+    "minio": "^7.0.32",
     "mongodb": "^4.12.1"
   }
 }
