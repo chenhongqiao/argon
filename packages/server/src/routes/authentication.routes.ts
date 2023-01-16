@@ -5,13 +5,12 @@ import { registerUser, initiateVerification, fetchUser, completeVerification, au
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
-import { AuthenticationError, AuthorizationError, ConflictError, NewUserSchema, NotFoundError }
+import { AuthenticationError, AuthorizationError, ConflictError, NewUserSchema, NotFoundError, JWTPayload, JWTPayloadType }
   from '@argoncs/types'
 import { delay } from '@argoncs/libraries'
 
 import { randomInt } from 'node:crypto'
 
-import { JWTPayload } from '../types'
 import { Sentry } from '../connections/sentry.connections'
 
 export const authenticationRoutes: FastifyPluginCallback = (app, options, done) => {
@@ -63,7 +62,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       try {
         const authenicated = await authenticateUser(usernameOrEmail, password)
         const { userId, scopes, role } = authenicated
-        const payload: JWTPayload = { userId, scopes, role }
+        const payload: JWTPayload = { type: JWTPayloadType.Identification, userId, scopes, role }
         const token = await reply.jwtSign(payload)
         await delay(randomInt(300, 600))
         return await reply.status(200).send({ token })
@@ -91,7 +90,8 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       const { userId } = request.params
       try {
         const user = await fetchUser(userId)
-        await initiateVerification(userId, user.email)
+        const token = await reply.jwtSign({ type: JWTPayloadType.EmailVerification, email: user.email, userId: user.id }, { expiresIn: '15m' })
+        await initiateVerification(user.email, token)
         return await reply.status(204).send()
       } catch (err) {
         if (err instanceof NotFoundError) {
@@ -105,21 +105,26 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
   )
 
   publicRoutes.put(
-    '/complete-verification/:userId',
+    '/complete-verification',
     {
       schema: {
         params: Type.Object({ userId: Type.String() }),
-        body: Type.Object({ token: Type.String() }),
         response: {
           200: Type.Object({ modified: Type.Boolean() })
         }
       }
     },
     async (request, reply) => {
-      const { token } = request.body
-      const { userId } = request.params
       try {
-        const { modified } = await completeVerification(userId, token)
+        await request.jwtVerify()
+      } catch (err) {
+        return reply.unauthorized('Must provide verification token to complete email verification.')
+      }
+      if (request.user.type !== JWTPayloadType.EmailVerification) {
+        return reply.unauthorized('Must provide verification token to complete email verification.')
+      }
+      try {
+        const { modified } = await completeVerification(request.user.userId, request.user.email)
         return await reply.status(200).send({ modified })
       } catch (err) {
         if (err instanceof NotFoundError) {

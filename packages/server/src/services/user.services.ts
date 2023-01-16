@@ -9,18 +9,9 @@ import { emailClient } from '../connections/email.connections'
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
-interface EmailVerificationDB {
-  _id?: ObjectId
-  userId: string
-  email: string
-  secret: string
-  createdAt: Date
-}
-
 type UserDB = Omit<User, 'id'> & { _id?: ObjectId }
 
 const userCollection = mongoDB.collection<UserDB>('users')
-const verificationCollection = mongoDB.collection<EmailVerificationDB>('verifications')
 
 export async function registerUser (newUser: NewUser): Promise<{ userId: string, email: string }> {
   const salt = (await randomBytesAsync(32)).toString('base64')
@@ -79,31 +70,21 @@ export async function updateUser (userId: string, user: Partial<NewUser>): Promi
   return { modified: modifiedCount > 0 }
 }
 
-export async function initiateVerification (userId: string, email: string): Promise<void> {
-  const secret = (await randomBytesAsync(32)).toString('hex')
-  const verification: EmailVerificationDB = { userId, email, createdAt: new Date(), secret }
-  const { insertedId } = await verificationCollection.insertOne(verification)
+export async function initiateVerification (email: string, token: string): Promise<void> {
   const verificationEmail: emailClient.MailDataRequired = {
-    to: verification.email,
+    to: email,
     from: { name: 'Argon Contest Server', email: process.env.EMAIL_SENDER_ADDRESS ?? '' },
     subject: '[ArgonCS] Please Verify Your Email',
-    html: `User: ${verification.userId}<br>Token: ${insertedId.toString()}${secret}`
+    html: `Token: ${token}`
   }
 
   await emailClient.send(verificationEmail)
 }
 
-export async function completeVerification (userId: string, token: string): Promise<{ modified: boolean }> {
-  const id = token.slice(0, 24)
-  const secret = token.slice(24)
-
-  const verification = await verificationCollection.findOne({ _id: new ObjectId(id) })
-  if (verification == null || verification.secret !== secret) {
-    throw new AuthenticationError('Invalid verification.', { userId, token })
-  }
+export async function completeVerification (userId: string, email: string): Promise<{ modified: boolean }> {
   const { modifiedCount, matchedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, {
     $set: {
-      verifiedEmail: verification.email
+      verifiedEmail: email
     }
   })
 

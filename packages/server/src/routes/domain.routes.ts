@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
-import { ConflictError, DomainDetailSchema, NewDomainSchema, NotFoundError } from '@argoncs/types'
+import { ConflictError, DomainDetailSchema, JWTPayloadType, NewDomainSchema, NotFoundError } from '@argoncs/types'
 import { addOrUpdateDomainMember, createDomain, deleteDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'
@@ -38,6 +38,9 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {
       await request.jwtVerify()
+      if (request.user.type !== JWTPayloadType.Identification) {
+        return reply.unauthorized('JWT Token must be valid for identification.')
+      }
     } catch (err) {
       reply.unauthorized('Authentication is required for domain operations.')
     }

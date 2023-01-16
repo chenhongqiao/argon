@@ -6,7 +6,8 @@ import {
   AuthorizationError,
   SubmissionType,
   TestingSubmissionSchema,
-  ContestSubmissionSchema
+  ContestSubmissionSchema,
+  JWTPayloadType
 } from '@argoncs/types'
 
 import {
@@ -35,6 +36,9 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {
       await request.jwtVerify()
+      if (request.user.type !== JWTPayloadType.Identification) {
+        return reply.unauthorized('JWT Token must be valid for identification.')
+      }
     } catch (err) {
       reply.unauthorized('Authentication is required to access the problem bank.')
     }

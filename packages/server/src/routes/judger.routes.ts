@@ -6,8 +6,7 @@ import { Sentry } from '../connections/sentry.connections'
 
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { userIdExists } from '../services/user.services'
-import { JWTPayload } from '../types'
-import { UserRole } from '@argoncs/types'
+import { JWTPayloadType, UserRole } from '@argoncs/types'
 
 import { randomUUID } from 'crypto'
 
@@ -16,6 +15,9 @@ export const judgerRoutes: FastifyPluginCallback = (app, options, done) => {
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {
       await request.jwtVerify()
+      if (request.user.type !== JWTPayloadType.Identification) {
+        return reply.unauthorized('JWT Token must be valid for identification.')
+      }
     } catch (err) {
       reply.unauthorized('Authentication is required for judger operations.')
     }
@@ -36,8 +38,7 @@ export const judgerRoutes: FastifyPluginCallback = (app, options, done) => {
         while (await userIdExists(userId)) {
           userId = randomUUID()
         }
-        const payload: JWTPayload = { userId, scopes: {}, role: UserRole.Judger }
-        const token = await reply.jwtSign(payload)
+        const token = await reply.jwtSign({ type: JWTPayloadType.Identification, userId, scopes: {}, role: UserRole.Judger })
         return await reply.status(200).send({ token })
       } catch (err) {
         Sentry.captureException(err, { extra: err.context })

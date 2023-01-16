@@ -8,6 +8,7 @@ import {
 import {
   CompilingResultSchema,
   GradingResultSchema,
+  JWTPayloadType,
   UserRole
 } from '@argoncs/types'
 
@@ -19,9 +20,11 @@ export const submissionResultRoutes: FastifyPluginCallback = (app, options, done
   judgerRoutes.addHook('onRequest', async (request, reply) => {
     try {
       await request.jwtVerify()
-
+      if (request.user.type !== JWTPayloadType.Identification) {
+        return reply.unauthorized('JWT Token must be valid for identification.')
+      }
       if (request.user.role !== UserRole.Judger) {
-        reply.unauthorized('Judger authentication is required to update submission results.')
+        return reply.unauthorized('Judger authentication is required to update submission results.')
       }
     } catch (err) {
       reply.unauthorized('Judger authentication is required to update submission results.')
