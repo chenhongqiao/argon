@@ -1,5 +1,5 @@
 import { destroySandbox, initSandbox } from './services/sandbox.services'
-import { gradeSubmission } from './services/grade.services'
+import { gradeSubmission } from './services/grading.services'
 import { compileSubmission } from './services/compile.services'
 
 import { GradingTask, CompilingTask, JudgerTaskType } from '@argoncs/types'

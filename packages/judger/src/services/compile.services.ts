@@ -4,7 +4,7 @@ import { promises as fs } from 'node:fs'
 import { runInSandbox } from './sandbox.services'
 
 import { CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus } from '@argoncs/types'
-import { uploadFromDisk, readFile } from '@argoncs/libraries'
+import { minio } from '@argoncs/libraries'
 import { languageConfigs } from '@argoncs/configs'
 
 export async function compileSubmission (task: CompilingTask, boxId: number): Promise<CompileSucceeded | CompileFailed> {
@@ -27,12 +27,12 @@ export async function compileSubmission (task: CompilingTask, boxId: number): Pr
     boxId
   )
   if (result.status === SandboxStatus.Succeeded) {
-    await uploadFromDisk(binaryPath, { containerName: 'binaries', blobName: task.submissionId })
+    await minio.fPutObject('binaries', task.submissionId, binaryPath)
     return {
       status: CompilingStatus.Succeeded
     }
   } else {
-    const log = (await readFile(logPath)).data.toString()
+    const log = (await fs.readFile(logPath)).toString()
     return {
       status: CompilingStatus.Failed,
       log
