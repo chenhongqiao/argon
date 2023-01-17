@@ -7,7 +7,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Server",
+      "name": "Debug API Server",
       "skipFiles": [
         "<node_internals>/**"
       ],
@@ -47,6 +47,21 @@
       ],
       "envFile": "${workspaceFolder}/.env",
       "preLaunchTask": "Build Shared Libraries",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Upload Server",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/packages/upload/src/index.ts",
+      "outFiles": [
+        "${workspaceFolder}/packages/upload/dist/**/*.js"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "preLaunchTask": "Build Upload Server",
       "outputCapture": "std"
     }
   ]

@@ -66,6 +66,20 @@
       "group": {
         "kind": "build",
       }
+    },
+    {
+      "label": "Build Upload Server",
+      "type": "typescript",
+      "tsconfig": "packages/upload/tsconfig.json",
+      "dependsOn": [
+        "Build Shared Libraries",
+      ],
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": {
+        "kind": "build",
+      }
     }
   ],
 }
