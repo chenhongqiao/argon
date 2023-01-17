@@ -15,6 +15,10 @@ This monorepo contains 5 packages.
 
 This package contains the server portion of the contest platform. It interacts with the user and the judger.
 
+### [@argoncs/upload](https://www.npmjs.com/package/@argoncs/upload)
+
+Upload server that handles testcases.
+
 ### [@argoncs/judger](https://www.npmjs.com/package/@argoncs/judger)
 
 This package contains the code to be used on judgers. It executes submissions in sandboxes and grade their outputs.
