@@ -14,7 +14,7 @@ const app = Fastify({
   }
 })
 
-export async function startServer (): Promise<void> {
+export async function startUploadServer (): Promise<void> {
   await app.register(jwt, {
     secret: process.env.JWT_SECRET ?? ''
   })
