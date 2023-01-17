@@ -1,3 +1,3 @@
-import { startServer } from './index'
+import { startAPIServer } from './index'
 
-void startServer()
+void startAPIServer()
