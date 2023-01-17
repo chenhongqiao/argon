@@ -21,6 +21,7 @@ import { messageSender, mongoDB, ObjectId } from '@argoncs/libraries'
 import { languageConfigs } from '@argoncs/configs'
 
 import { fetchFromProblemBank } from './problem.services'
+import path from 'path'
 
 type TestingSubmissionDB = TestingSubmissionWithoutIds & { _id?: ObjectId, domains_id: ObjectId, problemBank_id: ObjectId }
 type ContestSubmissionDB = ContestSubmissionWithoutIds & { _id?: ObjectId, contests_id: ObjectId, contestProblems_id: ObjectId }
@@ -78,16 +79,26 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
         // Fetch Contest Problem
         // TODO
       }
-      const submissionTestcases: Array<{ points: number, input: string, output: string }> = []
-      // @ts-expect-error: TODO
+      const submissionTestcases: Array<{ points: number, input: { name: string, versionId: string }, output: { name: string, versionId: string } }> = []
+      // @ts-expect-error: Fetch contest problem not implemented
+      if (problem.testcases == null) {
+        return await completeGrading(submissionId, 'Problem does not have testcases.')
+      }
+      // @ts-expect-error: Fetch contest problem not implemented
       problem.testcases.forEach((testcase, index) => {
         const task: GradingTask = {
           constraints: problem.constraints,
           type: JudgerTaskType.Grading,
           submissionId,
           testcase: {
-            input: testcase.input,
-            output: testcase.output
+            input: {
+              objectName: path.join(problem.domainId, problem.id, testcase.input.name),
+              versionId: testcase.input.versionId
+            },
+            output: {
+              objectName: path.join(problem.domainId, problem.id, testcase.output.name),
+              versionId: testcase.output.versionId
+            }
           },
           testcaseIndex: index,
           language: submission.language

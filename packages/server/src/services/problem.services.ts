@@ -4,7 +4,7 @@ import {
   Problem
 } from '@argoncs/types'
 import { mongoDB, ObjectId } from '@argoncs/libraries'
-import { verifyTestcaseDomain } from './testcase.services'
+import { testcaseExists } from './testcase.services'
 
 type ProblemDB = Omit<Problem, 'id' | 'domainId'> & { _id?: ObjectId, domains_id: ObjectId }
 
@@ -12,12 +12,6 @@ const problemBankCollection = mongoDB.collection<ProblemDB>('problemBank')
 
 export async function createInProblemBank (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
   const problem: ProblemDB = { ...newProblem, domains_id: new ObjectId(domainId) }
-  const testcasesVerifyQueue: Array<Promise<void>> = []
-  problem.testcases.forEach((testcase) => {
-    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
-    testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
-  })
-  await Promise.all(testcasesVerifyQueue)
   const { insertedId } = await problemBankCollection.insertOne(problem)
   return { problemId: insertedId.toString() }
 }
@@ -35,8 +29,8 @@ export async function updateInProblemBank (problemId: string, domainId: string, 
   if (problem.testcases != null) {
     const testcasesVerifyQueue: Array<Promise<void>> = []
     problem.testcases.forEach((testcase) => {
-      testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.input, domainId))
-      testcasesVerifyQueue.push(verifyTestcaseDomain(testcase.output, domainId))
+      testcasesVerifyQueue.push(testcaseExists(problemId, domainId, testcase.input.name, testcase.input.versionId))
+      testcasesVerifyQueue.push(testcaseExists(problemId, domainId, testcase.output.name, testcase.output.versionId))
     })
     await Promise.all(testcasesVerifyQueue)
   }

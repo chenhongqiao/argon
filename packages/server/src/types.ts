@@ -1,11 +1,5 @@
 import '@fastify/jwt'
-import { UserRole } from '@argoncs/types'
-
-export interface JWTPayload {
-  userId: string
-  scopes: Record<string, string[]>
-  role: UserRole
-}
+import { JWTPayload } from '@argoncs/types'
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {

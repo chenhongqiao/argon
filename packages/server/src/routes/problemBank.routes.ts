@@ -140,7 +140,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         return await reply.status(200).send({ modified })
       } catch (err) {
         if (err instanceof NotFoundError) {
-          if (err.message === 'Blob not found.') {
+          if (err.message === 'Testcase does not exist.') {
             reply.notFound('One or more of the testcases does not exist.')
           } else {
             reply.notFound('Problem not found.')
@@ -196,6 +196,9 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       const { domainId, problemId } = request.params
       try {
         const problem = await fetchFromProblemBank(problemId, domainId)
+        if (problem.testcases == null) {
+          return reply.methodNotAllowed('Testcases must be uploaded before a problem can be tested.')
+        }
         const created = await createTestingSubmission(submission, problem.domainId, problem.id, request.user.userId)
         await queueSubmission(created.submissionId)
         return await reply.status(202).send(created)

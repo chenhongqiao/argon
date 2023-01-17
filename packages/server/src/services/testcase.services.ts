@@ -1,37 +1,13 @@
-import { randomUUID } from 'node:crypto'
-import { Worker } from 'node:worker_threads'
-
-import { AuthorizationError } from '@argoncs/types'
-import { blobExists, deleteBlob, getMetaData } from '@argoncs/libraries'
+import { NotFoundError } from '@argoncs/types'
+import { minio } from '@argoncs/libraries'
 
 import path = require('node:path')
 
-export async function uploadTestcase (testcasePath: string, domainId: string): Promise<{ testcaseId: string }> {
-  let testcaseId = randomUUID()
-  while (Boolean(await blobExists({ containerName: 'testcases', blobName: testcaseId }))) {
-    testcaseId = randomUUID()
-  }
-  return await new Promise((resolve, reject) => {
-    const worker = new Worker(path.join(__dirname, '../tasks/uploadTestcase.tasks.js'), {
-      workerData: { testcasePath, testcaseId, domainId }
-    })
-    worker.on('message', resolve)
-    worker.on('error', reject)
-    worker.on('exit', (code) => {
-      if (code !== 0) {
-        reject(new Error(`Worker stopped with exit code ${code}.`))
-      }
-    })
-  })
-}
+export async function testcaseExists (problemId: string, domainId: string, filename: string, versionId: string): Promise<void> {
+  const objectName = path.join(domainId, problemId, filename)
+  const stat = await minio.statObject('testcases', objectName, { versionId })
 
-export async function verifyTestcaseDomain (testcaseId: string, domainId: string): Promise<void> {
-  const meta = await getMetaData({ containerName: 'testcases', blobName: testcaseId })
-  if (meta.domainid == null || meta.domainid !== domainId) {
-    throw new AuthorizationError('Testcase does not belong to this domain', { domainId, testcaseId })
+  if (stat == null || stat.versionId !== versionId) {
+    throw new NotFoundError('Testcase does not exist.', { domainId, problemId, filename, versionId })
   }
-}
-
-export async function deleteTestcase (testcaseId: string): Promise<void> {
-  await deleteBlob({ containerName: 'testcases', blobName: testcaseId })
 }

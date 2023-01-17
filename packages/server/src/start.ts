@@ -22,7 +22,7 @@ const app = Fastify({
   }
 })
 
-export async function startServer (): Promise<void> {
+export async function startAPIServer (): Promise<void> {
   await createCollectionIndexes()
 
   await app.register(jwt, {
@@ -43,7 +43,7 @@ export async function startServer (): Promise<void> {
   await app.register(judgerRoutes, { prefix: '/judger' })
 
   try {
-    const port: number = parseInt(process.env.SERVER_PORT ?? '8000')
+    const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')
     await app.listen({ port })
   } catch (err) {
     Sentry.captureException(err, { extra: err.context })

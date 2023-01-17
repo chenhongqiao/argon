@@ -11,8 +11,12 @@ export const NewProblemSchema = Type.Object({
   samples: Type.Array(
     Type.Object({ input: Type.String(), output: Type.String() })
   ),
-  testcases: Type.Array(
-    Type.Object({ input: Type.String(), output: Type.String(), points: Type.Number() })
+  testcases: Type.Optional(Type.Array(
+    Type.Object({
+      input: Type.Object({ name: Type.String(), versionId: Type.String() }),
+      output: Type.Object({ name: Type.String(), versionId: Type.String() }),
+      points: Type.Number()
+    }))
   )
 }, { additionalProperties: false })
 

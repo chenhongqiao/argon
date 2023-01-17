@@ -20,8 +20,8 @@ export interface GradingTask {
   type: JudgerTaskType.Grading
   submissionId: string
   testcase: {
-    input: string
-    output: string
+    input: { objectName: string, versionId: string }
+    output: { objectName: string, versionId: string }
   }
   testcaseIndex: number
   constraints: Constraints
