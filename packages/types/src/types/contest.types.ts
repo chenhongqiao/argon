@@ -10,7 +10,7 @@ export const NewContestSchema = Type.Object({
 export type NewContest = Static<typeof NewContestSchema>
 
 export const ContestSchema = Type.Intersect([NewContestSchema, Type.Object({
-  domainId: Type.String(),
-  id: Type.String()
+  domainId: Type.String({ minLength: 12, maxLength: 12 }),
+  id: Type.String({ minLength: 12, maxLength: 12 })
 })])
 export type Contest = Static<typeof ContestSchema>

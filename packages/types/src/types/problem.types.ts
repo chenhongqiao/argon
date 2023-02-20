@@ -23,8 +23,8 @@ export const NewProblemSchema = Type.Object({
 export type NewProblem = Static<typeof NewProblemSchema>
 
 export const ProblemSchema = Type.Intersect([NewProblemSchema, Type.Object({
-  id: Type.String(),
-  domainId: Type.String()
+  id: Type.String({ minLength: 12, maxLength: 12 }),
+  domainId: Type.String({ minLength: 12, maxLength: 12 })
 })])
 
 export type Problem = Static<typeof ProblemSchema>

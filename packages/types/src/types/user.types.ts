@@ -20,9 +20,9 @@ export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password'])
     salt: Type.String()
   }),
   role: Type.Enum(UserRole),
-  id: Type.String(),
+  id: Type.String({ minLength: 12, maxLength: 12 }),
   verifiedEmail: Type.Union([Type.String(), Type.Null()]),
-  scopes: Type.Record(Type.String(), Type.Array(Type.String()))
+  scopes: Type.Record(Type.String({ minLength: 12, maxLength: 12 }), Type.Array(Type.String()))
 })])
 export type User = Static<typeof UserSchema>
 

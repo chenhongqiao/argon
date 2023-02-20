@@ -49,9 +49,9 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     {
       schema: {
         body: NewProblemSchema,
-        params: Type.Object({ domainId: Type.String() }),
+        params: Type.Object({ domainId: Type.String({ minLength: 12, maxLength: 12 }) }),
         response: {
-          201: Type.Object({ problemId: Type.String() })
+          201: Type.Object({ problemId: Type.String({ minLength: 12, maxLength: 12 }) })
         }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
@@ -77,7 +77,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
+        params: Type.Object({ domainId: Type.String({ minLength: 12, maxLength: 12 }), problemId: Type.String({ minLength: 12, maxLength: 12 }) }),
         response: { 200: ProblemSchema }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.read'])]) as any]
@@ -105,7 +105,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         response: {
           200: Type.Array(ProblemSchema)
         },
-        params: Type.Object({ domainId: Type.String() })
+        params: Type.Object({ domainId: Type.String({ minLength: 12, maxLength: 12 }) })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.read'])]) as any]
     },
@@ -127,7 +127,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         body: Type.Partial(NewProblemSchema),
         response: { 200: Type.Object({ modified: Type.Boolean() }) },
-        params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
+        params: Type.Object({ domainId: Type.String({ minLength: 12, maxLength: 12 }), problemId: Type.String({ minLength: 12, maxLength: 12 }) })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
 
@@ -159,7 +159,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
+        params: Type.Object({ domainId: Type.String({ minLength: 12, maxLength: 12 }), problemId: Type.String({ minLength: 12, maxLength: 12 }) })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
     },
@@ -184,9 +184,9 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     {
       schema: {
         body: NewSubmissionSchema,
-        params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
+        params: Type.Object({ domainId: Type.String({ minLength: 12, maxLength: 12 }), problemId: Type.String({ minLength: 12, maxLength: 12 }) }),
         response: {
-          202: Type.Object({ submissionId: Type.String() })
+          202: Type.Object({ submissionId: Type.String({ minLength: 12, maxLength: 12 }) })
         }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
@@ -217,7 +217,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId/submissions/:submissionId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.String(), problemId: Type.String(), submissionId: Type.String() }),
+        params: Type.Object({ domainId: Type.String({ minLength: 12, maxLength: 12 }), problemId: Type.String({ minLength: 12, maxLength: 12 }), submissionId: Type.String({ minLength: 12, maxLength: 12 }) }),
         response: {
           200: Type.Union([TestingSubmissionSchema, ContestSubmissionSchema])
         }

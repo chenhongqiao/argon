@@ -21,7 +21,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       schema: {
         body: NewUserSchema,
         response: {
-          201: Type.Object({ userId: Type.String() })
+          201: Type.Object({ userId: Type.String({ minLength: 12, maxLength: 12 }) })
         }
       }
     },
@@ -50,7 +50,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
           200: Type.Object({ token: Type.String() }),
           403: Type.Object({
             message: Type.String(),
-            userId: Type.String(),
+            userId: Type.String({ minLength: 12, maxLength: 12 }),
             statusCode: Type.Number(),
             error: Type.String()
           })
@@ -83,7 +83,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     '/initiate-verification/:userId',
     {
       schema: {
-        params: Type.Object({ userId: Type.String() })
+        params: Type.Object({ userId: Type.String({ minLength: 12, maxLength: 12 }) })
       }
     },
     async (request, reply) => {

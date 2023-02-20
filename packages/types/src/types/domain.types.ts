@@ -8,8 +8,8 @@ export const NewDomainSchema = Type.Object({
 export type NewDomain = Static<typeof NewDomainSchema>
 
 export const DomainSchema = Type.Intersect([NewDomainSchema, Type.Object({
-  id: Type.Optional(Type.String()),
-  members: Type.Array(Type.String())
+  id: Type.Optional(Type.String({ minLength: 12, maxLength: 12 })),
+  members: Type.Array(Type.String({ minLength: 12, maxLength: 12 }))
 })])
 export type Domain = Static<typeof DomainSchema>
 
