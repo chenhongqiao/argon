@@ -59,7 +59,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
       }
       modifiedCount += modifiedUser
 
-      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $pull: { members: userId } }, { session })
+      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $pull: { members: new ObjectId(userId) } }, { session })
       if (matchedDomain === 0) {
         throw new NotFoundError('Domain does not exist.', { domainId })
       }
@@ -82,7 +82,7 @@ export async function fetchDomain (domainId: string): Promise<Domain> {
 }
 
 export async function fetchDomainDetail (domainId: string): Promise<DomainDetail> {
-  const domain = await domainCollection.aggregate([
+  const domain = (await domainCollection.aggregate([
     { $match: { _id: new ObjectId(domainId) } },
     {
       $lookup: {
@@ -97,7 +97,7 @@ export async function fetchDomainDetail (domainId: string): Promise<DomainDetail
       }
     },
     { $set: { id: '$_id' } }
-  ]).toArray()[0] as DomainDetail | undefined
+  ]).toArray())[0] as DomainDetail | undefined
   if (domain == null) {
     throw new NotFoundError('Domain does not exist.', { domainId })
   }
