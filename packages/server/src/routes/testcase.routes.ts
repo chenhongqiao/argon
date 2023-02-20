@@ -7,17 +7,10 @@ import { Type } from '@sinclair/typebox'
 import { verifyDomainScope } from '../auth/domainScope.auth'
 import { Sentry } from '../connections/sentry.connections'
 
-import multipart from '@fastify/multipart'
 import { JWTPayloadType } from '@argoncs/types'
 
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
-  void app.register(multipart, {
-    limits: {
-      fileSize: 20971520,
-      files: 50
-    }
-  })
 
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {
