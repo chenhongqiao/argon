@@ -6,7 +6,7 @@ import { testcaseRoutes } from './routes/testcase.routes'
 import { heartbeatRoutes } from './routes/heartbeat.routes'
 import { submissionResultRoutes } from './routes/submissionResult.routes'
 import { authenticationRoutes } from './routes/authentication.routes'
-import { domainRoutes } from './routes/domain.routes'
+import { domainPublicRoutes, domainPrivateRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
 import { judgerRoutes } from './routes/judger.routes'
 
@@ -39,7 +39,8 @@ export async function startAPIServer (): Promise<void> {
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
   await app.register(authenticationRoutes, { prefix: '/authentication' })
   await app.register(userRoutes, { prefix: '/users' })
-  await app.register(domainRoutes, { prefix: '/domains' })
+  await app.register(domainPublicRoutes, { prefix: '/domains' })
+  await app.register(domainPrivateRoutes, { prefix: '/domains' })
   await app.register(judgerRoutes, { prefix: '/judger' })
 
   try {

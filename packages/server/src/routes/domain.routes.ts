@@ -7,7 +7,7 @@ import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'
 import { Sentry } from '../connections/sentry.connections'
 
-export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
+export const domainPublicRoutes: FastifyPluginCallback = (app, options, done) => {
   const publicRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
   publicRoutes.get(
     '/:domainId',
@@ -33,7 +33,10 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         }
       }
     })
+  return done()
+}
 
+export const domainPrivateRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {
