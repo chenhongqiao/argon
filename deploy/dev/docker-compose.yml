@@ -8,10 +8,14 @@ services:
       - 27017:27017
     volumes:
       - argon-mongo:/data/db
+      - ./keyfile:/data/keyfile
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: argon
+      MONGO_INITDB_DATABASE: test
+      MONGO_REPLICA_SET_NAME: rs0
+      MONGO_SHARDING_ENABLED: false
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/keyfile
 
   minio:
     image: minio/minio
