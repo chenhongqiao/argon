@@ -2,7 +2,7 @@ import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { ConflictError, DomainDetailSchema, JWTPayloadType, NewDomainSchema, NotFoundError } from '@argoncs/types'
-import { addOrUpdateDomainMember, createDomain, deleteDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services'
+import { addOrUpdateDomainMember, createDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services'
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { verifyDomainScope } from '../auth/domainScope.auth'
 import { Sentry } from '../connections/sentry.connections'
@@ -90,30 +90,6 @@ export const domainRoutes: FastifyPluginCallback = (app, options, done) => {
         } else {
           Sentry.captureException(err, { extra: err.context })
           reply.internalServerError('A server error occurred when updating a domain.')
-        }
-      }
-    }
-  )
-
-  privateRoutes.delete(
-    '/:domainId',
-    {
-      schema: {
-        params: Type.Object({ domainId: Type.String() })
-      },
-      preValidation: [privateRoutes.auth([verifySuperAdmin]) as any]
-    },
-    async (request, reply) => {
-      const { domainId } = request.params
-      try {
-        await deleteDomain(domainId)
-        return await reply.status(204).send()
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          reply.notFound(err.message)
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when deleting a domain.')
         }
       }
     }
