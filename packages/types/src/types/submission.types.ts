@@ -26,8 +26,8 @@ export type NewSubmission = Static<typeof NewSubmissionSchema>
 
 export const BaseContestSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
   type: Type.Literal(SubmissionType.Contest),
-  problemId: Type.String({ minLength: 12, maxLength: 12 }),
-  contestId: Type.String({ minLength: 12, maxLength: 12 })
+  problemId: Type.RegEx(/^[a-f\d]{24}$/i),
+  contestId: Type.RegEx(/^[a-f\d]{24}$/i)
 })])
 
 const BaseContestSubmissionWithoutIdsSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
@@ -36,8 +36,8 @@ const BaseContestSubmissionWithoutIdsSchema = Type.Intersect([NewSubmissionSchem
 
 export const BaseTestingSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
   type: Type.Literal(SubmissionType.Testing),
-  problemId: Type.String({ minLength: 12, maxLength: 12 }),
-  domainId: Type.String({ minLength: 12, maxLength: 12 })
+  problemId: Type.RegEx(/^[a-f\d]{24}$/i),
+  domainId: Type.RegEx(/^[a-f\d]{24}$/i)
 })])
 
 const BaseTestingSubmissionWithoutIdsSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
@@ -82,19 +82,19 @@ const GradedSubmissionSchema = Type.Object({
 })
 
 export const ContestSubmissionSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([FailedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })])])
+  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([FailedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })])])
 export type ContestSubmission = Static<typeof ContestSubmissionSchema>
 
 export const TestingSubmissionSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })]),
-  Type.Intersect([FailedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String({ minLength: 12, maxLength: 12 }) })])])
+  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
+  Type.Intersect([FailedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })])])
 export type TestingSubmission = Static<typeof TestingSubmissionSchema>
 
 const ContestSubmissionWithoutIdsSchema = Type.Union([

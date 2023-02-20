@@ -35,7 +35,7 @@ export const submissionResultRoutes: FastifyPluginCallback = (app, options, done
     '/:submissionId/compiling-result',
     {
       schema: {
-        params: Type.Object({ submissionId: Type.String({ minLength: 12, maxLength: 12 }) }),
+        params: Type.Object({ submissionId: Type.RegEx(/^[a-f\d]{24}$/i) }),
         body: CompilingResultSchema
       }
     }, async (request, reply) => {
@@ -54,7 +54,7 @@ export const submissionResultRoutes: FastifyPluginCallback = (app, options, done
     '/:submissionId/testcase-result/:testcaseIndex',
     {
       schema: {
-        params: Type.Object({ submissionId: Type.String({ minLength: 12, maxLength: 12 }), testcaseIndex: Type.Number() }),
+        params: Type.Object({ submissionId: Type.RegEx(/^[a-f\d]{24}$/i), testcaseIndex: Type.Number() }),
         body: GradingResultSchema
       }
     }, async (request, reply) => {
