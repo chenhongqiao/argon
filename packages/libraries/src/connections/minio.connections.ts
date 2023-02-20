@@ -1,4 +1,4 @@
-import Minio, { Client, MinIOTypeHack } from 'minio'
+import { Client, MinIOTypeHack } from 'minio'
 
 import { ConnectionStringParser } from 'connection-string-parser'
 
@@ -33,7 +33,7 @@ declare module 'minio' {
   }
 }
 
-export const minio = new Minio.Client({
+export const minio = new Client({
   endPoint: minioConfig.hosts[0].host,
   accessKey: minioConfig.username,
   secretKey: minioConfig.password,
