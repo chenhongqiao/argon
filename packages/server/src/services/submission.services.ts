@@ -163,11 +163,10 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
     submission.testcases[testcaseIndex].result = gradingResult
     await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
       $set: {
-        'testcases.$[index].result': gradingResult,
-        'testcases.$[index].score': score
+        [`testcases.${testcaseIndex}.result`]: gradingResult,
+        [`testcases.${testcaseIndex}.score`]: score
       }
-    },
-    { arrayFilters: [{ index: testcaseIndex }] })
+    })
 
     if (submission.gradedCases === submission.testcases.length) {
       await completeGrading(submissionId)
