@@ -63,7 +63,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
         const authenicated = await authenticateUser(usernameOrEmail, password)
         const { userId, scopes, role } = authenicated
         const payload: JWTPayload = { type: JWTPayloadType.Identification, userId, scopes, role }
-        const token = await reply.jwtSign(payload)
+        const token = await reply.jwtSign(payload, { expiresIn: '720h' })
         await delay(randomInt(300, 600))
         return await reply.status(200).send({ token })
       } catch (err) {
@@ -108,7 +108,6 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     '/complete-verification',
     {
       schema: {
-        params: Type.Object({ userId: Type.String() }),
         response: {
           200: Type.Object({ modified: Type.Boolean() })
         }
