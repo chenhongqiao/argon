@@ -26,13 +26,9 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   })
 
   privateRoutes.post(
-    '/:domainId/:problemId',
+    '/',
     {
       schema: {
-        params: Type.Object({
-          domainId: Type.String(),
-          problemId: Type.String()
-        }),
         response: {
           201: Type.Object({ versionId: Type.String(), filename: Type.String() })
         }
@@ -40,14 +36,10 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       try {
-        const { domainId, problemId } = request.params
         if (request.user.type !== JWTPayloadType.Upload) {
           return reply.unauthorized('Invalid upload token.')
         }
-        const { resource } = request.user
-        if (resource.domainId !== domainId || resource.problemId !== problemId) {
-          return reply.forbidden('Missing valid credential to upload to this resource.')
-        }
+        const { domainId, problemId } = request.user.resource
         const testcase = await request.file()
         const result = await uploadTestcase(domainId, problemId, testcase)
         return await reply.status(201).send(result)
