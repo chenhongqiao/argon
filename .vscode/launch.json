@@ -56,7 +56,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/packages/upload/src/index.ts",
+      "program": "${workspaceFolder}/packages/upload/src/dev.ts",
       "outFiles": [
         "${workspaceFolder}/packages/upload/dist/**/*.js"
       ],
