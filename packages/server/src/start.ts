@@ -1,5 +1,7 @@
 import Fastify from 'fastify'
 import { randomBytes } from 'crypto'
+import Sentry = require('@sentry/node')
+import { sessionRedis } from '@argoncs/libraries'
 
 import { problemBankRoutes } from './routes/problemBank.routes'
 import { testcaseRoutes } from './routes/testcase.routes'
@@ -11,14 +13,15 @@ import { userRoutes } from './routes/user.routes'
 import { judgerRoutes } from './routes/judger.routes'
 
 import { createCollectionIndexes } from './utils/collection.utils'
-import { Sentry } from './connections/sentry.connections'
-import { sessionRedis } from '@argoncs/libraries'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
 import fastifySession from '@fastify/session'
 import fastifySensible from '@fastify/sensible'
 import fastifyJwt from '@fastify/jwt'
+import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
+
+import { version } from '../package.json'
 
 import connectRedis from 'connect-redis'
 const RedisStore = connectRedis(fastifySession as any)
@@ -27,6 +30,12 @@ const app = Fastify({
   logger: {
     enabled: true
   }
+})
+
+Sentry.init({
+  dsn: 'https://7e6e404e57024a01819d0fb4cb215538@o1044666.ingest.sentry.io/6554031',
+  environment: process.env.NODE_ENV,
+  release: version
 })
 
 export async function startAPIServer (): Promise<void> {
@@ -46,8 +55,16 @@ export async function startAPIServer (): Promise<void> {
     saveUninitialized: false
   })
   await app.register(fastifySensible)
-
   await app.register(fastifyAuth)
+  await app.register(fastifyHttpErrorsEnhanced, {
+    handle404Errors: false,
+    preHandler (err: any) {
+      if (!('statusCode' in err) && !('validation' in err)) {
+        Sentry.captureException(err)
+      }
+      return err
+    }
+  })
 
   await app.register(problemBankRoutes, { prefix: '/problem-bank' })
   await app.register(testcaseRoutes, { prefix: '/testcases' })
