@@ -1,5 +1,3 @@
-export * from './classes/error.classes'
-
 export * from './types/judger.types'
 export * from './types/compilation.types'
 export * from './types/grading.types'

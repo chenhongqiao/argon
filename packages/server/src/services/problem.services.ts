@@ -1,8 +1,8 @@
 import {
   NewProblem,
-  NotFoundError,
   Problem
 } from '@argoncs/types'
+import { NotFoundError } from 'http-errors-enhanced'
 import { mongoDB, ObjectId } from '@argoncs/libraries'
 import { testcaseExists } from './testcase.services'
 
@@ -19,7 +19,7 @@ export async function createInProblemBank (newProblem: NewProblem, domainId: str
 export async function fetchFromProblemBank (problemId: string, domainId: string): Promise<Problem> {
   const problem = await problemBankCollection.findOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) })
   if (problem == null) {
-    throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
+    throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
   }
   const { _id, domains_id, ...problemContent } = problem
   return { ...problemContent, id: _id.toString(), domainId: domains_id.toString() }
@@ -37,7 +37,7 @@ export async function updateInProblemBank (problemId: string, domainId: string, 
 
   const { matchedCount, modifiedCount } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problem })
   if (matchedCount === 0) {
-    throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
+    throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
   }
 
   return { modified: modifiedCount > 0 }
@@ -47,7 +47,7 @@ export async function deleteInProblemBank (problemId: string, domainId: string):
   const { deletedCount } = await problemBankCollection.deleteOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) })
 
   if (deletedCount === 0) {
-    throw new NotFoundError('Problem does not exist in problem bank.', { problemId, domainId })
+    throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
   }
 }
 

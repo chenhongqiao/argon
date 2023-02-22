@@ -1,8 +1,7 @@
 import { exec } from '../utils/system.utils'
+import { promises as fs } from 'node:fs'
 
 import {
-  ConflictError,
-  NotFoundError,
   Constraints,
   SandboxStatus,
   SandboxRuntimeError,
@@ -10,7 +9,8 @@ import {
   SandboxTimeExceeded,
   SandboxMemoryExceeded
 } from '@argoncs/types'
-import { readFile } from '@argoncs/libraries'
+
+import { ConflictError } from 'http-errors-enhanced'
 
 interface SandboxMeta {
   status?: string
@@ -53,7 +53,7 @@ export async function initSandbox (
     workDir = (await exec(`isolate --box-id=${boxId} --cg --init`)).stdout
   } catch (err) {
     if (Boolean((err.message?.startsWith('Box already exists')))) {
-      throw new ConflictError('Box already exists', { boxId })
+      throw new ConflictError('A box with the same ID already exists.', { boxId })
     } else {
       throw err
     }
@@ -127,7 +127,7 @@ export async function runInSandbox (
     await exec(command)
   } catch (err) {
     try {
-      const meta = (await readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).data.toString()
+      const meta = (await fs.readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).toString()
       const result = parseMeta(meta)
 
       switch (result.status) {
@@ -179,7 +179,7 @@ export async function runInSandbox (
           }
       }
     } catch (err) {
-      if (err instanceof NotFoundError) {
+      if (err?.code === 'ENONET') {
         return {
           status: SandboxStatus.SystemError,
           message: 'Meta file does not exist on abnormal termination.'
@@ -191,7 +191,7 @@ export async function runInSandbox (
   }
 
   try {
-    const meta = (await readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).data.toString()
+    const meta = (await fs.readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).toString()
     const result = parseMeta(meta)
     if (result.time == null || result['time-wall'] == null || result.memory == null) {
       return {
@@ -207,7 +207,7 @@ export async function runInSandbox (
       message: 'Task completed successfully.'
     }
   } catch (err) {
-    if (err instanceof NotFoundError) {
+    if (err?.code === 'ENONET') {
       return {
         status: SandboxStatus.SystemError,
         message: 'Meta file does not exist on abnormal termination.'

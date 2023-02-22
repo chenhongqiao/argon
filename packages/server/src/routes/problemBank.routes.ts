@@ -1,9 +1,7 @@
 import {
   NewProblemSchema,
-  NotFoundError,
   ProblemSchema,
   NewSubmissionSchema,
-  AuthorizationError,
   SubmissionType,
   TestingSubmissionSchema,
   ContestSubmissionSchema,
@@ -29,7 +27,6 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
 import { verifyDomainScope } from '../auth/domainScope.auth'
-import { Sentry } from '../connections/sentry.connections'
 
 export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -59,17 +56,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     async (request, reply) => {
       const problem = request.body
       const { domainId } = request.params
-      try {
-        const created = await createInProblemBank(problem, domainId)
-        return await reply.status(201).send(created)
-      } catch (err) {
-        if (err instanceof NotFoundError || err instanceof AuthorizationError) {
-          reply.notFound('One or more of the testcases does not exist.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when creating a problem.')
-        }
-      }
+      const created = await createInProblemBank(problem, domainId)
+      return await reply.status(201).send(created)
     }
   )
 
@@ -84,17 +72,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      try {
-        const problem = await fetchFromProblemBank(problemId, domainId)
-        return await reply.status(200).send(problem)
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          reply.notFound('Problem not found.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when loading a problem.')
-        }
-      }
+      const problem = await fetchFromProblemBank(problemId, domainId)
+      return await reply.status(200).send(problem)
     }
   )
 
@@ -111,13 +90,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const { domainId } = request.params
-      try {
-        const problems = await fetchDomainProblems(domainId)
-        return await reply.status(200).send(problems)
-      } catch (err) {
-        Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred when loading the problem list.')
-      }
+      const problems = await fetchDomainProblems(domainId)
+      return await reply.status(200).send(problems)
     }
   )
 
@@ -135,23 +109,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     async (request, reply) => {
       const { problemId, domainId } = request.params
       const problem = request.body
-      try {
-        const { modified } = await updateInProblemBank(problemId, domainId, problem)
-        return await reply.status(200).send({ modified })
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          if (err.message === 'Testcase does not exist.') {
-            reply.notFound('One or more of the testcases does not exist.')
-          } else {
-            reply.notFound('Problem not found.')
-          }
-        } else if (err instanceof AuthorizationError) {
-          reply.notFound('One or more of the testcases does not exist.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when updating a problem.')
-        }
-      }
+      const { modified } = await updateInProblemBank(problemId, domainId, problem)
+      return await reply.status(200).send({ modified })
     }
   )
 
@@ -165,17 +124,8 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      try {
-        await deleteInProblemBank(problemId, domainId)
-        return await reply.status(204).send()
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          reply.notFound('Problem not found.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when deleting a problem.')
-        }
-      }
+      await deleteInProblemBank(problemId, domainId)
+      return await reply.status(204).send()
     }
   )
 
@@ -194,22 +144,13 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     async (request, reply) => {
       const submission = request.body
       const { domainId, problemId } = request.params
-      try {
-        const problem = await fetchFromProblemBank(problemId, domainId)
-        if (problem.testcases == null) {
-          return reply.methodNotAllowed('Testcases must be uploaded before a problem can be tested.')
-        }
-        const created = await createTestingSubmission(submission, problem.domainId, problem.id, request.user.userId)
-        await queueSubmission(created.submissionId)
-        return await reply.status(202).send(created)
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          reply.notFound('Problem not found.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when creating a testing submission.')
-        }
+      const problem = await fetchFromProblemBank(problemId, domainId)
+      if (problem.testcases == null) {
+        return reply.methodNotAllowed('Testcases must be uploaded before a problem can be tested.')
       }
+      const created = await createTestingSubmission(submission, problem.domainId, problem.id, request.user.userId)
+      await queueSubmission(created.submissionId)
+      return await reply.status(202).send(created)
     }
   )
 
@@ -226,22 +167,13 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     },
     async (request, reply) => {
       const { domainId, submissionId, problemId } = request.params
-      try {
-        const submission = await fetchSubmission(submissionId)
+      const submission = await fetchSubmission(submissionId)
 
-        if (submission.type !== SubmissionType.Testing || submission.problemId !== problemId || submission.domainId !== domainId) {
-          return reply.notFound('Submission not found.')
-        }
-
-        return await reply.status(200).send(submission)
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          reply.notFound('Submission not found.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when loading a testing submission.')
-        }
+      if (submission.type !== SubmissionType.Testing || submission.problemId !== problemId || submission.domainId !== domainId) {
+        return reply.notFound('Submission not found.')
       }
+
+      return await reply.status(200).send(submission)
     })
 
   return done()

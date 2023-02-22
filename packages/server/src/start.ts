@@ -1,5 +1,5 @@
 import Fastify from 'fastify'
-import jwt from '@fastify/jwt'
+import { randomBytes } from 'crypto'
 
 import { problemBankRoutes } from './routes/problemBank.routes'
 import { testcaseRoutes } from './routes/testcase.routes'
@@ -12,9 +12,16 @@ import { judgerRoutes } from './routes/judger.routes'
 
 import { createCollectionIndexes } from './utils/collection.utils'
 import { Sentry } from './connections/sentry.connections'
+import { sessionRedis } from '@argoncs/libraries'
 
 import fastifyAuth from '@fastify/auth'
-import sensible from '@fastify/sensible'
+import fastifyCookie from '@fastify/cookie'
+import fastifySession from '@fastify/session'
+import fastifySensible from '@fastify/sensible'
+import fastifyJwt from '@fastify/jwt'
+
+import connectRedis from 'connect-redis'
+const RedisStore = connectRedis(fastifySession as any)
 
 const app = Fastify({
   logger: {
@@ -25,11 +32,20 @@ const app = Fastify({
 export async function startAPIServer (): Promise<void> {
   await createCollectionIndexes()
 
-  await app.register(jwt, {
+  await app.register(fastifyJwt, {
     secret: process.env.JWT_SECRET ?? ''
   })
-
-  await app.register(sensible)
+  await app.register(fastifyCookie)
+  await app.register(fastifySession, {
+    store: new RedisStore({ client: sessionRedis }) as any,
+    secret: process.env.COOKIE_SECRET ?? '',
+    idGenerator (request: any) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      return `${request.session.userId}-${randomBytes(16).toString('hex')}`
+    },
+    saveUninitialized: false
+  })
+  await app.register(fastifySensible)
 
   await app.register(fastifyAuth)
 

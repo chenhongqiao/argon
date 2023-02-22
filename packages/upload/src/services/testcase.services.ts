@@ -7,7 +7,7 @@ export async function uploadTestcase (domainId: string, problemId: string, testc
   const filename = testcase.filename.replaceAll('/', '.')
   const objectName = path.join(domainId, problemId, filename)
   const trimmed = new PassThrough()
-  trimTestcase(testcase.file, trimmed)
+  await trimTestcase(testcase.file, trimmed)
   const { versionId } = await minio.putObject('testcases', objectName, trimmed)
   if (versionId == null) {
     throw Error('Versioning not enabled on testcases bucket.')

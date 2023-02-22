@@ -1,4 +1,4 @@
-import { NotFoundError } from '@argoncs/types'
+import { NotFoundError } from 'http-errors-enhanced'
 import { minio } from '@argoncs/libraries'
 
 import path = require('node:path')
@@ -8,6 +8,6 @@ export async function testcaseExists (problemId: string, domainId: string, filen
   const stat = await minio.statObject('testcases', objectName, { versionId })
 
   if (stat == null || stat.versionId !== versionId) {
-    throw new NotFoundError('Testcase does not exist.', { domainId, problemId, filename, versionId })
+    throw new NotFoundError('No test case found with the given identifiers.', { domainId, problemId, filename, versionId })
   }
 }

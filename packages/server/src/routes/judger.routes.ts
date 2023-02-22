@@ -2,8 +2,6 @@ import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
-import { Sentry } from '../connections/sentry.connections'
-
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { userIdExists } from '../services/user.services'
 import { JWTPayloadType, UserRole } from '@argoncs/types'
@@ -33,17 +31,12 @@ export const judgerRoutes: FastifyPluginCallback = (app, options, done) => {
       preValidation: [privateRoutes.auth([verifySuperAdmin]) as any]
     },
     async (request, reply) => {
-      try {
-        let userId: string = randomUUID()
-        while (await userIdExists(userId)) {
-          userId = randomUUID()
-        }
-        const token = await reply.jwtSign({ type: JWTPayloadType.Identification, userId, scopes: {}, role: UserRole.Judger })
-        return await reply.status(200).send({ token })
-      } catch (err) {
-        Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred when creating token for judgers.')
+      let userId: string = randomUUID()
+      while (await userIdExists(userId)) {
+        userId = randomUUID()
       }
+      const token = await reply.jwtSign({ type: JWTPayloadType.Identification, userId, scopes: {}, role: UserRole.Judger })
+      return await reply.status(200).send({ token })
     }
   )
   return done()

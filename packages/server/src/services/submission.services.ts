@@ -2,12 +2,10 @@ import {
   CompilingResult,
   CompilingStatus,
   CompilingTask,
-  DataError,
   GradingTask,
   GradingResult,
   JudgerTaskType,
   NewSubmission,
-  NotFoundError,
   Problem,
   SubmissionStatus,
   ContestSubmission,
@@ -17,6 +15,7 @@ import {
   ContestSubmissionWithoutIds,
   GradingStatus
 } from '@argoncs/types'
+import { NotFoundError } from 'http-errors-enhanced'
 import { messageSender, mongoDB, ObjectId } from '@argoncs/libraries'
 import { languageConfigs } from '@argoncs/configs'
 
@@ -53,7 +52,7 @@ export async function queueSubmission (submissionId: string): Promise<void> {
   }
   const batch = await messageSender.createMessageBatch()
   if (!batch.tryAddMessage({ body: task })) {
-    throw new DataError('Task too big to fit in the queue.', task)
+    throw new Error('Task too big to fit in the queue.')
   }
   await messageSender.sendMessages(batch)
 }
@@ -104,7 +103,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
           language: submission.language
         }
         if (!batch.tryAddMessage({ body: task })) {
-          throw new DataError('Task too big to fit in the queue.', task)
+          throw new Error('Task too big to fit in the queue.')
         }
         submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
       })
@@ -157,7 +156,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
 
   if (submission.status === SubmissionStatus.Grading) {
     if (submission.testcases[testcaseIndex] == null) {
-      throw new NotFoundError('Testcase not found by index.', { testcaseIndex, submissionId })
+      throw new NotFoundError('No testcase found at the given index.', { testcaseIndex, submissionId })
     }
     const score = gradingResult.status === GradingStatus.Accepted ? submission.testcases[testcaseIndex].score : 0
     submission.testcases[testcaseIndex].result = gradingResult
@@ -177,7 +176,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
 export async function fetchSubmission (submissionId: string): Promise<TestingSubmission | ContestSubmission> {
   const submission = await submissionCollection.findOne({ _id: new ObjectId(submissionId) })
   if (submission == null) {
-    throw new NotFoundError('Submission does not exist.', { submissionId })
+    throw new NotFoundError('No submission found with the given ID.', { submissionId })
   }
   if (submission.type === SubmissionType.Testing) {
     const { _id, domains_id, problemBank_id, ...submissionContent } = submission

@@ -5,13 +5,11 @@ import { registerUser, initiateVerification, fetchUser, completeVerification, au
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 import { Type } from '@sinclair/typebox'
-import { AuthenticationError, AuthorizationError, ConflictError, NewUserSchema, NotFoundError, JWTPayload, JWTPayloadType }
+import { NewUserSchema, JWTPayloadType }
   from '@argoncs/types'
 import { delay } from '@argoncs/libraries'
 
 import { randomInt } from 'node:crypto'
-
-import { Sentry } from '../connections/sentry.connections'
 
 export const authenticationRoutes: FastifyPluginCallback = (app, options, done) => {
   const publicRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -27,17 +25,8 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     },
     async (request, reply) => {
       const user = request.body
-      try {
-        const registered = await registerUser(user)
-        return await reply.status(201).send(registered)
-      } catch (err) {
-        if (err instanceof ConflictError) {
-          reply.conflict(err.message)
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling the request.')
-        }
-      }
+      const registered = await registerUser(user)
+      return await reply.status(201).send(registered)
     }
   )
 
@@ -47,35 +36,17 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       schema: {
         body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
         response: {
-          200: Type.Object({ token: Type.String() }),
-          403: Type.Object({
-            message: Type.String(),
-            userId: Type.RegEx(/^[a-f\d]{24}$/i),
-            statusCode: Type.Number(),
-            error: Type.String()
-          })
+          200: Type.Object({ userId: Type.RegEx(/^[a-f\d]{24}$/i) })
         }
       }
     },
     async (request, reply) => {
       const { usernameOrEmail, password } = request.body
-      try {
-        const authenicated = await authenticateUser(usernameOrEmail, password)
-        const { userId, scopes, role } = authenicated
-        const payload: JWTPayload = { type: JWTPayloadType.Identification, userId, scopes, role }
-        const token = await reply.jwtSign(payload, { expiresIn: '720h' })
-        await delay(randomInt(300, 600))
-        return await reply.status(200).send({ token })
-      } catch (err) {
-        if (err instanceof AuthenticationError) {
-          reply.unauthorized('Authentication failed.')
-        } else if (err instanceof AuthorizationError) {
-          await reply.status(403).send({ message: 'Please verify your email first.', userId: err.context.userId, statusCode: 403, error: 'Forbidden' })
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when handling user registration.')
-        }
-      }
+      const authenicated = await authenticateUser(usernameOrEmail, password)
+      const { userId } = authenicated
+      await delay(randomInt(300, 600))
+      request.session.set('userId', userId)
+      return await reply.status(200).send({ userId })
     }
   )
 
@@ -88,19 +59,10 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     },
     async (request, reply) => {
       const { userId } = request.params
-      try {
-        const user = await fetchUser(userId)
-        const token = await reply.jwtSign({ type: JWTPayloadType.EmailVerification, email: user.email, userId: user.id }, { expiresIn: '15m' })
-        await initiateVerification(user.email, token)
-        return await reply.status(204).send()
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          reply.notFound('User not found.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when initiating email verification.')
-        }
-      }
+      const user = await fetchUser(userId)
+      const token = await reply.jwtSign({ type: JWTPayloadType.EmailVerification, email: user.email, userId: user.id }, { expiresIn: '15m' })
+      await initiateVerification(user.email, token)
+      return await reply.status(204).send()
     }
   )
 
@@ -122,19 +84,8 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       if (request.user.type !== JWTPayloadType.EmailVerification) {
         return reply.unauthorized('Must provide verification token to complete email verification.')
       }
-      try {
-        const { modified } = await completeVerification(request.user.userId, request.user.email)
-        return await reply.status(200).send({ modified })
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          reply.notFound('User to be verified not found.')
-        } if (err instanceof AuthenticationError) {
-          reply.unauthorized('Invalid verification.')
-        } else {
-          Sentry.captureException(err, { extra: err.context })
-          reply.internalServerError('A server error occurred when completing email verification.')
-        }
-      }
+      const { modified } = await completeVerification(request.user.userId, request.user.email)
+      return await reply.status(200).send({ modified })
     }
   )
 

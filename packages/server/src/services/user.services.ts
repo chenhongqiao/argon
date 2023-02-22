@@ -1,4 +1,5 @@
-import { User, NewUser, NotFoundError, AuthenticationError, AuthorizationError, UserRole, ConflictError } from '@argoncs/types'
+import { User, NewUser, UserRole } from '@argoncs/types'
+import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
 import { mongoDB, MongoServerError, ObjectId } from '@argoncs/libraries'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
@@ -51,7 +52,7 @@ export async function fetchUser (userId: string): Promise<User> {
   const user = await userCollection.findOne({ _id: new ObjectId(userId) })
   console.log(userId)
   if (user == null) {
-    throw new NotFoundError('User not found.', { userId })
+    throw new NotFoundError('No user found with the given ID.', { userId })
   }
   const { _id, ...userContent } = user
   return { ...userContent, id: _id.toString() }
@@ -64,7 +65,7 @@ export async function userIdExists (userId: string): Promise<boolean> {
 export async function updateUser (userId: string, user: Partial<NewUser>): Promise<{ modified: boolean }> {
   const { matchedCount, modifiedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: user })
   if (matchedCount === 0) {
-    throw new NotFoundError('User not found.', { userId })
+    throw new NotFoundError('No user found with the given ID.', { userId })
   }
 
   return { modified: modifiedCount > 0 }
@@ -89,25 +90,25 @@ export async function completeVerification (userId: string, email: string): Prom
   })
 
   if (matchedCount === 0) {
-    throw new NotFoundError('User does not exist.', { userId })
+    throw new NotFoundError('No user found with the given ID.', { userId })
   }
 
   return { modified: modifiedCount > 0 }
 }
 
-export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{ userId: string, scopes: Record<string, string[]>, role: UserRole }> {
+export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{ userId: string }> {
   const user = await userCollection.findOne({ $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }] })
   if (user == null) {
-    throw new AuthenticationError('Authentication failed.', { usernameOrEmail })
+    throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
   }
 
   const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.credential.hash) {
     if (user.email !== user.verifiedEmail) {
-      throw new AuthorizationError('Please verify your email first.', { userId: user._id })
+      throw new ForbiddenError('Please verify your email before logging in.', { userId: user._id })
     }
-    return { userId: user._id.toString(), scopes: user.scopes, role: user.role }
+    return { userId: user._id.toString() }
   } else {
-    throw new AuthenticationError('Authentication failed.', { usernameOrEmail })
+    throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
   }
 }

@@ -11,7 +11,7 @@ import { PassThrough } from 'node:stream'
 expose(async function (testcasePath: string): Promise<string> {
   const file = (await fs.open(testcasePath)).createReadStream()
   const trimmed = new PassThrough()
-  trimTestcase(file, trimmed)
+  await trimTestcase(file, trimmed)
   const md5 = createHash('md5')
   await pipeline(trimmed, md5)
   return md5.digest('hex')

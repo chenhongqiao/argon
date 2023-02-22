@@ -5,7 +5,6 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
 import { verifyDomainScope } from '../auth/domainScope.auth'
-import { Sentry } from '../connections/sentry.connections'
 
 import { JWTPayloadType } from '@argoncs/types'
 
@@ -36,12 +35,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
     },
     async (request, reply) => {
       const { domainId, problemId } = request.params
-      try {
-        await reply.status(200).send({ token: await reply.jwtSign({ type: JWTPayloadType.Upload, resource: { problemId, domainId }, userId: request.user.userId }) })
-      } catch (err) {
-        Sentry.captureException(err, { extra: err.context })
-        reply.internalServerError('A server error occurred when creating a testcase.')
-      }
+      await reply.status(200).send({ token: await reply.jwtSign({ type: JWTPayloadType.Upload, resource: { problemId, domainId }, userId: request.user.userId }) })
     }
   )
   return done()
