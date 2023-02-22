@@ -28,7 +28,12 @@ services:
       MINIO_ROOT_USER: root
       MINIO_ROOT_PASSWORD: password
     command: server /data
-      
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
 
 volumes:
   argon-mongo:
