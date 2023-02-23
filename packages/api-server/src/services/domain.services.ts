@@ -1,5 +1,5 @@
 import { NewDomain, Domain, User, DomainDetail } from '@argoncs/types'
-import { mongoClient, mongoDB, ObjectId } from '@argoncs/libraries'
+import { mongoClient, mongoDB, ObjectId } from '../../../common/src'
 import { NotFoundError } from 'http-errors-enhanced'
 
 type DomainDB = Omit<Domain, 'id' | 'members'> & { _id?: ObjectId, members: ObjectId[] }

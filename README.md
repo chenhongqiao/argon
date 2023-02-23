@@ -11,11 +11,11 @@ Argon is currently under heavy development as [TeamsCode](https://www.teamscode.
 
 This monorepo contains 5 packages.
 
-### [@argoncs/server](https://www.npmjs.com/package/@argoncs/server)
+### [@argoncs/api-server](https://www.npmjs.com/package/@argoncs/api-server)
 
 This package contains the server portion of the contest platform. It interacts with the user and the judger.
 
-### [@argoncs/upload](https://www.npmjs.com/package/@argoncs/upload)
+### [@argoncs/upload-server](https://www.npmjs.com/package/@argoncs/upload-server)
 
 Upload server that handles testcases.
 
@@ -27,7 +27,7 @@ This package contains the code to be used on judgers. It executes submissions in
 
 Type and class definitions utilized by both the server and the judger. Not designed to be used as a standalone package.
 
-### [@argoncs/libraries](https://www.npmjs.com/package/@argoncs/libraries)
+### [@argoncs/common](https://www.npmjs.com/package/@argoncs/common)
 
 Utilities and libraries used by both the server and the judger to interact with the infrastructure (such as DB and Object Storage).
 

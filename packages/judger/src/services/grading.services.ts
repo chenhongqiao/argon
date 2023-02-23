@@ -1,8 +1,8 @@
 import {
   SandboxStatus, GradingStatus, GradingTask, GradingResult
 } from '@argoncs/types'
-import { minio } from '@argoncs/libraries'
-import { languageConfigs } from '@argoncs/configs'
+import { minio } from '@argoncs/common'
+import languageConfigs from '../../configs/languages.json'
 
 import path = require('node:path')
 import { makeExecutable } from '../utils/system.utils'

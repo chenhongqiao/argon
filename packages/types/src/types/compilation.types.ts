@@ -1,4 +1,4 @@
-import { Constraints, JudgerTaskType } from './judger.types'
+import { Constraints, JudgerTaskType, ConstraintsSchema } from './judger.types'
 import { Static, Type } from '@sinclair/typebox'
 
 export enum SubmissionLang {
@@ -6,14 +6,15 @@ export enum SubmissionLang {
   CPP = 'C++',
 }
 
-export interface LanguageConfig {
-  srcFile: string
-  binaryFile: string
-  displayName: string
-  compileCommand: string
-  executeCommand: string
-  constraints: Constraints
-}
+export const LanguageConfigSchema = Type.Object({
+  srcFile: Type.String(),
+  binaryFile: Type.String(),
+  displayName: Type.String(),
+  compileCommand: Type.String(),
+  executeCommand: Type.String(),
+  constraints: ConstraintsSchema
+})
+export type LanguageConfig = Static<typeof LanguageConfigSchema>
 
 export interface CompilingTask {
   type: JudgerTaskType.Compiling

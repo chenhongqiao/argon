@@ -1,7 +1,7 @@
 import Fastify from 'fastify'
 import { randomBytes } from 'crypto'
 import Sentry = require('@sentry/node')
-import { sessionRedis } from '@argoncs/libraries'
+import { sessionRedis } from '../../common/src'
 
 import { problemBankRoutes } from './routes/problemBank.routes'
 import { testcaseRoutes } from './routes/testcase.routes'
@@ -10,7 +10,7 @@ import { submissionResultRoutes } from './routes/submissionResult.routes'
 import { authenticationRoutes } from './routes/authentication.routes'
 import { domainPublicRoutes, domainPrivateRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
-import { judgerRoutes } from './routes/judger.routes'
+import { judgerPublicRoutes, judgerPrivateRoutes } from './routes/judger.routes'
 
 import { createCollectionIndexes } from './utils/collection.utils'
 
@@ -74,7 +74,8 @@ export async function startAPIServer (): Promise<void> {
   await app.register(userRoutes, { prefix: '/users' })
   await app.register(domainPublicRoutes, { prefix: '/domains' })
   await app.register(domainPrivateRoutes, { prefix: '/domains' })
-  await app.register(judgerRoutes, { prefix: '/judger' })
+  await app.register(judgerPublicRoutes, { prefix: '/judger' })
+  await app.register(judgerPrivateRoutes, { prefix: '/judger' })
 
   try {
     const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')

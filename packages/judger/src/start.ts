@@ -3,7 +3,7 @@ import { gradeSubmission } from './services/grading.services'
 import { compileSubmission } from './services/compile.services'
 
 import { GradingTask, CompilingTask, JudgerTaskType } from '@argoncs/types'
-import { messageReceiver, delay } from '@argoncs/libraries'
+import { messageReceiver, delay } from '@argoncs/common'
 
 import os = require('node:os')
 import { randomUUID } from 'node:crypto'

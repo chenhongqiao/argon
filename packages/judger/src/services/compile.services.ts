@@ -4,8 +4,8 @@ import { promises as fs } from 'node:fs'
 import { runInSandbox } from './sandbox.services'
 
 import { CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus } from '@argoncs/types'
-import { minio } from '@argoncs/libraries'
-import { languageConfigs } from '@argoncs/configs'
+import { minio } from '@argoncs/common'
+import languageConfigs from '../../configs/languages.json'
 
 export async function compileSubmission (task: CompilingTask, boxId: number): Promise<CompileSucceeded | CompileFailed> {
   const workDir = `/var/local/lib/isolate/${boxId}/box`

@@ -1,14 +1,32 @@
 import { FastifyPluginCallback } from 'fastify'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
+import languageConfigs from '../../configs/languages.json'
 
 import { verifySuperAdmin } from '../auth/superAdmin.auth'
 import { userIdExists } from '../services/user.services'
-import { JWTPayloadType, UserRole } from '@argoncs/types'
+import { JWTPayloadType, SubmissionLang, UserRole, LanguageConfigSchema } from '@argoncs/types'
 
 import { randomUUID } from 'crypto'
 
-export const judgerRoutes: FastifyPluginCallback = (app, options, done) => {
+export const judgerPublicRoutes: FastifyPluginCallback = (app, options, done) => {
+  const publicRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
+  publicRoutes.get(
+    '/language-config',
+    {
+      schema: {
+        response: {
+          200: Type.Record(Type.Enum(SubmissionLang), LanguageConfigSchema)
+        }
+      }
+    },
+    async (request, reply) => {
+      await reply.status(200).send(languageConfigs)
+    }
+  )
+}
+
+export const judgerPrivateRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
   privateRoutes.addHook('onRequest', async (request, reply) => {
     try {

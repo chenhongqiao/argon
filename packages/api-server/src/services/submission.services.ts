@@ -16,8 +16,8 @@ import {
   GradingStatus
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { messageSender, mongoDB, ObjectId } from '@argoncs/libraries'
-import { languageConfigs } from '@argoncs/configs'
+import { messageSender, mongoDB, ObjectId } from '../../../common/src'
+import languageConfigs from '../../configs/languages.json'
 
 import { fetchFromProblemBank } from './problem.services'
 import path from 'path'

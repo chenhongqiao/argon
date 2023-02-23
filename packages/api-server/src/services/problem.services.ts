@@ -3,7 +3,7 @@ import {
   Problem
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { mongoDB, ObjectId } from '@argoncs/libraries'
+import { mongoDB, ObjectId } from '../../../common/src'
 import { testcaseExists } from './testcase.services'
 
 type ProblemDB = Omit<Problem, 'id' | 'domainId'> & { _id?: ObjectId, domains_id: ObjectId }

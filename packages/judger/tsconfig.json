@@ -16,17 +16,15 @@
   },
   "include": [
     "./src",
-    "./package.json"
+    "./package.json",
+    "./configs/*.json"
   ],
   "references": [
     {
       "path": "../types"
     },
     {
-      "path": "../configs"
-    },
-    {
-      "path": "../libraries"
+      "path": "../common"
     }
   ]
 }

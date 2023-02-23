@@ -1,5 +1,5 @@
 {
-  "name": "@argoncs/libraries",
+  "name": "@argoncs/common",
   "version": "0.1.9",
   "description": "Argon Contest Server Shared Libraries",
   "author": "Harry Chen",

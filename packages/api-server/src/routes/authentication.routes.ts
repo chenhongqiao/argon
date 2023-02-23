@@ -7,7 +7,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { NewUserSchema, JWTPayloadType }
   from '@argoncs/types'
-import { delay } from '@argoncs/libraries'
+import { delay } from '../../../common/src'
 
 import { randomInt } from 'node:crypto'
 

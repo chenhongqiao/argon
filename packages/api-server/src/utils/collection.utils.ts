@@ -1,4 +1,4 @@
-import { mongoDB, IndexSpecification, CreateIndexesOptions } from '@argoncs/libraries'
+import { mongoDB, IndexSpecification, CreateIndexesOptions } from '../../../common/src'
 
 interface Index {
   keys: IndexSpecification

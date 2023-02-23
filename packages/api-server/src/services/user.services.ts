@@ -1,6 +1,6 @@
 import { User, NewUser, UserRole } from '@argoncs/types'
 import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { mongoDB, MongoServerError, ObjectId } from '@argoncs/libraries'
+import { mongoDB, MongoServerError, ObjectId } from '../../../common/src'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'

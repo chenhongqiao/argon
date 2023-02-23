@@ -17,8 +17,7 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
-    "@argoncs/configs": "workspace:*",
-    "@argoncs/libraries": "workspace:*",
+    "@argoncs/common": "workspace:*",
     "@argoncs/types": "workspace:*",
     "@sentry/node": "^7.5.1",
     "got": "^11.8.0",

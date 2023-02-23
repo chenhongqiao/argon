@@ -1,6 +1,6 @@
 import { expose } from 'threads/worker'
 
-import { trimTestcase } from '@argoncs/libraries'
+import { trimTestcase } from '@argoncs/common'
 
 import { createHash } from 'node:crypto'
 
