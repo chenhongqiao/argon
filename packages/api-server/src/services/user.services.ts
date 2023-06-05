@@ -1,6 +1,6 @@
 import { User, NewUser, UserRole, UserSession, AuthenticationProfile } from '@argoncs/types'
 import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { localRedis, mongoDB, MongoServerError } from '@argoncs/common'
+import { mongoDB, MongoServerError } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -8,6 +8,7 @@ import { promisify } from 'node:util'
 import { nanoid } from '../utils/nanoid.utils'
 
 import { emailClient } from '../connections/email.connections'
+import { fetchCache, setCache } from './cache.services'
 
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
@@ -119,9 +120,9 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
 }
 
 export async function fetchSession (sessionId: string): Promise<UserSession> {
-  const cache = await localRedis.get(`session:${sessionId}`)
+  const cache = await fetchCache<UserSession>(`session:${sessionId}`)
   if (cache != null) {
-    return JSON.parse(cache) as UserSession
+    return cache
   }
 
   const session = await sessionCollection.findOne({ id: sessionId })
@@ -129,13 +130,15 @@ export async function fetchSession (sessionId: string): Promise<UserSession> {
     throw new NotFoundError('No session found with the given ID.', { sessionId })
   }
 
+  await setCache(`session:${sessionId}`, session)
+
   return session
 }
 
 export async function fetchAuthenticationProfile (userId: string): Promise<AuthenticationProfile> {
-  const cache = await localRedis.get(`auth-profile:${userId}`)
+  const cache = await fetchCache<AuthenticationProfile>(`auth-profile:${userId}`)
   if (cache != null) {
-    return JSON.parse(cache) as AuthenticationProfile
+    return cache
   }
 
   const user = await userCollection.findOne({ id: userId })
@@ -143,9 +146,13 @@ export async function fetchAuthenticationProfile (userId: string): Promise<Authe
     throw new NotFoundError('No user found with the given ID.', { userId })
   }
 
-  return {
+  const authProfile: AuthenticationProfile = {
     role: user.role,
     scopes: user.scopes,
     id: user.id
   }
+
+  await setCache(`auth-profile:${userId}`, authProfile)
+
+  return authProfile
 }

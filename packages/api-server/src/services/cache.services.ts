@@ -1,0 +1,33 @@
+import { cacheRedis } from '@argoncs/common'
+
+export async function fetchCache<T> (key: string): Promise<T | null> {
+  try {
+    const cache = await cacheRedis.get(key)
+    if (cache == null) {
+      return null
+    }
+    // Renew TTL
+    await cacheRedis.expire(key, 3600, 'XX')
+    // TODO: Use faster JSON parser
+    return JSON.parse(cache) as T
+  } catch (err) {
+    // TODO: Alert cache failure
+    return null
+  }
+}
+
+export async function setCache (key: string, data: any): Promise<boolean> {
+  try {
+    // TODO: Use faster JSON stringify
+    const status = await cacheRedis.setnx(key, JSON.stringify(data))
+    await cacheRedis.expire(key, 3600, 'NX')
+    return Boolean(status)
+  } catch (err) {
+    // TODO: Alert cache failure
+    return false
+  }
+}
+
+export async function refreshCache (key: string, data: any): Promise<void> {
+  await cacheRedis.set(key, JSON.stringify(data), 'KEEPTTL')
+}

@@ -3,6 +3,7 @@ import { mongoClient, mongoDB } from '@argoncs/common'
 import { NotFoundError } from 'http-errors-enhanced'
 
 import { nanoid } from '../utils/nanoid.utils'
+import { refreshCache } from './cache.services'
 
 const userCollection = mongoDB.collection<User>('users')
 const domainCollection = mongoDB.collection<Domain>('domains')
@@ -40,6 +41,9 @@ export async function addOrUpdateDomainMember (domainId: string, userId: string,
         throw new NotFoundError('No domain found with the given ID.', { domainId })
       }
       modifiedCount += modifiedDomain
+
+      const user = await userCollection.findOne({ id: userId }, { session })
+      await refreshCache(`auth-profile:${userId}`, user)
     })
     return { modified: modifiedCount > 0 }
   } finally {
@@ -64,7 +68,11 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
         throw new NotFoundError('No domain found with the given ID.', { domainId })
       }
       modifiedCount += modifiedDomain
+
+      const user = await userCollection.findOne({ id: userId }, { session })
+      await refreshCache(`auth-profile:${userId}`, user)
     })
+
     return { modified: modifiedCount > 0 }
   } finally {
     await session.endSession()
