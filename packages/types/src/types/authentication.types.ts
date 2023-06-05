@@ -1,4 +1,5 @@
-import { UserRole } from './user.types'
+import { Static, Type } from '@sinclair/typebox'
+import { User } from './user.types'
 
 export enum JWTPayloadType {
   Identification = 'Identification',
@@ -9,8 +10,7 @@ export enum JWTPayloadType {
 interface IdentificationPayload {
   type: JWTPayloadType.Identification
   userId: string
-  scopes: Record<string, string[]>
-  role: UserRole
+  sessionId: string
 }
 
 interface UploadPayload {
@@ -26,3 +26,14 @@ interface EmailVerificationPayload {
 }
 
 export type JWTPayload = IdentificationPayload | UploadPayload | EmailVerificationPayload
+
+export const UserSessionSchema = Type.Object({
+  id: Type.String(),
+  userId: Type.String(),
+  userAgent: Type.String(),
+  loginIP: Type.String()
+})
+
+export type UserSession = Static<typeof UserSessionSchema>
+
+export type AuthenticationProfile = Pick<User, 'scopes' | 'role' | 'id'>

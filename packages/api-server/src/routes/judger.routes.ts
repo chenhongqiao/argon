@@ -3,7 +3,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import languageConfigs from '../../configs/languages.json'
 
-import { verifySuperAdmin } from '../auth/superAdmin.auth'
+import { verifySuperAdmin } from '../auth/role.auth'
 import { userIdExists } from '../services/user.services'
 import { JWTPayloadType, SubmissionLang, UserRole, LanguageConfigSchema } from '@argoncs/types'
 

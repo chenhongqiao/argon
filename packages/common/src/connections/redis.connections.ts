@@ -1,3 +1,3 @@
 import { Redis } from 'ioredis'
 
-export const sessionRedis = new Redis(new URL('/0', process.env.REDIS_URL ?? '').href)
+export const localRedis = new Redis(process.env.LOCAL_REDIS_URL ?? '')

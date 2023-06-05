@@ -1,6 +1,6 @@
-import { User, NewUser, UserRole, UserSession } from '@argoncs/types'
+import { User, NewUser, UserRole, UserSession, AuthenticationProfile } from '@argoncs/types'
 import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { mongoDB, MongoServerError } from '@argoncs/common'
+import { localRedis, mongoDB, MongoServerError } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -115,5 +115,37 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
     return { userId, sessionId }
   } else {
     throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
+  }
+}
+
+export async function fetchSession (sessionId: string): Promise<UserSession> {
+  const cache = await localRedis.get(`session:${sessionId}`)
+  if (cache != null) {
+    return JSON.parse(cache) as UserSession
+  }
+
+  const session = await sessionCollection.findOne({ id: sessionId })
+  if (session == null) {
+    throw new NotFoundError('No session found with the given ID.', { sessionId })
+  }
+
+  return session
+}
+
+export async function fetchAuthenticationProfile (userId: string): Promise<AuthenticationProfile> {
+  const cache = await localRedis.get(`auth-profile:${userId}`)
+  if (cache != null) {
+    return JSON.parse(cache) as AuthenticationProfile
+  }
+
+  const user = await userCollection.findOne({ id: userId })
+  if (user == null) {
+    throw new NotFoundError('No user found with the given ID.', { userId })
+  }
+
+  return {
+    role: user.role,
+    scopes: user.scopes,
+    id: user.id
   }
 }

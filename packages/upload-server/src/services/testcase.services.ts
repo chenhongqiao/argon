@@ -1,5 +1,5 @@
 import { PassThrough } from 'node:stream'
-import { minio, trimTestcase } from '../../../common/src'
+import { minio, trimTestcase } from '@argoncs/common'
 import { MultipartFile } from '@fastify/multipart'
 import path = require('node:path')
 
