@@ -3,26 +3,26 @@ import {
   Problem
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { mongoDB, ObjectId } from '../../../common/src'
+import { mongoDB } from '@argoncs/common'
 import { testcaseExists } from './testcase.services'
 
-type ProblemDB = Omit<Problem, 'id' | 'domainId'> & { _id?: ObjectId, domains_id: ObjectId }
+import { nanoid } from '../utils/nanoid.utils'
 
-const problemBankCollection = mongoDB.collection<ProblemDB>('problemBank')
+const problemBankCollection = mongoDB.collection<Problem>('problemBank')
 
 export async function createInProblemBank (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
-  const problem: ProblemDB = { ...newProblem, domains_id: new ObjectId(domainId) }
-  const { insertedId } = await problemBankCollection.insertOne(problem)
-  return { problemId: insertedId.toString() }
+  const problemId = await nanoid()
+  const problem: Problem = { ...newProblem, id: problemId, domainId }
+  await problemBankCollection.insertOne(problem)
+  return { problemId }
 }
 
 export async function fetchFromProblemBank (problemId: string, domainId: string): Promise<Problem> {
-  const problem = await problemBankCollection.findOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) })
+  const problem = await problemBankCollection.findOne({ id: problemId, domainId })
   if (problem == null) {
     throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
   }
-  const { _id, domains_id, ...problemContent } = problem
-  return { ...problemContent, id: _id.toString(), domainId: domains_id.toString() }
+  return problem
 }
 
 export async function updateInProblemBank (problemId: string, domainId: string, problem: Partial<NewProblem>): Promise<{ modified: boolean }> {
@@ -35,7 +35,7 @@ export async function updateInProblemBank (problemId: string, domainId: string, 
     await Promise.all(testcasesVerifyQueue)
   }
 
-  const { matchedCount, modifiedCount } = await problemBankCollection.updateOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) }, { $set: problem })
+  const { matchedCount, modifiedCount } = await problemBankCollection.updateOne({ id: problemId, domainId }, { $set: problem })
   if (matchedCount === 0) {
     throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
   }
@@ -44,7 +44,7 @@ export async function updateInProblemBank (problemId: string, domainId: string, 
 }
 
 export async function deleteInProblemBank (problemId: string, domainId: string): Promise<void> {
-  const { deletedCount } = await problemBankCollection.deleteOne({ _id: new ObjectId(problemId), domains_id: new ObjectId(domainId) })
+  const { deletedCount } = await problemBankCollection.deleteOne({ id: problemId, domainId })
 
   if (deletedCount === 0) {
     throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
@@ -52,11 +52,7 @@ export async function deleteInProblemBank (problemId: string, domainId: string):
 }
 
 export async function fetchDomainProblems (domainId: string): Promise<Problem[]> {
-  const problems = await problemBankCollection.aggregate([
-    { $match: { domains_id: new ObjectId(domainId) } },
-    { $set: { id: '$_id', domainId: '$domains_id' } },
-    { $project: { _id: 0, domains_id: 0 } }
-  ]).toArray() as Problem[]
+  const problems = await problemBankCollection.find({ domainId }).sort({ _id: -1 }).toArray()
 
   return problems
 }

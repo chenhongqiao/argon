@@ -11,33 +11,32 @@ import {
   ContestSubmission,
   TestingSubmission,
   SubmissionType,
-  TestingSubmissionWithoutIds,
-  ContestSubmissionWithoutIds,
   GradingStatus
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { messageSender, mongoDB, ObjectId } from '../../../common/src'
+import { messageSender, mongoDB } from '@argoncs/common'
 import languageConfigs from '../../configs/languages.json'
 
 import { fetchFromProblemBank } from './problem.services'
 import path from 'path'
 
-type TestingSubmissionDB = TestingSubmissionWithoutIds & { _id?: ObjectId, domains_id: ObjectId, problemBank_id: ObjectId }
-type ContestSubmissionDB = ContestSubmissionWithoutIds & { _id?: ObjectId, contests_id: ObjectId, contestProblems_id: ObjectId }
+import { nanoid } from '../utils/nanoid.utils'
 
-const submissionCollection = mongoDB.collection<TestingSubmissionDB | ContestSubmissionDB>('submissions')
+const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
 
 export async function createTestingSubmission (submission: NewSubmission, domainId: string, problemId: string, userId: string): Promise<{ submissionId: string }> {
-  const pendingSubmission: TestingSubmissionDB = {
+  const submissionId = await nanoid()
+  const pendingSubmission: TestingSubmission = {
     ...submission,
+    id: submissionId,
     status: SubmissionStatus.Pending,
-    domains_id: new ObjectId(domainId),
-    problemBank_id: new ObjectId(problemId),
+    domainId,
+    problemId,
     type: SubmissionType.Testing
   }
 
-  const { insertedId } = await submissionCollection.insertOne(pendingSubmission)
-  return { submissionId: insertedId.toString() }
+  await submissionCollection.insertOne(pendingSubmission)
+  return { submissionId }
 }
 
 export async function queueSubmission (submissionId: string): Promise<void> {
@@ -58,7 +57,7 @@ export async function queueSubmission (submissionId: string): Promise<void> {
 }
 
 export async function markSubmissionAsCompiling (submissionId: string): Promise<void> {
-  await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+  await submissionCollection.updateOne({ id: submissionId }, {
     $set: {
       status: SubmissionStatus.Compiling
     }
@@ -108,7 +107,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
         submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
       })
 
-      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+      await submissionCollection.updateOne({ id: submissionId }, {
         $set: {
           status: SubmissionStatus.Grading,
           gradedCases: 0,
@@ -117,7 +116,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       })
       await messageSender.sendMessages(batch)
     } else {
-      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+      await submissionCollection.updateOne({ id: submissionId }, {
         $set: {
           status: SubmissionStatus.CompileFailed,
           log: compileResult.log
@@ -131,14 +130,14 @@ export async function completeGrading (submissionId: string, log?: string): Prom
   const submission = await fetchSubmission(submissionId)
 
   if (submission.status === SubmissionStatus.Compiling || submission.status === SubmissionStatus.Pending) {
-    await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, { $set: { status: SubmissionStatus.Terminated, log } })
+    await submissionCollection.updateOne({ id: submissionId }, { $set: { status: SubmissionStatus.Terminated, log } })
   } else if (submission.status === SubmissionStatus.Grading) {
     if (submission.gradedCases !== submission.testcases.length) {
-      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, { $set: { status: SubmissionStatus.Terminated, log } })
+      await submissionCollection.updateOne({ id: submissionId }, { $set: { status: SubmissionStatus.Terminated, log } })
     } else {
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       const score = submission.testcases.reduce((accumulator: number, testcase) => accumulator + (testcase.score ?? 0), 0)
-      await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+      await submissionCollection.updateOne({ id: submissionId }, {
         $set: {
           score,
           status: SubmissionStatus.Graded
@@ -160,7 +159,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
     }
     const score = gradingResult.status === GradingStatus.Accepted ? submission.testcases[testcaseIndex].score : 0
     submission.testcases[testcaseIndex].result = gradingResult
-    await submissionCollection.updateOne({ _id: new ObjectId(submissionId) }, {
+    await submissionCollection.updateOne({ id: submissionId }, {
       $set: {
         [`testcases.${testcaseIndex}.result`]: gradingResult,
         [`testcases.${testcaseIndex}.score`]: score
@@ -174,15 +173,9 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
 }
 
 export async function fetchSubmission (submissionId: string): Promise<TestingSubmission | ContestSubmission> {
-  const submission = await submissionCollection.findOne({ _id: new ObjectId(submissionId) })
+  const submission = await submissionCollection.findOne({ id: submissionId })
   if (submission == null) {
     throw new NotFoundError('No submission found with the given ID.', { submissionId })
   }
-  if (submission.type === SubmissionType.Testing) {
-    const { _id, domains_id, problemBank_id, ...submissionContent } = submission
-    return { ...submissionContent, id: _id.toString(), domainId: domains_id.toString(), problemId: problemBank_id.toString() }
-  } else {
-    const { _id, contests_id, contestProblems_id, ...submissionContent } = submission
-    return { ...submissionContent, id: _id.toString(), contestId: contests_id.toString(), problemId: contestProblems_id.toString() }
-  }
+  return submission
 }

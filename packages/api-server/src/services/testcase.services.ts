@@ -1,5 +1,5 @@
 import { NotFoundError } from 'http-errors-enhanced'
-import { minio } from '../../../common/src'
+import { minio } from '@argoncs/common'
 
 import path = require('node:path')
 

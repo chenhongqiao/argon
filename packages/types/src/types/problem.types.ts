@@ -23,8 +23,8 @@ export const NewProblemSchema = Type.Object({
 export type NewProblem = Static<typeof NewProblemSchema>
 
 export const ProblemSchema = Type.Intersect([NewProblemSchema, Type.Object({
-  id: Type.RegEx(/^[a-f\d]{24}$/i),
-  domainId: Type.RegEx(/^[a-f\d]{24}$/i)
+  id: Type.String(),
+  domainId: Type.String()
 })])
 
 export type Problem = Static<typeof ProblemSchema>

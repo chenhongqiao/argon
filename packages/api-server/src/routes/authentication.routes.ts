@@ -7,7 +7,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { NewUserSchema, JWTPayloadType }
   from '@argoncs/types'
-import { delay } from '../../../common/src'
+import { delay } from '@argoncs/common'
 
 import { randomInt } from 'node:crypto'
 
@@ -19,7 +19,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       schema: {
         body: NewUserSchema,
         response: {
-          201: Type.Object({ userId: Type.RegEx(/^[a-f\d]{24}$/i) })
+          201: Type.Object({ userId: Type.String() })
         }
       }
     },
@@ -36,17 +36,16 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
       schema: {
         body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
         response: {
-          200: Type.Object({ userId: Type.RegEx(/^[a-f\d]{24}$/i) })
+          200: Type.Object({ userId: Type.String() })
         }
       }
     },
     async (request, reply) => {
       const { usernameOrEmail, password } = request.body
-      const authenicated = await authenticateUser(usernameOrEmail, password)
-      const { userId } = authenicated
+      const { userId, sessionId } = await authenticateUser(usernameOrEmail, password, request.headers['user-agent'] ?? 'Unknown', request.ip)
       await delay(randomInt(300, 600))
-      request.session.set('userId', userId)
-      return await reply.status(200).send({ userId })
+      const token = await reply.jwtSign({ type: JWTPayloadType.Identification, userId, sessionId })
+      return await reply.status(200).setCookie('session_token', token)
     }
   )
 
@@ -54,7 +53,7 @@ export const authenticationRoutes: FastifyPluginCallback = (app, options, done) 
     '/initiate-verification/:userId',
     {
       schema: {
-        params: Type.Object({ userId: Type.RegEx(/^[a-f\d]{24}$/i) })
+        params: Type.Object({ userId: Type.String() })
       }
     },
     async (request, reply) => {

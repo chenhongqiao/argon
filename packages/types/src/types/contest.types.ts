@@ -10,7 +10,7 @@ export const NewContestSchema = Type.Object({
 export type NewContest = Static<typeof NewContestSchema>
 
 export const ContestSchema = Type.Intersect([NewContestSchema, Type.Object({
-  domainId: Type.RegEx(/^[a-f\d]{24}$/i),
-  id: Type.RegEx(/^[a-f\d]{24}$/i)
+  domainId: Type.String(),
+  id: Type.String()
 })])
 export type Contest = Static<typeof ContestSchema>

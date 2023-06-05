@@ -26,22 +26,14 @@ export type NewSubmission = Static<typeof NewSubmissionSchema>
 
 export const BaseContestSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
   type: Type.Literal(SubmissionType.Contest),
-  problemId: Type.RegEx(/^[a-f\d]{24}$/i),
-  contestId: Type.RegEx(/^[a-f\d]{24}$/i)
-})])
-
-const BaseContestSubmissionWithoutIdsSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
-  type: Type.Literal(SubmissionType.Contest)
+  problemId: Type.String(),
+  contestId: Type.String()
 })])
 
 export const BaseTestingSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
   type: Type.Literal(SubmissionType.Testing),
-  problemId: Type.RegEx(/^[a-f\d]{24}$/i),
-  domainId: Type.RegEx(/^[a-f\d]{24}$/i)
-})])
-
-const BaseTestingSubmissionWithoutIdsSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
-  type: Type.Literal(SubmissionType.Testing)
+  problemId: Type.String(),
+  domainId: Type.String()
 })])
 
 const PendingSubmissionSchema = Type.Object({
@@ -82,35 +74,17 @@ const GradedSubmissionSchema = Type.Object({
 })
 
 export const ContestSubmissionSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([FailedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })])])
+  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([FailedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })])])
 export type ContestSubmission = Static<typeof ContestSubmissionSchema>
 
 export const TestingSubmissionSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })]),
-  Type.Intersect([FailedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.RegEx(/^[a-f\d]{24}$/i) })])])
+  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
+  Type.Intersect([FailedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })])])
 export type TestingSubmission = Static<typeof TestingSubmissionSchema>
-
-const ContestSubmissionWithoutIdsSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
-  Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
-  Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
-  Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionWithoutIdsSchema]),
-  Type.Intersect([FailedSubmissionSchema, BaseContestSubmissionWithoutIdsSchema])
-])
-export type ContestSubmissionWithoutIds = Static<typeof ContestSubmissionWithoutIdsSchema>
-
-const TestingSubmissionWithoutIdsSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
-  Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
-  Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
-  Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema]),
-  Type.Intersect([FailedSubmissionSchema, BaseTestingSubmissionWithoutIdsSchema])
-])
-export type TestingSubmissionWithoutIds = Static<typeof TestingSubmissionWithoutIdsSchema>

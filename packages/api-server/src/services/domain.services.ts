@@ -1,22 +1,21 @@
 import { NewDomain, Domain, User, DomainDetail } from '@argoncs/types'
-import { mongoClient, mongoDB, ObjectId } from '../../../common/src'
+import { mongoClient, mongoDB } from '@argoncs/common'
 import { NotFoundError } from 'http-errors-enhanced'
 
-type DomainDB = Omit<Domain, 'id' | 'members'> & { _id?: ObjectId, members: ObjectId[] }
-type UserDB = Omit<User, 'id'> & { _id?: ObjectId }
+import { nanoid } from '../utils/nanoid.utils'
 
-const userCollection = mongoDB.collection<UserDB>('users')
-const domainCollection = mongoDB.collection<DomainDB>('domains')
+const userCollection = mongoDB.collection<User>('users')
+const domainCollection = mongoDB.collection<Domain>('domains')
 
 export async function createDomain (newDomain: NewDomain): Promise<{ domainId: string }> {
-  const domain: DomainDB = { ...newDomain, members: [] }
-  delete domain._id
-  const { insertedId } = await domainCollection.insertOne(domain)
-  return { domainId: insertedId.toString() }
+  const domainId = await nanoid()
+  const domain: Domain = { ...newDomain, id: domainId, members: [] }
+  await domainCollection.insertOne(domain)
+  return { domainId }
 }
 
 export async function updateDomain (domainId: string, domain: Partial<NewDomain>): Promise<{ modified: boolean }> {
-  const { matchedCount, modifiedCount } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $set: domain })
+  const { matchedCount, modifiedCount } = await domainCollection.updateOne({ id: domainId }, { $set: domain })
   if (matchedCount === 0) {
     throw new NotFoundError('No domain found with the given ID.', { domainId })
   }
@@ -29,14 +28,14 @@ export async function addOrUpdateDomainMember (domainId: string, userId: string,
   try {
     let modifiedCount = 0
     await session.withTransaction(async () => {
-      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ _id: new ObjectId(userId) },
+      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId },
         { $set: { [`scopes.${domainId}`]: scopes } }, { session })
       if (matchedUser === 0) {
         throw new NotFoundError('User does not exist.', { userId })
       }
       modifiedCount += modifiedUser
 
-      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $addToSet: { members: new ObjectId(userId) } }, { session })
+      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ id: domainId }, { $addToSet: { members: userId } }, { session })
       if (matchedDomain === 0) {
         throw new NotFoundError('No domain found with the given ID.', { domainId })
       }
@@ -53,14 +52,14 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
   try {
     let modifiedCount = 0
     await session.withTransaction(async () => {
-      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ _id: new ObjectId(userId) },
+      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId },
         { $unset: { [`scopes.${domainId}`]: '' } }, { session })
       if (matchedUser === 0) {
         throw new NotFoundError('No user found in this domain with the given ID.', { userId })
       }
       modifiedCount += modifiedUser
 
-      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ _id: new ObjectId(domainId) }, { $pull: { members: new ObjectId(userId) } }, { session })
+      const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ id: domainId }, { $pull: { members: userId } }, { session })
       if (matchedDomain === 0) {
         throw new NotFoundError('No domain found with the given ID.', { domainId })
       }
@@ -73,31 +72,28 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
 }
 
 export async function fetchDomain (domainId: string): Promise<Domain> {
-  const domain = await domainCollection.findOne({ _id: new ObjectId(domainId) })
+  const domain = await domainCollection.findOne({ id: domainId })
   if (domain == null) {
     throw new NotFoundError('No domain found with the given ID.', { domainId })
   }
 
-  const { _id, members, ...domainContent } = domain
-  return { ...domainContent, id: _id.toString(), members: members.map(userId => userId.toString()) }
+  return domain
 }
 
 export async function fetchDomainDetail (domainId: string): Promise<DomainDetail> {
   const domain = (await domainCollection.aggregate([
-    { $match: { _id: new ObjectId(domainId) } },
+    { $match: { id: domainId } },
     {
       $lookup: {
         from: 'users',
         localField: 'members',
-        foreignField: '_id',
+        foreignField: 'id',
         as: 'members',
         pipeline: [
-          { $set: { id: '$_id' } },
           { $project: { username: 1, name: 1, id: 1 } }
         ]
       }
-    },
-    { $set: { id: '$_id' } }
+    }
   ]).toArray())[0] as DomainDetail | undefined
   if (domain == null) {
     throw new NotFoundError('No domain found with the given ID.', { domainId })

@@ -46,9 +46,9 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     {
       schema: {
         body: NewProblemSchema,
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String() }),
         response: {
-          201: Type.Object({ problemId: Type.RegEx(/^[a-f\d]{24}$/i) })
+          201: Type.Object({ problemId: Type.String() })
         }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
@@ -65,7 +65,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i), problemId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: { 200: ProblemSchema }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.read'])]) as any]
@@ -84,7 +84,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
         response: {
           200: Type.Array(ProblemSchema)
         },
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i) })
+        params: Type.Object({ domainId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.read'])]) as any]
     },
@@ -101,7 +101,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
       schema: {
         body: Type.Partial(NewProblemSchema),
         response: { 200: Type.Object({ modified: Type.Boolean() }) },
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i), problemId: Type.RegEx(/^[a-f\d]{24}$/i) })
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
 
@@ -118,7 +118,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i), problemId: Type.RegEx(/^[a-f\d]{24}$/i) })
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
     },
@@ -134,9 +134,9 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     {
       schema: {
         body: NewSubmissionSchema,
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i), problemId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
-          202: Type.Object({ submissionId: Type.RegEx(/^[a-f\d]{24}$/i) })
+          202: Type.Object({ submissionId: Type.String() })
         }
       },
       preValidation: [privateRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
@@ -158,7 +158,7 @@ export const problemBankRoutes: FastifyPluginCallback = (app, options, done) => 
     '/:domainId/:problemId/submissions/:submissionId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i), problemId: Type.RegEx(/^[a-f\d]{24}$/i), submissionId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String(), submissionId: Type.String() }),
         response: {
           200: Type.Union([TestingSubmissionSchema, ContestSubmissionSchema])
         }

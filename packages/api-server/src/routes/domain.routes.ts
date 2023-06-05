@@ -12,7 +12,7 @@ export const domainPublicRoutes: FastifyPluginCallback = (app, options, done) =>
     '/:domainId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String() }),
         response: {
           200: DomainDetailSchema
         }
@@ -41,7 +41,7 @@ export const domainPrivateRoutes: FastifyPluginCallback = (app, options, done) =
       schema: {
         body: NewDomainSchema,
         response: {
-          201: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i) })
+          201: Type.Object({ domainId: Type.String() })
         }
       },
       preValidation: [privateRoutes.auth([verifySuperAdmin]) as any]
@@ -58,7 +58,7 @@ export const domainPrivateRoutes: FastifyPluginCallback = (app, options, done) =
     {
       schema: {
         body: Type.Partial(NewDomainSchema),
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String() }),
         response: { 200: Type.Object({ modified: Type.Boolean() }) }
       },
       preValidation: [privateRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
@@ -74,9 +74,9 @@ export const domainPrivateRoutes: FastifyPluginCallback = (app, options, done) =
     '/:domainId/members',
     {
       schema: {
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String() }),
         body: Type.Object({
-          userId: Type.RegEx(/^[a-f\d]{24}$/i),
+          userId: Type.String(),
           scopes: Type.Array(Type.String())
         })
       },
@@ -94,7 +94,7 @@ export const domainPrivateRoutes: FastifyPluginCallback = (app, options, done) =
     '/:domainId/members/:userId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i), userId: Type.RegEx(/^[a-f\d]{24}$/i) })
+        params: Type.Object({ domainId: Type.String(), userId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
@@ -109,7 +109,7 @@ export const domainPrivateRoutes: FastifyPluginCallback = (app, options, done) =
     '/:domainId/members/:userId',
     {
       schema: {
-        params: Type.Object({ domainId: Type.RegEx(/^[a-f\d]{24}$/i), userId: Type.RegEx(/^[a-f\d]{24}$/i) }),
+        params: Type.Object({ domainId: Type.String(), userId: Type.String() }),
         body: Type.Object({
           scopes: Type.Array(Type.String())
         }),

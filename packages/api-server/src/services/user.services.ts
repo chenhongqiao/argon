@@ -1,23 +1,26 @@
-import { User, NewUser, UserRole } from '@argoncs/types'
+import { User, NewUser, UserRole, UserSession } from '@argoncs/types'
 import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { mongoDB, MongoServerError, ObjectId } from '../../../common/src'
+import { mongoDB, MongoServerError } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
+
+import { nanoid } from '../utils/nanoid.utils'
 
 import { emailClient } from '../connections/email.connections'
 
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
-type UserDB = Omit<User, 'id'> & { _id?: ObjectId }
-
-const userCollection = mongoDB.collection<UserDB>('users')
+const userCollection = mongoDB.collection<User>('users')
+const sessionCollection = mongoDB.collection<UserSession>('sessions')
 
 export async function registerUser (newUser: NewUser): Promise<{ userId: string, email: string }> {
   const salt = (await randomBytesAsync(32)).toString('base64')
   const hash = (await pbkdf2Async(newUser.password, salt, 100000, 512, 'sha512')).toString('base64')
-  const user: UserDB = {
+  const userId = await nanoid()
+  const user: User = {
+    id: userId,
     name: newUser.name,
     email: newUser.email,
     credential: {
@@ -31,8 +34,8 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
   }
 
   try {
-    const { insertedId } = await userCollection.insertOne(user)
-    return { userId: insertedId.toString(), email: user.email }
+    await userCollection.insertOne(user)
+    return { userId, email: user.email }
   } catch (err) {
     if (err instanceof MongoServerError && err.code === 11000 && err.keyValue != null) {
       if (err.keyValue.email !== undefined) {
@@ -49,21 +52,20 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
 }
 
 export async function fetchUser (userId: string): Promise<User> {
-  const user = await userCollection.findOne({ _id: new ObjectId(userId) })
-  console.log(userId)
+  const user = await userCollection.findOne({ id: userId })
   if (user == null) {
     throw new NotFoundError('No user found with the given ID.', { userId })
   }
-  const { _id, ...userContent } = user
-  return { ...userContent, id: _id.toString() }
+
+  return user
 }
 
 export async function userIdExists (userId: string): Promise<boolean> {
-  return Boolean(userCollection.countDocuments({ _id: new ObjectId(userId) }))
+  return Boolean(userCollection.countDocuments({ id: userId }))
 }
 
 export async function updateUser (userId: string, user: Partial<NewUser>): Promise<{ modified: boolean }> {
-  const { matchedCount, modifiedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: user })
+  const { matchedCount, modifiedCount } = await userCollection.updateOne({ id: userId }, { $set: user })
   if (matchedCount === 0) {
     throw new NotFoundError('No user found with the given ID.', { userId })
   }
@@ -83,7 +85,7 @@ export async function initiateVerification (email: string, token: string): Promi
 }
 
 export async function completeVerification (userId: string, email: string): Promise<{ modified: boolean }> {
-  const { modifiedCount, matchedCount } = await userCollection.updateOne({ _id: new ObjectId(userId) }, {
+  const { modifiedCount, matchedCount } = await userCollection.updateOne({ id: userId }, {
     $set: {
       verifiedEmail: email
     }
@@ -96,18 +98,21 @@ export async function completeVerification (userId: string, email: string): Prom
   return { modified: modifiedCount > 0 }
 }
 
-export async function authenticateUser (usernameOrEmail: string, password: string): Promise<{ userId: string }> {
+export async function authenticateUser (usernameOrEmail: string, password: string, loginIP: string, userAgent: string): Promise<{ userId: string, sessionId: string }> {
   const user = await userCollection.findOne({ $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }] })
   if (user == null) {
     throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
   }
+  const { id: userId } = user
 
   const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.credential.hash) {
     if (user.email !== user.verifiedEmail) {
-      throw new ForbiddenError('Please verify your email before logging in.', { userId: user._id })
+      throw new ForbiddenError('Please verify your email before logging in.', { userId: user.id })
     }
-    return { userId: user._id.toString() }
+    const sessionId = await nanoid()
+    await sessionCollection.insertOne({ id: sessionId, userId, userAgent, loginIP })
+    return { userId, sessionId }
   } else {
     throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
   }

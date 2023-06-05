@@ -22,7 +22,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
         response: {
           200: PublicUserProfileSchema
         },
-        params: Type.Object({ userId: Type.RegEx(/^[a-f\d]{24}$/i) })
+        params: Type.Object({ userId: Type.String() })
       }
     },
     async (request, reply) => {
@@ -40,7 +40,7 @@ export const userRoutes: FastifyPluginCallback = (app, options, done) => {
         response: {
           200: PrivateUserProfileSchema
         },
-        params: Type.Object({ userId: Type.RegEx(/^[a-f\d]{24}$/i) })
+        params: Type.Object({ userId: Type.String() })
       },
       preValidation: [privateRoutes.auth([verifyUserOwnsership]) as any]
     },
