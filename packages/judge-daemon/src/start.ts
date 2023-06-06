@@ -64,6 +64,7 @@ export async function startJudger (): Promise<void> {
         }
 
         rabbitMQ.publish(judgerExchange, judgerResultsKey, Buffer.from(JSON.stringify(result)))
+        rabbitMQ.ack(message)
       } catch (err) {
         Sentry.captureException(err)
         rabbitMQ.reject(message, false)
