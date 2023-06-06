@@ -14,7 +14,7 @@ import {
   GradingStatus
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { messageSender, mongoDB } from '@argoncs/common'
+import { rabbitMQ, mongoDB, judgerExchange, judgerTasksKey } from '@argoncs/common'
 import languageConfigs from '../../configs/languages.json'
 
 import { fetchFromProblemBank } from './problem.services'
@@ -49,11 +49,7 @@ export async function queueSubmission (submissionId: string): Promise<void> {
     language: submission.language,
     constraints: languageConfigs[submission.language].constraints
   }
-  const batch = await messageSender.createMessageBatch()
-  if (!batch.tryAddMessage({ body: task })) {
-    throw new Error('Task too big to fit in the queue.')
-  }
-  await messageSender.sendMessages(batch)
+  rabbitMQ.publish(judgerExchange, judgerTasksKey, Buffer.from(JSON.stringify(task)))
 }
 
 export async function markSubmissionAsCompiling (submissionId: string): Promise<void> {
@@ -69,7 +65,6 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
 
   if (submission.status === SubmissionStatus.Compiling) {
     if (compileResult.status === CompilingStatus.Succeeded) {
-      const batch = await messageSender.createMessageBatch()
       let problem: Problem
       if (submission.type === SubmissionType.Testing) {
         problem = await fetchFromProblemBank(submission.problemId, submission.domainId)
@@ -101,9 +96,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
           testcaseIndex: index,
           language: submission.language
         }
-        if (!batch.tryAddMessage({ body: task })) {
-          throw new Error('Task too big to fit in the queue.')
-        }
+        rabbitMQ.publish(judgerExchange, judgerTasksKey, Buffer.from(JSON.stringify(task)))
         submissionTestcases.push({ points: testcase.points, input: testcase.input, output: testcase.output })
       })
 
@@ -114,7 +107,6 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
           testcases: submissionTestcases
         }
       })
-      await messageSender.sendMessages(batch)
     } else {
       await submissionCollection.updateOne({ id: submissionId }, {
         $set: {

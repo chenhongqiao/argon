@@ -3,7 +3,7 @@ import { gradeSubmission } from './services/grading.services'
 import { compileSubmission } from './services/compile.services'
 
 import { GradingTask, CompilingTask, JudgerTaskType } from '@argoncs/types'
-import { messageReceiver, delay } from '@argoncs/common'
+import { rabbitMQ, judgerTasksQueue } from '@argoncs/common'
 
 import os = require('node:os')
 import { randomUUID } from 'node:crypto'
@@ -51,7 +51,6 @@ async function handleCompilingTask (task: CompilingTask, boxId: number): Promise
   await initSandbox(boxId)
   const result = await compileSubmission(task, boxId)
   await destroySandbox(boxId)
-  availableBoxes.add(boxId)
   try {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     await got.put(new URL(`/submission-results/${task.submissionId}/compiling-result`, serverBaseURL).href, {
@@ -83,35 +82,29 @@ export async function startJudger (): Promise<void> {
 
   logger.info(`Judger ${judgerId} start receiving tasks.`)
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    if (availableBoxes.size > 0) {
-      const messages = await messageReceiver.receiveMessages(availableBoxes.size, { maxWaitTimeInMs: 200 })
-      const tasks: Array<GradingTask | CompilingTask> = messages.map(
-        message => message.body
-      )
-      tasks.forEach(task => {
+  await rabbitMQ.prefetch(availableBoxes.size)
+  await rabbitMQ.consume(judgerTasksQueue, async (message) => {
+    if (message != null) {
+      const boxId = availableBoxes.values().next().value
+      try {
+        if (availableBoxes.size === 0) {
+          rabbitMQ.reject(message, true)
+          return
+        }
+        const task = JSON.parse(message.content.toString()) as GradingTask | CompilingTask
         logger.info(task, 'New task received.')
-        const boxId = availableBoxes.values().next().value
         availableBoxes.delete(boxId)
         if (task.type === JudgerTaskType.Grading) {
-          try {
-            void handleGradingTask(task, boxId)
-          } catch (err) {
-            Sentry.captureException(err, { extra: err.context })
-            logger.error(err)
-          }
+          await handleGradingTask(task, boxId)
         } else if (task.type === JudgerTaskType.Compiling) {
-          try {
-            void handleCompilingTask(task, boxId)
-          } catch (err) {
-            Sentry.captureException(err, { extra: err.context })
-            logger.error(err)
-          }
+          await handleCompilingTask(task, boxId)
         }
-      })
-    } else {
-      await delay(200)
+      } catch (err) {
+        Sentry.captureException(err)
+        rabbitMQ.reject(message, false)
+      } finally {
+        availableBoxes.add(boxId)
+      }
     }
-  }
+  })
 }
