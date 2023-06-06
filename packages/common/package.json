@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@argoncs/types": "workspace:*",
+    "@sentry/node": "^7.54.0",
     "amqplib": "^0.10.3",
     "connection-string-parser": "^1.0.4",
     "event-stream": "^4.0.1",

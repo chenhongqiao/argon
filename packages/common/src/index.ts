@@ -2,6 +2,7 @@ export * from './connections/mongodb.connections'
 export * from './connections/minio.connections'
 export * from './connections/redis.connections'
 export * from './connections/rabbitmq.connections'
+export * from './connections/sentry.connections'
 
 export * from './utils/testcase.utils'
 export * from './utils/time.utils'
