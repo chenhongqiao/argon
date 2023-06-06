@@ -4,7 +4,6 @@ import Sentry = require('@sentry/node')
 import { problemBankRoutes } from './routes/problemBank.routes'
 import { testcaseRoutes } from './routes/testcase.routes'
 import { heartbeatRoutes } from './routes/heartbeat.routes'
-import { submissionResultRoutes } from './routes/submissionResult.routes'
 import { authenticationRoutes } from './routes/authentication.routes'
 import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
@@ -58,7 +57,6 @@ export async function startAPIServer (): Promise<void> {
 
   await app.register(problemBankRoutes, { prefix: '/problem-bank' })
   await app.register(testcaseRoutes, { prefix: '/testcases' })
-  await app.register(submissionResultRoutes, { prefix: '/submission-results' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
   await app.register(authenticationRoutes, { prefix: '/authentication' })
   await app.register(userRoutes, { prefix: '/users' })

@@ -17,14 +17,6 @@ export async function createInProblemBank (newProblem: NewProblem, domainId: str
   return { problemId }
 }
 
-export async function fetchFromProblemBank (problemId: string, domainId: string): Promise<Problem> {
-  const problem = await problemBankCollection.findOne({ id: problemId, domainId })
-  if (problem == null) {
-    throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
-  }
-  return problem
-}
-
 export async function updateInProblemBank (problemId: string, domainId: string, problem: Partial<NewProblem>): Promise<{ modified: boolean }> {
   if (problem.testcases != null) {
     const testcasesVerifyQueue: Array<Promise<void>> = []

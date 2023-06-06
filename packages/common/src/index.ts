@@ -5,3 +5,6 @@ export * from './connections/rabbitmq.connections'
 
 export * from './utils/testcase.utils'
 export * from './utils/time.utils'
+
+export * from './services/problem.services'
+export * from './services/submission.services'

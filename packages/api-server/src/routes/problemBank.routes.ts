@@ -11,14 +11,12 @@ import {
   createInProblemBank,
   deleteInProblemBank,
   fetchDomainProblems,
-  fetchFromProblemBank,
   updateInProblemBank
 } from '../services/problem.services'
 
 import {
   queueSubmission,
-  createTestingSubmission,
-  fetchSubmission
+  createTestingSubmission
 } from '../services/submission.services'
 
 import { Type } from '@sinclair/typebox'
@@ -26,6 +24,7 @@ import { Type } from '@sinclair/typebox'
 import { verifyDomainScope } from '../auth/scope.auth'
 import { FastifyTypeBox } from '../types'
 import { authJWTHook } from '../hooks/authentication.hooks'
+import { fetchFromProblemBank, fetchSubmission } from '@argoncs/common'
 
 export async function problemBankRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox) => {
