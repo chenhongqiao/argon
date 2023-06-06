@@ -5,7 +5,7 @@
 
 A fast and scalable online competitive programming contest server powered by cloud native computing.
 
-Argon is currently under heavy development as [TeamsCode](https://www.teamscode.org)'s next-generation contest platform. Not all features are implemented and it's yet far from a finished product. This contest platform is expected to appear in TeamsCode's Spring 2023 contest if not later.
+Argon is currently under heavy development as [TeamsCode](https://www.teamscode.org)'s next-generation contest platform. Not all features are implemented and it's yet far from a finished product. Our current plan is to have this contest server ready by the TeamsCode Summer 2023 Contest.
 
 ## Packages
 
@@ -23,6 +23,10 @@ Upload server that handles testcases.
 
 This package contains the code to be used on judgers. It executes submissions in sandboxes and grade their outputs.
 
+### [@argoncs/result-handler](https://www.npmjs.com/package/@argoncs/result-handler)
+
+The result handler receives compiling and grading results from a message queue and then perform database updates.
+
 ### [@argoncs/types](https://www.npmjs.com/package/@argoncs/types)
 
 Type and class definitions utilized by both the server and the judger. Not designed to be used as a standalone package.
@@ -31,12 +35,8 @@ Type and class definitions utilized by both the server and the judger. Not desig
 
 Utilities and libraries used by both the server and the judger to interact with the infrastructure (such as DB and Object Storage).
 
-### [@argoncs/configs](https://www.npmjs.com/package/@argoncs/configs)
-
-Configurations shared between the server and the judger.
-
 ## Contribution
 
 TeamsCode is a student organization and this project is developed entirely by high school students. We developed this project with the hope that it can benefit the community while serving as TeamsCode's contest server.
 
-While issues and pull requests are always welcomed, the best way to contribute to this project is to join our team. If you are a high school student and knows web development, feel free to email us at contact@teamscode.org for more info!
+We are looking for people to join our team! If you are a high school student and knows web development, please email us at contact@teamscode.org for more info!
