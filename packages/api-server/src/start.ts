@@ -8,7 +8,7 @@ import { submissionResultRoutes } from './routes/submissionResult.routes'
 import { authenticationRoutes } from './routes/authentication.routes'
 import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
-import { judgerPublicRoutes, judgerPrivateRoutes } from './routes/judger.routes'
+import { judgerRoutes } from './routes/judger.routes'
 
 import { createCollectionIndexes } from './utils/collection.utils'
 
@@ -62,8 +62,7 @@ export async function startAPIServer (): Promise<void> {
   await app.register(authenticationRoutes, { prefix: '/authentication' })
   await app.register(userRoutes, { prefix: '/users' })
   await app.register(domainRoutes, { prefix: '/domains' })
-  await app.register(judgerPublicRoutes, { prefix: '/judger' })
-  await app.register(judgerPrivateRoutes, { prefix: '/judger' })
+  await app.register(judgerRoutes, { prefix: '/judger' })
 
   try {
     const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')
