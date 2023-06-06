@@ -3,12 +3,11 @@ import { gradeSubmission } from './services/grading.services'
 import { compileSubmission } from './services/compile.services'
 
 import { GradingTask, CompilingTask, JudgerTaskType, GradingResultMessage, JudgerResultType, CompilingResultMessage } from '@argoncs/types'
-import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey } from '@argoncs/common'
+import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey, sentry } from '@argoncs/common'
 
 import os = require('node:os')
 import { randomUUID } from 'node:crypto'
 import { pino } from 'pino'
-import Sentry = require('@sentry/node')
 
 import { version } from '../package.json'
 
@@ -17,8 +16,8 @@ const logger = pino()
 const availableBoxes = new Set()
 const judgerId = randomUUID()
 
-Sentry.init({
-  dsn: 'https://54ac76947d434e9a981b7e85191910cc@o1044666.ingest.sentry.io/65541781',
+sentry.init({
+  dsn: 'https://e30481557cee442a91f73c1bcc25b714@o1044666.ingest.sentry.io/4505311016910848',
   environment: process.env.NODE_ENV,
   release: version
 })
@@ -76,7 +75,7 @@ export async function startJudger (): Promise<void> {
         rabbitMQ.publish(judgerExchange, judgerResultsKey, Buffer.from(JSON.stringify(result)))
         rabbitMQ.ack(message)
       } catch (err) {
-        Sentry.captureException(err)
+        sentry.captureException(err)
         rabbitMQ.reject(message, false)
       } finally {
         await destroySandbox(boxId)

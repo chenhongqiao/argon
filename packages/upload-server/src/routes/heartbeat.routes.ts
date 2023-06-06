@@ -3,7 +3,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 
 import { version, name } from '../../package.json'
-import { Sentry } from '../connections/sentry.connections'
+import { sentry } from '@argoncs/common'
 
 export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
   const publicRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -20,7 +20,7 @@ export const heartbeatRoutes: FastifyPluginCallback = (app, options, done) => {
       try {
         return await reply.status(200).send({ version, online: true, name })
       } catch (err) {
-        Sentry.captureException(err, { extra: err.context })
+        sentry.captureException(err, { extra: err.context })
         reply.internalServerError('A server error occurred during heartbeat.')
       }
     }

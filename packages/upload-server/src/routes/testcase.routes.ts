@@ -4,9 +4,9 @@ import { uploadTestcase } from '../services/testcase.services'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
-import { Sentry } from '../connections/sentry.connections'
 import multipart from '@fastify/multipart'
 import { JWTPayloadType } from '@argoncs/types'
+import { sentry } from '@argoncs/common'
 
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
@@ -51,7 +51,7 @@ export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
         } else if (err instanceof app.multipartErrors.RequestFileTooLargeError) {
           reply.payloadTooLarge('Testcase too large to be processed.')
         } else {
-          Sentry.captureException(err, { extra: err.context })
+          sentry.captureException(err, { extra: err.context })
           reply.internalServerError('A server error occurred when creating a testcase.')
         }
       }

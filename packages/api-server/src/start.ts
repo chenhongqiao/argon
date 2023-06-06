@@ -1,5 +1,4 @@
 import Fastify from 'fastify'
-import Sentry = require('@sentry/node')
 
 import { problemBankRoutes } from './routes/problemBank.routes'
 import { testcaseRoutes } from './routes/testcase.routes'
@@ -9,7 +8,7 @@ import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
 import { judgerRoutes } from './routes/judger.routes'
 
-import { connectMongoDB, connectRabbitMQ } from '@argoncs/common'
+import { connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
@@ -25,8 +24,8 @@ const app = Fastify({
   }
 })
 
-Sentry.init({
-  dsn: 'https://7e6e404e57024a01819d0fb4cb215538@o1044666.ingest.sentry.io/6554031',
+sentry.init({
+  dsn: 'https://5aec7cfe257348109da4882fbb807e3a@o1044666.ingest.sentry.io/4505310995218432',
   environment: process.env.NODE_ENV,
   release: version
 })
@@ -49,7 +48,7 @@ export async function startAPIServer (): Promise<void> {
     handle404Errors: false,
     preHandler (err: any) {
       if (!('statusCode' in err) && !('validation' in err)) {
-        Sentry.captureException(err)
+        sentry.captureException(err)
       }
       return err
     }
@@ -67,7 +66,7 @@ export async function startAPIServer (): Promise<void> {
     const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')
     await app.listen({ port })
   } catch (err) {
-    Sentry.captureException(err, { extra: err.context })
+    sentry.captureException(err)
     app.log.error(err)
     throw err
   }
