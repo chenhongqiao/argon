@@ -56,9 +56,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@argoncs/judger@workspace:packages/judger":
+"@argoncs/judge-daemon@workspace:packages/judger":
   version: 0.0.0-use.local
-  resolution: "@argoncs/judger@workspace:packages/judger"
+  resolution: "@argoncs/judge-daemon@workspace:packages/judger"
   dependencies:
     "@argoncs/common": "workspace:*"
     "@argoncs/types": "workspace:*"

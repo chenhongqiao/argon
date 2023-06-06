@@ -19,7 +19,7 @@ This package contains the server portion of the contest platform. It interacts w
 
 Upload server that handles testcases.
 
-### [@argoncs/judger](https://www.npmjs.com/package/@argoncs/judger)
+### [@argoncs/judge-daemon](https://www.npmjs.com/package/@argoncs/judge-daemon)
 
 This package contains the code to be used on judgers. It executes submissions in sandboxes and grade their outputs.
 
