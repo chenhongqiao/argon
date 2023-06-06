@@ -2,7 +2,7 @@ import { deadResultsQueue, deadTasksQueue, judgerResultsQueue, rabbitMQ } from '
 import { CompilingResultMessage, CompilingTask, GradingResultMessage, GradingTask, JudgerResultType } from '@argoncs/types'
 import { completeGrading, handleCompileResult, handleGradingResult } from './services/result.services'
 
-async function startHandler (): Promise<void> {
+export async function startHandler (): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   await rabbitMQ.consume(judgerResultsQueue, async (message) => {
     if (message != null) {
@@ -42,4 +42,3 @@ async function startHandler (): Promise<void> {
     }
   })
 }
-void startHandler()
