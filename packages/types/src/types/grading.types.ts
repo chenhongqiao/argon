@@ -2,6 +2,7 @@ import { SubmissionLang } from './compilation.types'
 
 import {
   Constraints,
+  JudgerResultType,
   JudgerTaskType,
   SandboxMemoryExceededSchema,
   SandboxRuntimeErrorSchema,
@@ -56,3 +57,10 @@ export const GradingResultSchema = Type.Union([
   SandboxMemoryExceededSchema
 ])
 export type GradingResult = Static<typeof GradingResultSchema>
+
+export interface GradingResultMessage {
+  type: JudgerResultType.Grading
+  submissionId: string
+  testcaseIndex: number
+  result: GradingResult
+}

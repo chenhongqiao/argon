@@ -1,4 +1,4 @@
-import { Constraints, JudgerTaskType, ConstraintsSchema } from './judger.types'
+import { Constraints, JudgerTaskType, ConstraintsSchema, JudgerResultType } from './judger.types'
 import { Static, Type } from '@sinclair/typebox'
 
 export enum SubmissionLang {
@@ -43,3 +43,9 @@ export type CompileFailed = Static<typeof CompileFailedSchema>
 // When using Type.Union, all children should not have addtionalProperties: false set to avoid an ajv issue
 export const CompilingResultSchema = Type.Union([CompileSucceededSchema, CompileFailedSchema])
 export type CompilingResult = Static<typeof CompilingResultSchema>
+
+export interface CompilingResultMessage {
+  type: JudgerResultType.Compiling
+  submissionId: string
+  result: CompilingResult
+}

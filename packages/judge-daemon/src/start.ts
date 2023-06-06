@@ -2,7 +2,7 @@ import { destroySandbox, initSandbox } from './services/sandbox.services'
 import { gradeSubmission } from './services/grading.services'
 import { compileSubmission } from './services/compile.services'
 
-import { GradingTask, CompilingTask, JudgerTaskType, GradingResult, CompilingResult } from '@argoncs/types'
+import { GradingTask, CompilingTask, JudgerTaskType, GradingResultMessage, JudgerResultType, CompilingResultMessage } from '@argoncs/types'
 import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey } from '@argoncs/common'
 
 import os = require('node:os')
@@ -38,6 +38,7 @@ export async function startJudger (): Promise<void> {
   logger.info(`Judger ${judgerId} start receiving tasks.`)
 
   await rabbitMQ.prefetch(availableBoxes.size)
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   await rabbitMQ.consume(judgerTasksQueue, async (message) => {
     if (message != null) {
       const boxId = availableBoxes.values().next().value
@@ -47,18 +48,27 @@ export async function startJudger (): Promise<void> {
           logger.info('Received a task when no box is available.')
           return
         }
-        const task = JSON.parse(message.content.toString()) as GradingTask | CompilingTask
+        const task: GradingTask | CompilingTask = JSON.parse(message.content.toString())
 
         logger.info(task, 'Processing a new task.')
         availableBoxes.delete(boxId)
         await initSandbox(boxId)
 
-        let result: GradingResult | CompilingResult
+        let result: CompilingResultMessage | GradingResultMessage
 
         if (task.type === JudgerTaskType.Grading) {
-          result = await gradeSubmission(task, boxId)
+          result = {
+            type: JudgerResultType.Grading,
+            result: (await gradeSubmission(task, boxId)),
+            submissionId: task.submissionId,
+            testcaseIndex: task.testcaseIndex
+          }
         } else if (task.type === JudgerTaskType.Compiling) {
-          result = await compileSubmission(task, boxId)
+          result = {
+            type: JudgerResultType.Compiling,
+            result: (await compileSubmission(task, boxId)),
+            submissionId: task.submissionId
+          }
         } else {
           throw Error('Invalid task type.')
         }

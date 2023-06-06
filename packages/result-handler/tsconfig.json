@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "inlineSources": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist",
+    "lib": [
+      "es2021"
+    ],
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./src",
+    "./package.json",
+    "./configs/*.json"
+  ],
+  "references": [
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../types"
+    }
+  ]
+}

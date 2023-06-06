@@ -5,6 +5,11 @@ export enum JudgerTaskType {
   Grading = 'Grading',
 }
 
+export enum JudgerResultType {
+  Compiling = 'Compiling',
+  Grading = 'Grading',
+}
+
 export enum SandboxStatus {
   Succeeded = 'OK',
   MemoryExceeded = 'MLE',
