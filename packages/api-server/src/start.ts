@@ -10,7 +10,7 @@ import { domainRoutes } from './routes/domain.routes'
 import { userRoutes } from './routes/user.routes'
 import { judgerRoutes } from './routes/judger.routes'
 
-import { createCollectionIndexes } from './utils/collection.utils'
+import { connectMongoDB, connectRabbitMQ } from '@argoncs/common'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
@@ -33,7 +33,8 @@ Sentry.init({
 })
 
 export async function startAPIServer (): Promise<void> {
-  await createCollectionIndexes()
+  await connectMongoDB()
+  await connectRabbitMQ()
 
   await app.register(fastifyJwt, {
     secret: process.env.JWT_SECRET ?? '',

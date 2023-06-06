@@ -1,6 +1,7 @@
 import { Client, MinIOTypeHack } from 'minio'
 
 import { ConnectionStringParser } from 'connection-string-parser'
+import { ReadableStream } from 'stream/web'
 
 const minioConnectionString = new ConnectionStringParser({
   scheme: 'minio',
