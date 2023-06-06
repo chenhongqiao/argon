@@ -1,6 +1,6 @@
-import { judgerResultsQueue, rabbitMQ } from '@argoncs/common'
-import { CompilingResultMessage, GradingResultMessage, JudgerResultType } from '@argoncs/types'
-import { handleCompileResult, handleGradingResult } from './services/result.services'
+import { deadResultsQueue, deadTasksQueue, judgerResultsQueue, rabbitMQ } from '@argoncs/common'
+import { CompilingResultMessage, CompilingTask, GradingResultMessage, GradingTask, JudgerResultType } from '@argoncs/types'
+import { completeGrading, handleCompileResult, handleGradingResult } from './services/result.services'
 
 async function startHandler (): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -21,6 +21,24 @@ async function startHandler (): Promise<void> {
       } catch (err) {
         rabbitMQ.reject(message, false)
       }
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  await rabbitMQ.consume(deadResultsQueue, async (message) => {
+    if (message != null) {
+      const letter: CompilingResultMessage | GradingResultMessage = JSON.parse(message.content.toString())
+
+      await completeGrading(letter.submissionId, 'One or more of the grading results failed to be processed.')
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  await rabbitMQ.consume(deadTasksQueue, async (message) => {
+    if (message != null) {
+      const letter: CompilingTask | GradingTask = JSON.parse(message.content.toString())
+
+      await completeGrading(letter.submissionId, 'One or more of the grading tasks failed to complete.')
     }
   })
 }
