@@ -11,42 +11,27 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/packages/server/src/dev.ts",
+      "program": "${workspaceFolder}/packages/api-server/src/dev.ts",
       "outFiles": [
-        "${workspaceFolder}/packages/server/dist/**/*.js"
+        "${workspaceFolder}/packages/api-server/dist/**/*.js"
       ],
-      "envFile": "${workspaceFolder}/.env",
-      "preLaunchTask": "Build Server",
+      "envFile": "${workspaceFolder}/packages/api-server/.env",
+      "preLaunchTask": "Build API Server",
       "outputCapture": "std"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Judger",
+      "name": "Debug Judge Daemon",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/packages/judger/src/dev.ts",
+      "program": "${workspaceFolder}/packages/judge-daemon/src/dev.ts",
       "outFiles": [
-        "${workspaceFolder}/packages/judger/dist/**/*.js"
+        "${workspaceFolder}/packages/judge-daemon/dist/**/*.js"
       ],
-      "envFile": "${workspaceFolder}/.env",
-      "preLaunchTask": "Build Judger",
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Libraries",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}/packages/libraries/src/index.ts",
-      "outFiles": [
-        "${workspaceFolder}/packages/libraries/dist/**/*.js"
-      ],
-      "envFile": "${workspaceFolder}/.env",
-      "preLaunchTask": "Build Shared Libraries",
+      "envFile": "${workspaceFolder}/packages/judge-daemon/.env",
+      "preLaunchTask": "Build Judge Daemon",
       "outputCapture": "std"
     },
     {
@@ -56,11 +41,26 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/packages/upload/src/dev.ts",
+      "program": "${workspaceFolder}/packages/upload-server/src/dev.ts",
       "outFiles": [
-        "${workspaceFolder}/packages/upload/dist/**/*.js"
+        "${workspaceFolder}/packages/upload-server/dist/**/*.js"
       ],
-      "envFile": "${workspaceFolder}/.env",
+      "envFile": "${workspaceFolder}/packages/upload-server/.env",
+      "preLaunchTask": "Build Upload Server",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Result Handler",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/packages/result-handler/src/dev.ts",
+      "outFiles": [
+        "${workspaceFolder}/packages/result-handler/dist/**/*.js"
+      ],
+      "envFile": "${workspaceFolder}/packages/result-handler/.env",
       "preLaunchTask": "Build Upload Server",
       "outputCapture": "std"
     }

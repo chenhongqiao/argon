@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Shared Libraries",
+      "label": "Build Common",
       "type": "typescript",
-      "tsconfig": "packages/libraries/tsconfig.json",
+      "tsconfig": "packages/common/tsconfig.json",
       "problemMatcher": [
         "$tsc"
       ],
@@ -13,19 +13,7 @@
       }
     },
     {
-      "label": "Build Configurations",
-      "type": "typescript",
-      "tsconfig": "packages/configs/tsconfig.json",
-      "dependsOn": "Build Shared Types",
-      "problemMatcher": [
-        "$tsc"
-      ],
-      "group": {
-        "kind": "build",
-      }
-    },
-    {
-      "label": "Build Shared Types",
+      "label": "Build Types",
       "type": "typescript",
       "tsconfig": "packages/types/tsconfig.json",
       "problemMatcher": [
@@ -36,13 +24,12 @@
       }
     },
     {
-      "label": "Build Server",
+      "label": "Build API Server",
       "type": "typescript",
-      "tsconfig": "packages/server/tsconfig.json",
+      "tsconfig": "packages/api-server/tsconfig.json",
       "dependsOn": [
-        "Build Shared Types",
-        "Build Shared Libraries",
-        "Build Configurations"
+        "Build Types",
+        "Build Common"
       ],
       "problemMatcher": [
         "$tsc"
@@ -52,13 +39,12 @@
       }
     },
     {
-      "label": "Build Judger",
+      "label": "Build Judge Daemon",
       "type": "typescript",
-      "tsconfig": "packages/judger/tsconfig.json",
+      "tsconfig": "packages/judge-daemon/tsconfig.json",
       "dependsOn": [
-        "Build Shared Types",
-        "Build Shared Libraries",
-        "Build Configurations"
+        "Build Types",
+        "Build Common"
       ],
       "problemMatcher": [
         "$tsc"
@@ -70,9 +56,24 @@
     {
       "label": "Build Upload Server",
       "type": "typescript",
-      "tsconfig": "packages/upload/tsconfig.json",
+      "tsconfig": "packages/upload-server/tsconfig.json",
       "dependsOn": [
-        "Build Shared Libraries",
+        "Build Common",
+      ],
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": {
+        "kind": "build",
+      }
+    },
+    {
+      "label": "Build Result Handler",
+      "type": "typescript",
+      "tsconfig": "packages/result-handler/tsconfig.json",
+      "dependsOn": [
+        "Build Types",
+        "Build Common"
       ],
       "problemMatcher": [
         "$tsc"
