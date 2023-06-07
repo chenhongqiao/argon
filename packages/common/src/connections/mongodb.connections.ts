@@ -59,16 +59,14 @@ const collections: Collection[] = [
   }
 ]
 
-export async function connectMongoDB (): Promise<void> {
-  await mongoClient.connect()
+await mongoClient.connect()
 
-  const indexPromises: Array<Promise<string>> = []
-  collections.forEach(collection => {
-    if (collection.indexes != null) {
-      indexPromises.push(...collection.indexes.map(async index => await mongoDB.collection(collection.name).createIndex(index.keys, index.options ?? {})))
-    }
-  })
-  await Promise.all(indexPromises)
-}
+const indexPromises: Array<Promise<string>> = []
+collections.forEach(collection => {
+  if (collection.indexes != null) {
+    indexPromises.push(...collection.indexes.map(async index => await mongoDB.collection(collection.name).createIndex(index.keys, index.options ?? {})))
+  }
+})
+await Promise.all(indexPromises)
 
 export { MongoServerError } from 'mongodb'

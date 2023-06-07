@@ -8,7 +8,7 @@ import { domainRoutes } from './routes/domain.routes.js'
 import { userRoutes } from './routes/user.routes.js'
 import { judgerRoutes } from './routes/judger.routes.js'
 
-import { connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
+import { sentry } from '@argoncs/common'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
@@ -29,9 +29,6 @@ sentry.init({
 })
 
 export async function startAPIServer (): Promise<void> {
-  await connectMongoDB()
-  await connectRabbitMQ()
-
   await app.register(fastifyJwt, {
     secret: process.env.JWT_SECRET ?? '',
     cookie: {
