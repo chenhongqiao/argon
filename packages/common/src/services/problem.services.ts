@@ -1,6 +1,6 @@
 import { Problem } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { mongoDB } from '../connections/mongodb.connections'
+import { mongoDB } from '../connections/mongodb.connections.js'
 
 const problemBankCollection = mongoDB.collection<Problem>('problemBank')
 

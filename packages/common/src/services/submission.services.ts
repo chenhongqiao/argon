@@ -1,6 +1,6 @@
 import { ContestSubmission, TestingSubmission } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { mongoDB } from '../connections/mongodb.connections'
+import { mongoDB } from '../connections/mongodb.connections.js'
 
 const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
 
