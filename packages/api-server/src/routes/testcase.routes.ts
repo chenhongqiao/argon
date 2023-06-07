@@ -1,10 +1,10 @@
 import { Type } from '@sinclair/typebox'
 
-import { verifyDomainScope } from '../auth/scope.auth'
+import { verifyDomainScope } from '../auth/scope.auth.js'
 
 import { JWTPayloadType } from '@argoncs/types'
-import { FastifyTypeBox } from '../types'
-import { authJWTHook } from '../hooks/authentication.hooks'
+import { FastifyTypeBox } from '../types.js'
+import { authJWTHook } from '../hooks/authentication.hooks.js'
 
 export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox) => {

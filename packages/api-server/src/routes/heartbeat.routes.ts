@@ -1,7 +1,6 @@
 import { Type } from '@sinclair/typebox'
 
-import { version, name } from '../../package.json'
-import { FastifyTypeBox } from '../types'
+import { FastifyTypeBox } from '../types.js'
 
 export async function heartbeatRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox) => {
@@ -15,7 +14,7 @@ export async function heartbeatRoutes (app: FastifyTypeBox): Promise<void> {
         }
       },
       async (request, reply) => {
-        return await reply.status(200).send({ version, online: true, name })
+        return await reply.status(200).send({ version: process.env.npm_package_version as string, online: true, name: process.env.npm_package_name as string })
       }
     )
   })

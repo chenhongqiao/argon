@@ -8,9 +8,9 @@ import {
   SubmissionType
 } from '@argoncs/types'
 import { rabbitMQ, mongoDB, judgerExchange, judgerTasksKey, fetchSubmission } from '@argoncs/common'
-import languageConfigs from '../../configs/languages.json'
+import { languageConfigs } from '../../configs/language.configs.js'
 
-import { nanoid } from '../utils/nanoid.utils'
+import { nanoid } from '../utils/nanoid.utils.js'
 
 const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
 

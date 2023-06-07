@@ -4,9 +4,9 @@ import {
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import { mongoDB } from '@argoncs/common'
-import { testcaseExists } from './testcase.services'
+import { testcaseExists } from './testcase.services.js'
 
-import { nanoid } from '../utils/nanoid.utils'
+import { nanoid } from '../utils/nanoid.utils.js'
 
 const problemBankCollection = mongoDB.collection<Problem>('problemBank')
 

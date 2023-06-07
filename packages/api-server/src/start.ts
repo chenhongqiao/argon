@@ -1,12 +1,12 @@
-import Fastify from 'fastify'
+import { fastify } from 'fastify'
 
-import { problemBankRoutes } from './routes/problemBank.routes'
-import { testcaseRoutes } from './routes/testcase.routes'
-import { heartbeatRoutes } from './routes/heartbeat.routes'
-import { authenticationRoutes } from './routes/authentication.routes'
-import { domainRoutes } from './routes/domain.routes'
-import { userRoutes } from './routes/user.routes'
-import { judgerRoutes } from './routes/judger.routes'
+import { problemBankRoutes } from './routes/problemBank.routes.js'
+import { testcaseRoutes } from './routes/testcase.routes.js'
+import { heartbeatRoutes } from './routes/heartbeat.routes.js'
+import { authenticationRoutes } from './routes/authentication.routes.js'
+import { domainRoutes } from './routes/domain.routes.js'
+import { userRoutes } from './routes/user.routes.js'
+import { judgerRoutes } from './routes/judger.routes.js'
 
 import { connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
 
@@ -16,9 +16,7 @@ import fastifySensible from '@fastify/sensible'
 import fastifyJwt from '@fastify/jwt'
 import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
 
-import { version } from '../package.json'
-
-const app = Fastify({
+const app = fastify({
   logger: {
     enabled: true
   }
@@ -27,7 +25,7 @@ const app = Fastify({
 sentry.init({
   dsn: 'https://5aec7cfe257348109da4882fbb807e3a@o1044666.ingest.sentry.io/4505310995218432',
   environment: process.env.NODE_ENV,
-  release: version
+  release: process.env.npm_package_version
 })
 
 export async function startAPIServer (): Promise<void> {

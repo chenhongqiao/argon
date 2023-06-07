@@ -2,8 +2,8 @@ import { NewDomain, Domain, User, DomainDetail } from '@argoncs/types'
 import { mongoClient, mongoDB } from '@argoncs/common'
 import { NotFoundError } from 'http-errors-enhanced'
 
-import { nanoid } from '../utils/nanoid.utils'
-import { refreshCache } from './cache.services'
+import { nanoid } from '../utils/nanoid.utils.js'
+import { refreshCache } from './cache.services.js'
 
 const userCollection = mongoDB.collection<User>('users')
 const domainCollection = mongoDB.collection<Domain>('domains')

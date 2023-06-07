@@ -1,4 +1,4 @@
-import { registerUser, initiateVerification, fetchUser, completeVerification, authenticateUser } from '../services/user.services'
+import { registerUser, initiateVerification, fetchUser, completeVerification, authenticateUser } from '../services/user.services.js'
 
 import { Type } from '@sinclair/typebox'
 import { NewUserSchema, JWTPayloadType }
@@ -6,7 +6,7 @@ import { NewUserSchema, JWTPayloadType }
 import { delay } from '@argoncs/common'
 
 import { randomInt } from 'node:crypto'
-import { FastifyTypeBox } from '../types'
+import { FastifyTypeBox } from '../types.js'
 
 export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox) => {

@@ -31,5 +31,6 @@
     "fastify-http-errors-enhanced": "^4.1.0",
     "http-errors-enhanced": "^1.0.13",
     "nanoid": "^4.0.2"
-  }
+  },
+  "type": "module"
 }

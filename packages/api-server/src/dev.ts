@@ -1,3 +1,3 @@
-import { startAPIServer } from './index'
+import { startAPIServer } from './index.js'
 
 void startAPIServer()

@@ -1,7 +1,7 @@
 import { JWTPayloadType } from '@argoncs/types'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { NotFoundError, UnauthorizedError } from 'http-errors-enhanced'
-import { fetchAuthenticationProfile, fetchSession } from '../services/user.services'
+import { fetchAuthenticationProfile, fetchSession } from '../services/user.services.js'
 
 export async function authJWTHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   await request.jwtVerify()

@@ -1,10 +1,10 @@
 import { Type } from '@sinclair/typebox'
 import { DomainDetailSchema, NewDomainSchema } from '@argoncs/types'
-import { addOrUpdateDomainMember, createDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services'
-import { verifySuperAdmin } from '../auth/role.auth'
-import { verifyDomainScope } from '../auth/scope.auth'
-import { FastifyTypeBox } from '../types'
-import { authJWTHook } from '../hooks/authentication.hooks'
+import { addOrUpdateDomainMember, createDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services.js'
+import { verifySuperAdmin } from '../auth/role.auth.js'
+import { verifyDomainScope } from '../auth/scope.auth.js'
+import { FastifyTypeBox } from '../types.js'
+import { authJWTHook } from '../hooks/authentication.hooks.js'
 
 export async function domainRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox) => {

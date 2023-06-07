@@ -5,10 +5,10 @@ import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
 
-import { nanoid } from '../utils/nanoid.utils'
+import { nanoid } from '../utils/nanoid.utils.js'
 
-import { emailClient } from '../connections/email.connections'
-import { fetchCache, setCache } from './cache.services'
+import { emailClient } from '../connections/email.connections.js'
+import { fetchCache, setCache } from './cache.services.js'
 
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)

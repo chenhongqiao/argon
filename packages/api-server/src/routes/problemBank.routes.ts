@@ -12,24 +12,23 @@ import {
   deleteInProblemBank,
   fetchDomainProblems,
   updateInProblemBank
-} from '../services/problem.services'
+} from '../services/problem.services.js'
 
 import {
   queueSubmission,
   createTestingSubmission
-} from '../services/submission.services'
+} from '../services/submission.services.js'
 
 import { Type } from '@sinclair/typebox'
 
-import { verifyDomainScope } from '../auth/scope.auth'
-import { FastifyTypeBox } from '../types'
-import { authJWTHook } from '../hooks/authentication.hooks'
+import { verifyDomainScope } from '../auth/scope.auth.js'
+import { FastifyTypeBox } from '../types.js'
+import { authJWTHook } from '../hooks/authentication.hooks.js'
 import { fetchFromProblemBank, fetchSubmission } from '@argoncs/common'
 
 export async function problemBankRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox) => {
     privateRoutes.addHook('preValidation', authJWTHook)
-
     privateRoutes.post(
       '/:domainId',
       {

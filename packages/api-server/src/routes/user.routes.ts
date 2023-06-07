@@ -1,9 +1,9 @@
 import { Type } from '@sinclair/typebox'
 import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile } from '@argoncs/types'
-import { fetchUser } from '../services/user.services'
-import { verifyUserOwnsership } from '../auth/ownership.auth'
-import { FastifyTypeBox } from '../types'
-import { authJWTHook } from '../hooks/authentication.hooks'
+import { fetchUser } from '../services/user.services.js'
+import { verifyUserOwnsership } from '../auth/ownership.auth.js'
+import { FastifyTypeBox } from '../types.js'
+import { authJWTHook } from '../hooks/authentication.hooks.js'
 
 export async function userRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox) => {
