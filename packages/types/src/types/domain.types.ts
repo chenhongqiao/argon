@@ -1,5 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
-import { PublicUserProfileSchema } from './user.types'
+import { PublicUserProfileSchema } from './user.types.js'
 
 export const NewDomainSchema = Type.Object({
   name: Type.String(),

@@ -1,5 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
-import { User } from './user.types'
+import { User } from './user.types.js'
 
 export enum JWTPayloadType {
   Identification = 'Identification',

@@ -1,4 +1,4 @@
-import { SubmissionLang } from './compilation.types'
+import { SubmissionLang } from './compilation.types.js'
 
 import {
   Constraints,
@@ -8,7 +8,7 @@ import {
   SandboxRuntimeErrorSchema,
   SandboxSystemErrorSchema,
   SandboxTimeExceededSchema
-} from './judger.types'
+} from './judger.types.js'
 
 import { Static, Type } from '@sinclair/typebox'
 

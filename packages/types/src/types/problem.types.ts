@@ -1,6 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 
-import { ConstraintsSchema } from './judger.types'
+import { ConstraintsSchema } from './judger.types.js'
 
 export const NewProblemSchema = Type.Object({
   name: Type.String(),

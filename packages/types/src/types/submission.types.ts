@@ -1,8 +1,8 @@
 import { Static, Type } from '@sinclair/typebox'
 
-import { SubmissionLang } from './compilation.types'
+import { SubmissionLang } from './compilation.types.js'
 
-import { GradingResultSchema } from './grading.types'
+import { GradingResultSchema } from './grading.types.js'
 
 export enum SubmissionStatus {
   Pending = 'Pending',
