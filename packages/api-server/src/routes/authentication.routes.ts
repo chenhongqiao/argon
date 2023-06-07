@@ -42,7 +42,7 @@ export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> 
         const { userId, sessionId } = await authenticateUser(usernameOrEmail, password, request.headers['user-agent'] ?? 'Unknown', request.ip)
         await delay(randomInt(300, 600))
         const token = await reply.jwtSign({ type: JWTPayloadType.Identification, userId, sessionId })
-        return await reply.status(200).setCookie('session_token', token)
+        return await reply.status(200).setCookie('session_token', token, { path: '/', httpOnly: true }).send({ userId })
       }
     )
 
