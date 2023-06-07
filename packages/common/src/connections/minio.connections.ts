@@ -3,30 +3,7 @@ import { Client, MinIOTypeHack } from 'minio'
 import { ConnectionStringParser } from 'connection-string-parser'
 import { ReadableStream } from 'stream/web'
 
-const minioConnectionString = new ConnectionStringParser({
-  scheme: 'minio',
-  hosts: []
-})
-
-if (process.env.MINIO_URL == null) {
-  throw new Error('Missing MinIO URL.')
-}
-
-const minioConfig = minioConnectionString.parse(process.env.MINIO_URL)
-
-if (minioConfig.hosts[0].host == null || minioConfig.username == null || minioConfig.password == null) {
-  throw new Error('MinIO URL missing required information.')
-}
-
 declare module 'minio' {
-  export interface BucketItemStat {
-    size: number
-    etag: string
-    versionId: string
-    lastModified: Date
-    metaData: ItemBucketMetadata
-  }
-
   export class MinIOTypeHack {
     statObject (bucketName: string, objectName: string, options: VersionIdentificator): Promise<BucketItemStat>
 
@@ -34,9 +11,34 @@ declare module 'minio' {
   }
 }
 
-export const minio = new Client({
-  endPoint: minioConfig.hosts[0].host,
-  accessKey: minioConfig.username,
-  secretKey: minioConfig.password,
-  port: minioConfig.hosts[0].port
-}) as Client & MinIOTypeHack
+let minio: Client & MinIOTypeHack
+
+export async function connectMinIO (url: string): Promise<void> {
+  const minioConnectionString = new ConnectionStringParser({
+    scheme: 'minio',
+    hosts: []
+  })
+
+  if (url == null) {
+    throw new Error('Missing MinIO URL.')
+  }
+
+  const minioConfig = minioConnectionString.parse(url)
+
+  if (minioConfig.hosts[0].host == null || minioConfig.username == null || minioConfig.password == null) {
+    throw new Error('MinIO URL missing required information.')
+  }
+
+  minio = new Client({
+    endPoint: minioConfig.hosts[0].host,
+    accessKey: minioConfig.username,
+    secretKey: minioConfig.password,
+    port: minioConfig.hosts[0].port
+  }) as Client & MinIOTypeHack
+
+  await minio.makeBucket('testcases')
+  await minio.makeBucket('binaries')
+  await minio.setBucketVersioning('testcases', { Status: 'Enabled' })
+}
+
+export { minio }

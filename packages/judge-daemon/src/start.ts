@@ -3,11 +3,12 @@ import { gradeSubmission } from './services/grading.services.js'
 import { compileSubmission } from './services/compile.services.js'
 
 import { GradingTask, CompilingTask, JudgerTaskType, GradingResultMessage, JudgerResultType, CompilingResultMessage } from '@argoncs/types'
-import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey, sentry } from '@argoncs/common'
+import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey, sentry, connectRabbitMQ, connectMinIO } from '@argoncs/common'
 
 import os = require('node:os')
 import { randomUUID } from 'node:crypto'
 import { pino } from 'pino'
+import assert from 'assert'
 
 const logger = pino()
 
@@ -21,6 +22,11 @@ sentry.init({
 })
 
 export async function startJudger (): Promise<void> {
+  assert(process.env.RABBITMQ_URL != null)
+  await connectRabbitMQ(process.env.RABBITMQ_URL)
+  assert(process.env.MINIO_URL != null)
+  await connectMinIO(process.env.MINIO_URL)
+
   const cores = os.cpus().length
 
   logger.info(`${cores} CPU cores detected.`)

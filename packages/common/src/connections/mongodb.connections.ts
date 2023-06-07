@@ -1,9 +1,4 @@
-import { MongoClient, IndexSpecification, CreateIndexesOptions } from 'mongodb'
-
-const mongoURL = process.env.MONGO_URL ?? ''
-
-export const mongoClient = new MongoClient(mongoURL)
-export const mongoDB = mongoClient.db()
+import { MongoClient, IndexSpecification, CreateIndexesOptions, Db } from 'mongodb'
 
 interface Index {
   keys: IndexSpecification
@@ -59,14 +54,21 @@ const collections: Collection[] = [
   }
 ]
 
-await mongoClient.connect()
+let mongoDB: Db
 
-const indexPromises: Array<Promise<string>> = []
-collections.forEach(collection => {
-  if (collection.indexes != null) {
-    indexPromises.push(...collection.indexes.map(async index => await mongoDB.collection(collection.name).createIndex(index.keys, index.options ?? {})))
-  }
-})
-await Promise.all(indexPromises)
+export async function connectMongoDB (url: string): Promise<void> {
+  const mongoClient = new MongoClient(url)
+  mongoDB = mongoClient.db()
+  await mongoClient.connect()
 
+  const indexPromises: Array<Promise<string>> = []
+  collections.forEach(collection => {
+    if (collection.indexes != null) {
+      indexPromises.push(...collection.indexes.map(async index => await mongoDB.collection(collection.name).createIndex(index.keys, index.options ?? {})))
+    }
+  })
+  await Promise.all(indexPromises)
+}
 export { MongoServerError } from 'mongodb'
+
+export { mongoDB }

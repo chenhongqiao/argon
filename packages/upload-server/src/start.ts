@@ -4,9 +4,10 @@ import jwt from '@fastify/jwt'
 import { testcaseRoutes } from './routes/testcase.routes.js'
 import { heartbeatRoutes } from './routes/heartbeat.routes.js'
 
-import { sentry } from '@argoncs/common'
+import { connectMinIO, sentry } from '@argoncs/common'
 
 import sensible from '@fastify/sensible'
+import assert from 'assert'
 
 const app = fastify({
   logger: {
@@ -21,6 +22,9 @@ sentry.init({
 })
 
 export async function startUploadServer (): Promise<void> {
+  assert(process.env.MINIO_URL != null)
+  await connectMinIO(process.env.MINIO_URL)
+
   await app.register(jwt, {
     secret: process.env.JWT_SECRET ?? ''
   })

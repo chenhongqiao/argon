@@ -1,4 +1,6 @@
-import amqplib from 'amqplib'
+import amqplib, { Channel } from 'amqplib'
+
+let rabbitMQ: Channel
 
 export const judgerExchange = 'judger'
 export const judgerTasksQueue = 'judger-tasks'
@@ -10,20 +12,22 @@ export const deadLetterExchange = 'dead-letter'
 export const deadTasksQueue = 'dead-tasks'
 export const deadResultsQueue = 'dead-results'
 
-const connection = await amqplib.connect(process.env.RABBITMQ_URL ?? '')
-const rabbitMQ = await connection.createChannel()
+export async function connectRabbitMQ (url: string): Promise<void> {
+  const connection = await amqplib.connect(url)
+  rabbitMQ = await connection.createChannel()
 
-await rabbitMQ.assertExchange(judgerExchange, 'direct')
-await rabbitMQ.assertExchange(deadLetterExchange, 'direct')
+  await rabbitMQ.assertExchange(judgerExchange, 'direct')
+  await rabbitMQ.assertExchange(deadLetterExchange, 'direct')
 
-await rabbitMQ.assertQueue(deadTasksQueue)
-await rabbitMQ.assertQueue(deadResultsQueue)
-await rabbitMQ.bindQueue(deadTasksQueue, deadLetterExchange, judgerTasksKey)
-await rabbitMQ.bindQueue(deadResultsQueue, deadLetterExchange, judgerResultsKey)
+  await rabbitMQ.assertQueue(deadTasksQueue)
+  await rabbitMQ.assertQueue(deadResultsQueue)
+  await rabbitMQ.bindQueue(deadTasksQueue, deadLetterExchange, judgerTasksKey)
+  await rabbitMQ.bindQueue(deadResultsQueue, deadLetterExchange, judgerResultsKey)
 
-await rabbitMQ.assertQueue(judgerTasksQueue, { deadLetterExchange })
-await rabbitMQ.assertQueue(judgerResultsQueue, { deadLetterExchange })
-await rabbitMQ.bindQueue(judgerTasksQueue, judgerExchange, judgerTasksKey)
-await rabbitMQ.bindQueue(judgerResultsQueue, judgerExchange, judgerResultsKey)
+  await rabbitMQ.assertQueue(judgerTasksQueue, { deadLetterExchange })
+  await rabbitMQ.assertQueue(judgerResultsQueue, { deadLetterExchange })
+  await rabbitMQ.bindQueue(judgerTasksQueue, judgerExchange, judgerTasksKey)
+  await rabbitMQ.bindQueue(judgerResultsQueue, judgerExchange, judgerResultsKey)
+}
 
 export { rabbitMQ }

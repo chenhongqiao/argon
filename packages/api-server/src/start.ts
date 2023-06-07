@@ -8,13 +8,14 @@ import { domainRoutes } from './routes/domain.routes.js'
 import { userRoutes } from './routes/user.routes.js'
 import { judgerRoutes } from './routes/judger.routes.js'
 
-import { sentry } from '@argoncs/common'
+import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
 import fastifySensible from '@fastify/sensible'
 import fastifyJwt from '@fastify/jwt'
 import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
+import assert from 'assert'
 
 const app = fastify({
   logger: {
@@ -29,6 +30,15 @@ sentry.init({
 })
 
 export async function startAPIServer (): Promise<void> {
+  assert(process.env.MONGO_URL != null)
+  await connectMongoDB(process.env.MONGO_URL)
+  assert(process.env.MINIO_URL != null)
+  await connectMinIO(process.env.MINIO_URL)
+  assert(process.env.RABBITMQ_URL != null)
+  await connectRabbitMQ(process.env.RABBITMQ_URL)
+  assert(process.env.CACHEREDIS_URL != null)
+  await connectCacheRedis(process.env.CACHEREDIS_URL)
+
   await app.register(fastifyJwt, {
     secret: process.env.JWT_SECRET ?? '',
     cookie: {
