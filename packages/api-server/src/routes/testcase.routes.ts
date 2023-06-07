@@ -23,7 +23,7 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
       },
       async (request, reply) => {
         const { domainId, problemId } = request.params
-        await reply.status(200).send({ token: await reply.jwtSign({ type: JWTPayloadType.Upload, resource: { problemId, domainId }, userId: request.user.userId }) })
+        await reply.status(200).send({ token: await reply.jwtSign({ type: JWTPayloadType.Upload, resource: { problemId, domainId }, userId: request.user.userId }, { expiresIn: '10m' }) })
       }
     )
 
