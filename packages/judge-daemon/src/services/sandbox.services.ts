@@ -1,4 +1,4 @@
-import { exec } from '../utils/system.utils'
+import { exec } from '../utils/system.utils.js'
 import { promises as fs } from 'node:fs'
 
 import {

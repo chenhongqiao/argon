@@ -2,13 +2,13 @@ import {
   SandboxStatus, GradingStatus, GradingTask, GradingResult
 } from '@argoncs/types'
 import { minio } from '@argoncs/common'
-import languageConfigs from '../../configs/languages.json'
+import { languageConfigs } from '../../configs/language.configs.js'
 
 import path = require('node:path')
-import { makeExecutable } from '../utils/system.utils'
+import { makeExecutable } from '../utils/system.utils.js'
 import {
   runInSandbox
-} from './sandbox.services'
+} from './sandbox.services.js'
 
 import { spawn, Thread, Worker } from 'threads'
 

@@ -1,1 +1,1 @@
-export { startJudger } from './start'
+export { startJudger } from './start.js'

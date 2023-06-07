@@ -12,12 +12,11 @@
     "lib": [
       "es2021"
     ],
-    "resolveJsonModule": true
+    "module": "node16"
   },
   "include": [
     "./src",
-    "./package.json",
-    "./configs/*.json"
+    "./configs"
   ],
   "references": [
     {

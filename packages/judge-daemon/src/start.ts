@@ -1,6 +1,6 @@
-import { destroySandbox, initSandbox } from './services/sandbox.services'
-import { gradeSubmission } from './services/grading.services'
-import { compileSubmission } from './services/compile.services'
+import { destroySandbox, initSandbox } from './services/sandbox.services.js'
+import { gradeSubmission } from './services/grading.services.js'
+import { compileSubmission } from './services/compile.services.js'
 
 import { GradingTask, CompilingTask, JudgerTaskType, GradingResultMessage, JudgerResultType, CompilingResultMessage } from '@argoncs/types'
 import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey, sentry } from '@argoncs/common'
@@ -8,8 +8,6 @@ import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey, sentry } 
 import os = require('node:os')
 import { randomUUID } from 'node:crypto'
 import { pino } from 'pino'
-
-import { version } from '../package.json'
 
 const logger = pino()
 
@@ -19,7 +17,7 @@ const judgerId = randomUUID()
 sentry.init({
   dsn: 'https://e30481557cee442a91f73c1bcc25b714@o1044666.ingest.sentry.io/4505311016910848',
   environment: process.env.NODE_ENV,
-  release: version
+  release: process.env.npm_package_version
 })
 
 export async function startJudger (): Promise<void> {
