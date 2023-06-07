@@ -54,10 +54,11 @@ const collections: Collection[] = [
   }
 ]
 
+let mongoClient: MongoClient
 let mongoDB: Db
 
 export async function connectMongoDB (url: string): Promise<void> {
-  const mongoClient = new MongoClient(url)
+  mongoClient = new MongoClient(url)
   mongoDB = mongoClient.db()
   await mongoClient.connect()
 
@@ -71,4 +72,4 @@ export async function connectMongoDB (url: string): Promise<void> {
 }
 export { MongoServerError } from 'mongodb'
 
-export { mongoDB }
+export { mongoDB, mongoClient }
