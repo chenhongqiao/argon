@@ -8,7 +8,7 @@ import { domainRoutes } from './routes/domain.routes.js'
 import { userRoutes } from './routes/user.routes.js'
 import { judgerRoutes } from './routes/judger.routes.js'
 
-import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
+import { connectCacheRedis, connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
@@ -32,8 +32,6 @@ sentry.init({
 export async function startAPIServer (): Promise<void> {
   assert(process.env.MONGO_URL != null)
   await connectMongoDB(process.env.MONGO_URL)
-  assert(process.env.MINIO_URL != null)
-  await connectMinIO(process.env.MINIO_URL)
   assert(process.env.RABBITMQ_URL != null)
   await connectRabbitMQ(process.env.RABBITMQ_URL)
   assert(process.env.CACHEREDIS_URL != null)

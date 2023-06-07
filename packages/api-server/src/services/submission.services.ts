@@ -12,9 +12,9 @@ import { languageConfigs } from '../../configs/language.configs.js'
 
 import { nanoid } from '../utils/nanoid.utils.js'
 
-const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
-
 export async function createTestingSubmission (submission: NewSubmission, domainId: string, problemId: string, userId: string): Promise<{ submissionId: string }> {
+  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
+
   const submissionId = await nanoid()
   const pendingSubmission: TestingSubmission = {
     ...submission,
@@ -43,6 +43,8 @@ export async function queueSubmission (submissionId: string): Promise<void> {
 }
 
 export async function markSubmissionAsCompiling (submissionId: string): Promise<void> {
+  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
+
   await submissionCollection.updateOne({ id: submissionId }, {
     $set: {
       status: SubmissionStatus.Compiling

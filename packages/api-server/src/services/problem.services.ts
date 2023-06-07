@@ -8,9 +8,9 @@ import { testcaseExists } from './testcase.services.js'
 
 import { nanoid } from '../utils/nanoid.utils.js'
 
-const problemBankCollection = mongoDB.collection<Problem>('problemBank')
-
 export async function createInProblemBank (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
+  const problemBankCollection = mongoDB.collection<Problem>('problemBank')
+
   const problemId = await nanoid()
   const problem: Problem = { ...newProblem, id: problemId, domainId }
   await problemBankCollection.insertOne(problem)
@@ -18,6 +18,8 @@ export async function createInProblemBank (newProblem: NewProblem, domainId: str
 }
 
 export async function updateInProblemBank (problemId: string, domainId: string, problem: Partial<NewProblem>): Promise<{ modified: boolean }> {
+  const problemBankCollection = mongoDB.collection<Problem>('problemBank')
+
   if (problem.testcases != null) {
     const testcasesVerifyQueue: Array<Promise<void>> = []
     problem.testcases.forEach((testcase) => {
@@ -36,6 +38,8 @@ export async function updateInProblemBank (problemId: string, domainId: string, 
 }
 
 export async function deleteInProblemBank (problemId: string, domainId: string): Promise<void> {
+  const problemBankCollection = mongoDB.collection<Problem>('problemBank')
+
   const { deletedCount } = await problemBankCollection.deleteOne({ id: problemId, domainId })
 
   if (deletedCount === 0) {
@@ -44,6 +48,8 @@ export async function deleteInProblemBank (problemId: string, domainId: string):
 }
 
 export async function fetchDomainProblems (domainId: string): Promise<Problem[]> {
+  const problemBankCollection = mongoDB.collection<Problem>('problemBank')
+
   const problems = await problemBankCollection.find({ domainId }).sort({ _id: -1 }).toArray()
 
   return problems
