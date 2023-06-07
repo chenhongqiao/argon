@@ -1,13 +1,11 @@
 import { deadResultsQueue, deadTasksQueue, judgerResultsQueue, rabbitMQ, sentry } from '@argoncs/common'
 import { CompilingResultMessage, CompilingTask, GradingResultMessage, GradingTask, JudgerResultType } from '@argoncs/types'
-import { completeGrading, handleCompileResult, handleGradingResult } from './services/result.services'
-
-import { version } from '../package.json'
+import { completeGrading, handleCompileResult, handleGradingResult } from './services/result.services.js'
 
 sentry.init({
   dsn: 'https://f56d872b49cc4981baf851fd569080cd@o1044666.ingest.sentry.io/450531102457856',
   environment: process.env.NODE_ENV,
-  release: version
+  release: process.env.npm_package_version
 })
 
 export async function startHandler (): Promise<void> {

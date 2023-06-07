@@ -1,1 +1,1 @@
-export { startHandler } from './start'
+export { startHandler } from './start.js'
