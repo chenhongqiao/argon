@@ -24,12 +24,13 @@ services:
     restart: always
     ports:
       - 9000:9000
+      - 9001:9001
     volumes:
       - minio:/data
     environment:
       MINIO_ROOT_USER: root
       MINIO_ROOT_PASSWORD: password
-    command: server /data
+    command: server /data --console-address ":9001"
 
   dragonfly:
     image: docker.dragonflydb.io/dragonflydb/dragonfly
