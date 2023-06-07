@@ -3,9 +3,9 @@ import { CompilingResult, CompilingStatus, ContestSubmission, GradingResult, Gra
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
 
-const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
-
 export async function handleCompileResult (compileResult: CompilingResult, submissionId: string): Promise<void> {
+  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
+
   const submission = await fetchSubmission(submissionId)
 
   if (submission.status === SubmissionStatus.Compiling) {
@@ -64,6 +64,8 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
 }
 
 export async function completeGrading (submissionId: string, log?: string): Promise<void> {
+  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
+
   const submission = await fetchSubmission(submissionId)
 
   if (submission.status === SubmissionStatus.Compiling || submission.status === SubmissionStatus.Pending) {
@@ -88,6 +90,8 @@ export async function completeGrading (submissionId: string, log?: string): Prom
 }
 
 export async function handleGradingResult (gradingResult: GradingResult, submissionId: string, testcaseIndex: number): Promise<void> {
+  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
+
   const submission = await fetchSubmission(submissionId)
 
   if (submission.status === SubmissionStatus.Grading) {
