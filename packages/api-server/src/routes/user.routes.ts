@@ -6,7 +6,7 @@ import { FastifyTypeBox } from '../types.js'
 import { authJWTHook } from '../hooks/authentication.hooks.js'
 
 export async function userRoutes (app: FastifyTypeBox): Promise<void> {
-  await app.register((privateRoutes: FastifyTypeBox) => {
+  await app.register((privateRoutes: FastifyTypeBox, options, done) => {
     privateRoutes.addHook('preValidation', authJWTHook)
 
     privateRoutes.get(
@@ -45,5 +45,7 @@ export async function userRoutes (app: FastifyTypeBox): Promise<void> {
         await reply.status(200).send(privateProfile)
       }
     )
+
+    done()
   })
 }

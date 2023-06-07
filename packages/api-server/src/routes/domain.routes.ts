@@ -7,7 +7,7 @@ import { FastifyTypeBox } from '../types.js'
 import { authJWTHook } from '../hooks/authentication.hooks.js'
 
 export async function domainRoutes (app: FastifyTypeBox): Promise<void> {
-  await app.register((publicRoutes: FastifyTypeBox) => {
+  await app.register((publicRoutes: FastifyTypeBox, options, done) => {
     publicRoutes.get(
       '/:domainId',
       {
@@ -23,9 +23,11 @@ export async function domainRoutes (app: FastifyTypeBox): Promise<void> {
         const domainDetail = await fetchDomainDetail(domainId)
         return domainDetail
       })
+
+    done()
   })
 
-  await app.register((privateRoutes: FastifyTypeBox) => {
+  await app.register((privateRoutes: FastifyTypeBox, options, done) => {
     privateRoutes.addHook('preValidation', authJWTHook)
 
     privateRoutes.post(
@@ -117,5 +119,7 @@ export async function domainRoutes (app: FastifyTypeBox): Promise<void> {
         return await reply.status(200).send({ modified })
       }
     )
+
+    done()
   })
 }

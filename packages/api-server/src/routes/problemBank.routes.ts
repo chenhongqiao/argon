@@ -27,7 +27,7 @@ import { authJWTHook } from '../hooks/authentication.hooks.js'
 import { fetchFromProblemBank, fetchSubmission } from '@argoncs/common'
 
 export async function problemBankRoutes (app: FastifyTypeBox): Promise<void> {
-  await app.register((privateRoutes: FastifyTypeBox) => {
+  await app.register((privateRoutes: FastifyTypeBox, options, done) => {
     privateRoutes.addHook('preValidation', authJWTHook)
     privateRoutes.post(
       '/:domainId',
@@ -163,5 +163,7 @@ export async function problemBankRoutes (app: FastifyTypeBox): Promise<void> {
 
         return await reply.status(200).send(submission)
       })
+
+    done()
   })
 }

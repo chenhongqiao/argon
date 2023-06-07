@@ -9,24 +9,7 @@ import { randomInt } from 'node:crypto'
 import { FastifyTypeBox } from '../types.js'
 
 export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> {
-  await app.register((publicRoutes: FastifyTypeBox) => {
-    publicRoutes.post(
-      '/register',
-      {
-        schema: {
-          body: NewUserSchema,
-          response: {
-            201: Type.Object({ userId: Type.String() })
-          }
-        }
-      },
-      async (request, reply) => {
-        const user = request.body
-        const registered = await registerUser(user)
-        return await reply.status(201).send(registered)
-      }
-    )
-
+  await app.register((publicRoutes: FastifyTypeBox, options, done) => {
     publicRoutes.post(
       '/register',
       {
@@ -101,5 +84,7 @@ export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> 
         return await reply.status(200).send({ modified })
       }
     )
+
+    done()
   })
 }
