@@ -33,11 +33,16 @@ export async function connectMinIO (url: string): Promise<void> {
     endPoint: minioConfig.hosts[0].host,
     accessKey: minioConfig.username,
     secretKey: minioConfig.password,
+    useSSL: false,
     port: minioConfig.hosts[0].port
   }) as Client & MinIOTypeHack
 
-  await minio.makeBucket('testcases')
-  await minio.makeBucket('binaries')
+  if (!await minio.bucketExists('testcases')) {
+    await minio.makeBucket('testcases')
+  }
+  if (!await minio.bucketExists('binaries')) {
+    await minio.makeBucket('binaries')
+  }
   await minio.setBucketVersioning('testcases', { Status: 'Enabled' })
 }
 
