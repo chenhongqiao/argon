@@ -1,6 +1,6 @@
 import { FastifyPluginCallback } from 'fastify'
 
-import { uploadTestcase } from '../services/testcase.services'
+import { uploadTestcase } from '../services/testcase.services.js'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
@@ -10,7 +10,7 @@ import { sentry } from '@argoncs/common'
 
 export const testcaseRoutes: FastifyPluginCallback = (app, options, done) => {
   const privateRoutes = app.withTypeProvider<TypeBoxTypeProvider>()
-  void app.register(multipart, {
+  void app.register(multipart.default, {
     limits: {
       fileSize: 20971520,
       files: 200

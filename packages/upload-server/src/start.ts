@@ -1,15 +1,14 @@
-import Fastify from 'fastify'
+import { fastify } from 'fastify'
 import jwt from '@fastify/jwt'
 
-import { testcaseRoutes } from './routes/testcase.routes'
-import { heartbeatRoutes } from './routes/heartbeat.routes'
+import { testcaseRoutes } from './routes/testcase.routes.js'
+import { heartbeatRoutes } from './routes/heartbeat.routes.js'
 
 import { sentry } from '@argoncs/common'
-import { version } from '../package.json'
 
 import sensible from '@fastify/sensible'
 
-const app = Fastify({
+const app = fastify({
   logger: {
     enabled: true
   }
@@ -18,7 +17,7 @@ const app = Fastify({
 sentry.init({
   dsn: 'https://5fe68d06e15e4b979262554199e83b18@o1044666.ingest.sentry.io/4505311047319552',
   environment: process.env.NODE_ENV,
-  release: version
+  release: process.env.npm_package_version
 })
 
 export async function startUploadServer (): Promise<void> {
