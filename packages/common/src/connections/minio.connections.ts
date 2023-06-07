@@ -4,6 +4,14 @@ import { ConnectionStringParser } from 'connection-string-parser'
 import { ReadableStream } from 'stream/web'
 
 declare module 'minio' {
+  export interface BucketItemStat {
+    size: number
+    etag: string
+    versionId: string
+    lastModified: Date
+    metaData: ItemBucketMetadata
+  }
+
   export class MinIOTypeHack {
     statObject (bucketName: string, objectName: string, options: VersionIdentificator): Promise<BucketItemStat>
 
