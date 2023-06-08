@@ -1,12 +1,15 @@
 import { fastify } from 'fastify'
-import jwt from '@fastify/jwt'
+import fastifyJwt from '@fastify/jwt'
+
+import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
+import fastifyAuth from '@fastify/auth'
 
 import { testcaseRoutes } from './routes/testcase.routes.js'
 import { heartbeatRoutes } from './routes/heartbeat.routes.js'
 
 import { connectMinIO, sentry } from '@argoncs/common'
 
-import sensible from '@fastify/sensible'
+import fastifySensible from '@fastify/sensible'
 import assert from 'assert'
 
 const app = fastify({
@@ -25,11 +28,21 @@ export async function startUploadServer (): Promise<void> {
   assert(process.env.MINIO_URL != null)
   await connectMinIO(process.env.MINIO_URL)
 
-  await app.register(jwt, {
+  await app.register(fastifyHttpErrorsEnhanced, {
+    handle404Errors: false,
+    convertResponsesValidationErrors: false,
+    preHandler (err: any) {
+      if (!('statusCode' in err) && !('validation' in err)) {
+        sentry.captureException(err)
+      }
+      return err
+    }
+  })
+  await app.register(fastifyJwt, {
     secret: process.env.JWT_SECRET ?? ''
   })
-
-  await app.register(sensible)
+  await app.register(fastifyAuth)
+  await app.register(fastifySensible)
 
   await app.register(testcaseRoutes, { prefix: '/testcases' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
@@ -38,7 +51,7 @@ export async function startUploadServer (): Promise<void> {
     const port: number = parseInt(process.env.UPLOAD_SERVER_PORT ?? '8001')
     await app.listen({ port })
   } catch (err) {
-    sentry.captureException(err, { extra: err.context })
+    sentry.captureException(err)
     app.log.error(err)
     throw err
   }

@@ -96,6 +96,7 @@ __metadata:
   resolution: "@argoncs/upload-server@workspace:packages/upload-server"
   dependencies:
     "@argoncs/common": "workspace:*"
+    "@fastify/auth": ^4.3.0
     "@fastify/jwt": ^6.3.1
     "@fastify/multipart": ^6.0.1
     "@fastify/sensible": ^5.1.1
@@ -103,6 +104,8 @@ __metadata:
     "@sinclair/typebox": ^0.25.0
     "@types/long": ^4.0.2
     fastify: ^4.8.1
+    fastify-http-errors-enhanced: ^4.1.0
+    http-errors-enhanced: ^1.0.13
     typescript: ^4.3.2
   languageName: unknown
   linkType: soft
@@ -1009,6 +1012,16 @@ __metadata:
     fastify-plugin: ^4.0.0
     reusify: ^1.0.4
   checksum: a6f488c726ed3f5719ac824034b1681860e0d92463be087cc3b29e1b700bef8bfd767c338c26b71885dfc76dd613184ec7be9b2a6b62b0d6624989d0a027e307
+  languageName: node
+  linkType: hard
+
+"@fastify/auth@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "@fastify/auth@npm:4.3.0"
+  dependencies:
+    fastify-plugin: ^4.0.0
+    reusify: ^1.0.4
+  checksum: 000995f0a9aab993ab6c8e792c7909b914f375760f32fcd007dd555601dd7ad2f04444beb87f5ac50dfee1062fee75192668978de73f3bf467ef7a169897dd7f
   languageName: node
   linkType: hard
 

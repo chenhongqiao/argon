@@ -37,16 +37,6 @@ export async function startAPIServer (): Promise<void> {
   assert(process.env.CACHEREDIS_URL != null)
   await connectCacheRedis(process.env.CACHEREDIS_URL)
 
-  await app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET ?? '',
-    cookie: {
-      cookieName: 'session_token',
-      signed: false
-    }
-  })
-  await app.register(fastifyCookie)
-  await app.register(fastifySensible)
-  await app.register(fastifyAuth)
   await app.register(fastifyHttpErrorsEnhanced, {
     handle404Errors: false,
     convertResponsesValidationErrors: false,
@@ -57,6 +47,16 @@ export async function startAPIServer (): Promise<void> {
       return err
     }
   })
+  await app.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET ?? '',
+    cookie: {
+      cookieName: 'session_token',
+      signed: false
+    }
+  })
+  await app.register(fastifyCookie)
+  await app.register(fastifySensible)
+  await app.register(fastifyAuth)
 
   await app.register(problemBankRoutes, { prefix: '/problem-bank' })
   await app.register(testcaseRoutes, { prefix: '/testcases' })
