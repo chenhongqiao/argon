@@ -34,7 +34,7 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
           params:
             Type.Object({ domainId: Type.String(), problemId: Type.String() }),
           response: {
-            201: Type.Object({ versionId: Type.String(), filename: Type.String() })
+            201: Type.Array(Type.Object({ versionId: Type.String(), objectName: Type.String() }))
           }
         },
         preValidation: [privateRoutes.auth([verifyTestcaseUpload]) as any]
@@ -42,9 +42,12 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
       async (request, reply) => {
         try {
           const { domainId, problemId } = request.params
-          const testcase = await request.file()
-          const result = await uploadTestcase(domainId, problemId, testcase)
-          return await reply.status(201).send(result)
+          const testcases = request.files()
+          const queue: Array<Promise<{ versionId: string, objectName: string }>> = []
+          for await (const testcase of testcases) {
+            queue.push(uploadTestcase(domainId, problemId, testcase))
+          }
+          return await reply.status(201).send(await Promise.all(queue))
         } catch (err) {
           if (err instanceof app.multipartErrors.InvalidMultipartContentTypeError) {
             throw new BadRequestError('Request must be multipart.')
