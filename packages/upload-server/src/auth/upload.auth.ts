@@ -15,7 +15,7 @@ export function verifyTestcaseUpload (request: FastifyRequest, reply: FastifyRep
     return done(new ForbiddenError('Resource not associated with a domain and a problem.'))
   }
 
-  if (request.user.resource.domainId !== domainId || request.user.resource.problemId !== domainId) {
+  if (request.user.resource.domainId !== domainId || request.user.resource.problemId !== problemId) {
     return done(new ForbiddenError('Token does not authorize upload to this resource.'))
   }
 
