@@ -1,16 +1,14 @@
 import {
   SandboxStatus, GradingStatus, GradingTask, GradingResult
 } from '@argoncs/types'
-import { minio } from '@argoncs/common'
 import { languageConfigs } from '../../configs/language.configs.js'
 
 import path = require('node:path')
-import { makeExecutable } from '../utils/system.utils.js'
+import { makeExecutable, exec } from '../utils/system.utils.js'
 import {
   runInSandbox
 } from './sandbox.services.js'
 
-import { spawn, Thread, Worker } from 'threads'
 import fs from 'fs/promises'
 import { fetchBinary, fetchTestcase } from './storage.services.js'
 
@@ -41,30 +39,25 @@ export async function gradeSubmission (
     boxId
   )
   if (sandboxResult.status === SandboxStatus.Succeeded) {
-    const correctHash = (await minio.statObject('testcases', task.testcase.input.objectName, { versionId: task.testcase.input.versionId })).etag
-    const hashWorker = await spawn(new Worker('../workers/testcase.workers'))
+    const answerPath = await fetchTestcase(task.testcase.output.objectName, task.testcase.output.versionId)
+    const { time, wallTime, memory } = sandboxResult
     try {
-      const outputHash = await hashWorker(path.join(workDir, 'out.txt'))
-      const { time, wallTime, memory } = sandboxResult
-      if (outputHash.md5 === correctHash) {
-        return {
-          status: GradingStatus.Accepted,
-          time,
-          wallTime,
-          memory,
-          message: 'Submission Accepted.'
-        }
-      } else {
-        return {
-          status: GradingStatus.WrongAnswer,
-          time,
-          wallTime,
-          memory,
-          message: 'Wrong Answer.'
-        }
+      await exec(`diff -Z -B ${answerPath} ${path.join(workDir, 'out.txt')}`)
+      return {
+        status: GradingStatus.Accepted,
+        time,
+        wallTime,
+        memory,
+        message: 'Submission Accepted.'
       }
-    } finally {
-      await Thread.terminate(hashWorker)
+    } catch (err) {
+      return {
+        status: GradingStatus.WrongAnswer,
+        time,
+        wallTime,
+        memory,
+        message: 'Wrong Answer.'
+      }
     }
   } else {
     return sandboxResult

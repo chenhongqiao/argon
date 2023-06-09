@@ -4,7 +4,6 @@ export * from './connections/redis.connections.js'
 export * from './connections/rabbitmq.connections.js'
 export * from './connections/sentry.connections.js'
 
-export * from './utils/testcase.utils.js'
 export * from './utils/time.utils.js'
 
 export * from './services/problem.services.js'

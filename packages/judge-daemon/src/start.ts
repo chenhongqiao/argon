@@ -9,6 +9,7 @@ import os = require('node:os')
 import { randomUUID } from 'node:crypto'
 import { pino } from 'pino'
 import assert from 'assert'
+import { prepareStorage } from './services/storage.services.js'
 
 const logger = pino()
 
@@ -26,6 +27,8 @@ export async function startJudger (): Promise<void> {
   await connectRabbitMQ(process.env.RABBITMQ_URL)
   assert(process.env.MINIO_URL != null)
   await connectMinIO(process.env.MINIO_URL)
+
+  await prepareStorage('/argon-cache')
 
   const cores = os.cpus().length
 
