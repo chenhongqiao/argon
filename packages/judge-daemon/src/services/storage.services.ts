@@ -14,7 +14,10 @@ export async function prepareStorage (dir: string): Promise<void> {
   const { bsize, bavail } = await fs.statfs(dir)
   const availableSpace = Math.floor(bsize * bavail * 0.9)
   cache = new LRUCache({
-    maxSize: availableSpace
+    maxSize: availableSpace,
+    dispose: (value, key): void => {
+      void fs.rm(value)
+    }
   })
 }
 
