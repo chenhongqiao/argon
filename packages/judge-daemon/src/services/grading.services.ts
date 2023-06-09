@@ -11,6 +11,8 @@ import {
 } from './sandbox.services.js'
 
 import { spawn, Thread, Worker } from 'threads'
+import fs from 'fs/promises'
+import { fetchBinary, fetchTestcase } from './storage.services.js'
 
 export async function gradeSubmission (
   task: GradingTask,
@@ -19,8 +21,11 @@ export async function gradeSubmission (
   const workDir = `/var/local/lib/isolate/${boxId}/box`
   const config = languageConfigs[task.language]
 
-  await minio.fGetObject('binaries', task.submissionId, path.join(workDir, config.binaryFile))
-  await minio.fGetObject('testcases', task.testcase.input.objectName, path.join(workDir, 'in.txt'))
+  const binaryPath = await fetchBinary(task.submissionId)
+  await fs.copyFile(binaryPath, path.join(workDir, config.binaryFile))
+
+  const testcasePath = await fetchTestcase(task.testcase.input.objectName, task.testcase.input.versionId)
+  await fs.copyFile(testcasePath, path.join(workDir, 'in.txt'))
 
   await makeExecutable(path.join(workDir, config.binaryFile))
 

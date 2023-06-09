@@ -16,6 +16,7 @@ declare module 'minio' {
     statObject (bucketName: string, objectName: string, options: VersionIdentificator): Promise<BucketItemStat>
 
     getObject (bucketName: string, objectName: string, options: VersionIdentificator): Promise<ReadableStream>
+    fGetObject (bucketName: string, objectName: string, filePath: string, options: VersionIdentificator): Promise<void>
   }
 }
 
