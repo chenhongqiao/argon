@@ -1,3 +1,3 @@
 import { startUploadServer } from './index.js'
 
-void startUploadServer()
+await startUploadServer()

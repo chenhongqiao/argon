@@ -1,3 +1,3 @@
 import { startJudger } from './start.js'
 
-void startJudger()
+await startJudger()

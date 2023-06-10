@@ -1,3 +1,3 @@
 import { startHandler } from './start.js'
 
-void startHandler()
+await startHandler()
