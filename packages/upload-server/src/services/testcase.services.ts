@@ -2,7 +2,7 @@ import { minio } from '@argoncs/common'
 import { MultipartFile } from '@fastify/multipart'
 import path = require('node:path')
 
-export async function uploadTestcase (domainId: string, problemId: string, testcase: MultipartFile): Promise<{ versionId: string, objectName: string }> {
+export async function uploadTestcase (domainId: string, problemId: string, testcase: MultipartFile): Promise<{ versionId: string, name: string }> {
   const filename = testcase.filename.replaceAll('/', '.')
   const objectName = path.join(domainId, problemId, filename)
   const { versionId } = await minio.putObject('testcases', objectName, testcase.file)
@@ -10,5 +10,5 @@ export async function uploadTestcase (domainId: string, problemId: string, testc
     throw Error('Versioning not enabled on testcases bucket.')
   }
 
-  return { versionId, objectName }
+  return { versionId, name: filename }
 }

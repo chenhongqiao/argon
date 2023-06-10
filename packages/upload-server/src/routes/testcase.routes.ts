@@ -34,7 +34,7 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
           params:
             Type.Object({ domainId: Type.String(), problemId: Type.String() }),
           response: {
-            201: Type.Array(Type.Object({ versionId: Type.String(), objectName: Type.String() }))
+            201: Type.Array(Type.Object({ versionId: Type.String(), name: Type.String() }))
           }
         },
         preValidation: [privateRoutes.auth([verifyTestcaseUpload]) as any]
@@ -43,7 +43,7 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
         try {
           const { domainId, problemId } = request.params
           const testcases = request.files()
-          const queue: Array<Promise<{ versionId: string, objectName: string }>> = []
+          const queue: Array<Promise<{ versionId: string, name: string }>> = []
           for await (const testcase of testcases) {
             queue.push(uploadTestcase(domainId, problemId, testcase))
           }
