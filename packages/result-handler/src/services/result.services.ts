@@ -68,7 +68,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
 
   const submission = await fetchSubmission(submissionId)
 
-  if (submission.status === SubmissionStatus.Compiling || submission.status === SubmissionStatus.Pending) {
+  if (submission.status === SubmissionStatus.Compiling) {
     await submissionCollection.updateOne({ id: submissionId }, { $set: { status: SubmissionStatus.Terminated, log } })
   } else if (submission.status === SubmissionStatus.Grading) {
     if (submission.gradedCases !== submission.testcases.length) {
@@ -98,16 +98,20 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
     if (submission.testcases[testcaseIndex] == null) {
       throw new NotFoundError('No testcase found at the given index.', { testcaseIndex, submissionId })
     }
-    const score = gradingResult.status === GradingStatus.Accepted ? submission.testcases[testcaseIndex].score : 0
+    const score = gradingResult.status === GradingStatus.Accepted ? submission.testcases[testcaseIndex].points : 0
     submission.testcases[testcaseIndex].result = gradingResult
     await submissionCollection.updateOne({ id: submissionId }, {
       $set: {
         [`testcases.${testcaseIndex}.result`]: gradingResult,
         [`testcases.${testcaseIndex}.score`]: score
+      },
+      $inc: {
+        gradedCases: 1,
+        score
       }
     })
 
-    if (submission.gradedCases === submission.testcases.length) {
+    if (submission.gradedCases + 1 === submission.testcases.length) {
       await completeGrading(submissionId)
     }
   }
