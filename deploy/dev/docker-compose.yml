@@ -4,20 +4,18 @@ name: argon-dev
 
 services:
   mongo:
-    image: mongo
+    image: bitnami/mongodb
     restart: always
     ports: 
       - 27017:27017
     volumes:
-      - mongodb:/data/db
-      - ./replica.key:/data/replica.key
+      - mongodb:/bitnami/mongodb
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: test
-      MONGO_REPLICA_SET_NAME: rs0
-      MONGO_SHARDING_ENABLED: false
-    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
+      MONGODB_ROOT_USER: root
+      MONGODB_ROOT_PASSWORD: password
+      MONGODB_DATABASE: test
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_KEY: ThisIsAUniqueKeyThatShouldBeChanged123
 
   minio:
     image: minio/minio
@@ -34,6 +32,7 @@ services:
 
   dragonfly:
     image: docker.dragonflydb.io/dragonflydb/dragonfly
+    restart: always
     ulimits:
       memlock: -1
     ports:
@@ -43,6 +42,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:management
+    restart: always
     ports:
       - 5672:5672
       - 15672:15672
