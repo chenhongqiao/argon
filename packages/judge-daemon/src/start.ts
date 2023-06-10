@@ -48,12 +48,12 @@ export async function startJudger (): Promise<void> {
   await rabbitMQ.consume(judgerTasksQueue, async (message) => {
     if (message != null) {
       const boxId = availableBoxes.values().next().value
+      if (boxId == null) {
+        rabbitMQ.reject(message, true)
+        logger.info('Received a task when no box is available.')
+        return
+      }
       try {
-        if (availableBoxes.size === 0) {
-          rabbitMQ.reject(message, true)
-          logger.info('Received a task when no box is available.')
-          return
-        }
         const task: GradingTask | CompilingTask = JSON.parse(message.content.toString())
 
         logger.info(task, 'Processing a new task.')
@@ -80,13 +80,18 @@ export async function startJudger (): Promise<void> {
         }
 
         rabbitMQ.publish(judgerExchange, judgerResultsKey, Buffer.from(JSON.stringify(result)))
+
+        await destroySandbox(boxId)
+        availableBoxes.add(boxId)
+
         rabbitMQ.ack(message)
       } catch (err) {
         sentry.captureException(err)
-        rabbitMQ.reject(message, false)
-      } finally {
+
         await destroySandbox(boxId)
         availableBoxes.add(boxId)
+
+        rabbitMQ.reject(message, false)
       }
     }
   })
