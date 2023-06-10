@@ -1,6 +1,6 @@
 {
   "name": "@argoncs/common",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Argon Contest Server Shared Libraries",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
