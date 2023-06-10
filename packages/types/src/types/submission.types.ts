@@ -5,7 +5,6 @@ import { SubmissionLang } from './compilation.types.js'
 import { GradingResultSchema } from './grading.types.js'
 
 export enum SubmissionStatus {
-  Pending = 'Pending',
   Compiling = 'Compiling',
   Grading = 'Grading',
   CompileFailed = 'CompileFailed',
@@ -36,10 +35,6 @@ export const BaseTestingSubmissionSchema = Type.Intersect([NewSubmissionSchema, 
   domainId: Type.String()
 })])
 
-const PendingSubmissionSchema = Type.Object({
-  status: Type.Literal(SubmissionStatus.Pending)
-})
-
 const CompilingSubmissionSchema = Type.Object({
   status: Type.Literal(SubmissionStatus.Compiling)
 })
@@ -48,8 +43,6 @@ const GradingSubmissionSchema = Type.Object({
   status: Type.Literal(SubmissionStatus.Grading),
   gradedCases: Type.Number(),
   testcases: Type.Array(Type.Object({
-    input: Type.String(),
-    output: Type.String(),
     points: Type.Number(),
     score: Type.Optional(Type.Number()),
     result: Type.Optional(GradingResultSchema)
@@ -65,8 +58,6 @@ const GradedSubmissionSchema = Type.Object({
   status: Type.Literal(SubmissionStatus.Graded),
   score: Type.Number(),
   testcases: Type.Array(Type.Object({
-    input: Type.String(),
-    output: Type.String(),
     points: Type.Number(),
     score: Type.Number(),
     result: GradingResultSchema
@@ -74,7 +65,6 @@ const GradedSubmissionSchema = Type.Object({
 })
 
 export const ContestSubmissionSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
   Type.Intersect([CompilingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
   Type.Intersect([GradingSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
   Type.Intersect([GradedSubmissionSchema, BaseContestSubmissionSchema, Type.Object({ id: Type.String() })]),
@@ -82,7 +72,6 @@ export const ContestSubmissionSchema = Type.Union([
 export type ContestSubmission = Static<typeof ContestSubmissionSchema>
 
 export const TestingSubmissionSchema = Type.Union([
-  Type.Intersect([PendingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
   Type.Intersect([CompilingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
   Type.Intersect([GradingSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),
   Type.Intersect([GradedSubmissionSchema, BaseTestingSubmissionSchema, Type.Object({ id: Type.String() })]),

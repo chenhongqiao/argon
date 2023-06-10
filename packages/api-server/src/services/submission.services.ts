@@ -19,7 +19,7 @@ export async function createTestingSubmission (submission: NewSubmission, domain
   const pendingSubmission: TestingSubmission = {
     ...submission,
     id: submissionId,
-    status: SubmissionStatus.Pending,
+    status: SubmissionStatus.Compiling,
     domainId,
     problemId,
     type: SubmissionType.Testing
