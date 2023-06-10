@@ -61,7 +61,7 @@
         "${workspaceFolder}/packages/result-handler/dist/**/*.js"
       ],
       "envFile": "${workspaceFolder}/packages/result-handler/.env",
-      "preLaunchTask": "Build Upload Server",
+      "preLaunchTask": "Build Result Handler",
       "outputCapture": "std"
     }
   ]
