@@ -1,11 +1,9 @@
-import { fetchFromProblemBank, fetchSubmission, judgerExchange, judgerTasksKey, mongoDB, rabbitMQ } from '@argoncs/common'
-import { CompilingResult, CompilingStatus, ContestSubmission, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus, SubmissionType, TestingSubmission } from '@argoncs/types'
+import { fetchFromProblemBank, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
+import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus, SubmissionType } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
 
 export async function handleCompileResult (compileResult: CompilingResult, submissionId: string): Promise<void> {
-  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
-
   const submission = await fetchSubmission(submissionId)
 
   if (submission.status === SubmissionStatus.Compiling) {
@@ -64,8 +62,6 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
 }
 
 export async function completeGrading (submissionId: string, log?: string): Promise<void> {
-  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
-
   const submission = await fetchSubmission(submissionId)
 
   if (submission.status === SubmissionStatus.Compiling) {
@@ -90,8 +86,6 @@ export async function completeGrading (submissionId: string, log?: string): Prom
 }
 
 export async function handleGradingResult (gradingResult: GradingResult, submissionId: string, testcaseIndex: number): Promise<void> {
-  const submissionCollection = mongoDB.collection<TestingSubmission | ContestSubmission>('submissions')
-
   const submission = await fetchSubmission(submissionId)
 
   if (submission.status === SubmissionStatus.Grading) {

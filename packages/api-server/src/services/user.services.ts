@@ -1,6 +1,6 @@
 import { User, NewUser, UserRole, UserSession, AuthenticationProfile } from '@argoncs/types'
 import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { mongoDB, MongoServerError } from '@argoncs/common'
+import { MongoServerError, sessionCollection, userCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -14,8 +14,6 @@ const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
 export async function registerUser (newUser: NewUser): Promise<{ userId: string, email: string }> {
-  const userCollection = mongoDB.collection<User>('users')
-
   const salt = (await randomBytesAsync(32)).toString('base64')
   const hash = (await pbkdf2Async(newUser.password, salt, 100000, 512, 'sha512')).toString('base64')
   const userId = await nanoid()
@@ -52,8 +50,6 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
 }
 
 export async function fetchUser (userId: string): Promise<User> {
-  const userCollection = mongoDB.collection<User>('users')
-
   const user = await userCollection.findOne({ id: userId })
   if (user == null) {
     throw new NotFoundError('No user found with the given ID.', { userId })
@@ -63,14 +59,10 @@ export async function fetchUser (userId: string): Promise<User> {
 }
 
 export async function userIdExists (userId: string): Promise<boolean> {
-  const userCollection = mongoDB.collection<User>('users')
-
   return Boolean(userCollection.countDocuments({ id: userId }))
 }
 
 export async function updateUser (userId: string, user: Partial<NewUser>): Promise<{ modified: boolean }> {
-  const userCollection = mongoDB.collection<User>('users')
-
   const { matchedCount, modifiedCount } = await userCollection.updateOne({ id: userId }, { $set: user })
   if (matchedCount === 0) {
     throw new NotFoundError('No user found with the given ID.', { userId })
@@ -91,8 +83,6 @@ export async function initiateVerification (email: string, token: string): Promi
 }
 
 export async function completeVerification (userId: string, email: string): Promise<{ modified: boolean }> {
-  const userCollection = mongoDB.collection<User>('users')
-
   const { modifiedCount, matchedCount } = await userCollection.updateOne({ id: userId }, {
     $set: {
       verifiedEmail: email
@@ -107,9 +97,6 @@ export async function completeVerification (userId: string, email: string): Prom
 }
 
 export async function authenticateUser (usernameOrEmail: string, password: string, loginIP: string, userAgent: string): Promise<{ userId: string, sessionId: string }> {
-  const userCollection = mongoDB.collection<User>('users')
-  const sessionCollection = mongoDB.collection<UserSession>('sessions')
-
   const user = await userCollection.findOne({ $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }] })
   if (user == null) {
     throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
@@ -130,8 +117,6 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
 }
 
 export async function fetchSession (sessionId: string): Promise<UserSession> {
-  const sessionCollection = mongoDB.collection<UserSession>('sessions')
-
   const cache = await fetchCache<UserSession>(`session:${sessionId}`)
   if (cache != null) {
     return cache
@@ -148,8 +133,6 @@ export async function fetchSession (sessionId: string): Promise<UserSession> {
 }
 
 export async function fetchAuthenticationProfile (userId: string): Promise<AuthenticationProfile> {
-  const userCollection = mongoDB.collection<User>('users')
-
   const cache = await fetchCache<AuthenticationProfile>(`auth-profile:${userId}`)
   if (cache != null) {
     return cache

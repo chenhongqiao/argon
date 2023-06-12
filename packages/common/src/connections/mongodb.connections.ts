@@ -1,16 +1,17 @@
-import { MongoClient, IndexSpecification, CreateIndexesOptions, Db } from 'mongodb'
+import { ContestSubmission, Domain, EmailVerification, Problem, TestingSubmission, User, UserSession } from '@argoncs/types'
+import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
 
 interface Index {
   keys: IndexSpecification
   options?: CreateIndexesOptions
 }
 
-interface Collection {
+interface CollectionIndex {
   name: string
   indexes?: Index[]
 }
 
-const collections: Collection[] = [
+const collections: CollectionIndex[] = [
   {
     name: 'domains',
     indexes: [
@@ -32,7 +33,7 @@ const collections: Collection[] = [
     ]
   },
   {
-    name: 'verifications',
+    name: 'emailVerifications',
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
       { keys: { createdAt: 1 }, options: { expireAfterSeconds: 900 } }
@@ -51,11 +52,24 @@ const collections: Collection[] = [
     indexes: [
       { keys: { userId: 1, id: 1 }, options: { unique: true } }
     ]
+  },
+  {
+    name: 'testcaseUploads',
+    indexes: [
+      { keys: { id: 1 }, options: { unique: true } },
+      { keys: { createdAt: 1 }, options: { expireAfterSeconds: 900 } }
+    ]
   }
 ]
 
-let mongoClient: MongoClient
-let mongoDB: Db
+export let mongoClient: MongoClient
+export let mongoDB: Db
+export let domainCollection: Collection<Domain>
+export let userCollection: Collection<User>
+export let problemBankCollection: Collection<Problem>
+export let submissionCollection: Collection<ContestSubmission | TestingSubmission>
+export let sessionCollection: Collection<UserSession>
+export let emailVerificationCollection: Collection<EmailVerification>
 
 export async function connectMongoDB (url: string): Promise<void> {
   mongoClient = new MongoClient(url)
@@ -69,7 +83,12 @@ export async function connectMongoDB (url: string): Promise<void> {
     }
   })
   await Promise.all(indexPromises)
+
+  domainCollection = mongoDB.collection('domains')
+  userCollection = mongoDB.collection('users')
+  problemBankCollection = mongoDB.collection('problemBank')
+  submissionCollection = mongoDB.collection('submissions')
+  sessionCollection = mongoDB.collection('sessions')
+  emailVerificationCollection = mongoDB.collection('emailVerifications')
 }
 export { MongoServerError } from 'mongodb'
-
-export { mongoDB, mongoClient }
