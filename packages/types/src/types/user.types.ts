@@ -14,14 +14,15 @@ export enum UserRole {
   Judger = 'Judger'
 }
 
-export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password']), Type.Object({
+export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password', 'email']), Type.Object({
   credential: Type.Object({
     hash: Type.String(),
     salt: Type.String()
   }),
   role: Type.Enum(UserRole),
   id: Type.String(),
-  verifiedEmail: Type.Union([Type.String(), Type.Null()]),
+  email: Type.String(),
+  newEmail: Type.Optional(Type.String()),
   scopes: Type.Record(Type.String(), Type.Array(Type.String()))
 })])
 export type User = Static<typeof UserSchema>

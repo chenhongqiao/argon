@@ -1,4 +1,4 @@
-import { registerUser, initiateVerification, fetchUser, completeVerification, authenticateUser } from '../services/user.services.js'
+import { registerUser, initiateVerification, completeVerification, authenticateUser } from '../services/user.services.js'
 
 import { Type } from '@sinclair/typebox'
 import { NewUserSchema, JWTPayloadType }
@@ -55,9 +55,7 @@ export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> 
       },
       async (request, reply) => {
         const { userId } = request.params
-        const user = await fetchUser(userId)
-        const token = await reply.jwtSign({ type: JWTPayloadType.EmailVerification, email: user.email, userId: user.id }, { expiresIn: '15m' })
-        await initiateVerification(user.email, token)
+        await initiateVerification(userId)
         return await reply.status(204).send()
       }
     )
@@ -66,21 +64,17 @@ export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> 
       '/complete-verification',
       {
         schema: {
+          body: Type.Object({
+            token: Type.String()
+          }),
           response: {
             200: Type.Object({ modified: Type.Boolean() })
           }
         }
       },
       async (request, reply) => {
-        try {
-          await request.jwtVerify()
-        } catch (err) {
-          return reply.unauthorized('Must provide verification token to complete email verification.')
-        }
-        if (request.user.type !== JWTPayloadType.EmailVerification) {
-          return reply.unauthorized('Must provide verification token to complete email verification.')
-        }
-        const { modified } = await completeVerification(request.user.userId, request.user.email)
+        const { token } = request.body
+        const { modified } = await completeVerification(token)
         return await reply.status(200).send({ modified })
       }
     )

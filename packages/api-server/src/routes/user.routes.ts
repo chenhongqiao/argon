@@ -40,8 +40,8 @@ export async function userRoutes (app: FastifyTypeBox): Promise<void> {
       },
       async (request, reply) => {
         const { userId } = request.params
-        const { username, name, email, verifiedEmail, scopes, role } = await fetchUser(userId)
-        const privateProfile: PrivateUserProfile = { username, name, email, verifiedEmail, scopes, id: userId, role }
+        const { username, name, email, newEmail, scopes, role } = await fetchUser(userId)
+        const privateProfile: PrivateUserProfile = { username, name, email, newEmail, scopes, id: userId, role }
         await reply.status(200).send(privateProfile)
       }
     )

@@ -15,6 +15,7 @@
     "module": "node16"
   },
   "include": [
-    "./src"
+    "./src",
+    "./package.json"
   ]
 }

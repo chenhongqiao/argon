@@ -1,11 +1,11 @@
 import { User, NewUser, UserRole, UserSession, AuthenticationProfile } from '@argoncs/types'
 import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { MongoServerError, sessionCollection, userCollection } from '@argoncs/common'
+import { emailVerificationCollection, MongoServerError, sessionCollection, userCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
 
-import { nanoid } from '../utils/nanoid.utils.js'
+import { longNanoId, nanoid } from '../utils/nanoid.utils.js'
 
 import { emailClient } from '../connections/email.connections.js'
 import { fetchCache, setCache } from './cache.services.js'
@@ -20,13 +20,13 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
   const user: User = {
     id: userId,
     name: newUser.name,
-    email: newUser.email,
+    email: '',
+    newEmail: newUser.email,
     credential: {
       salt,
       hash
     },
     role: UserRole.User,
-    verifiedEmail: null,
     username: newUser.username,
     scopes: {}
   }
@@ -71,18 +71,43 @@ export async function updateUser (userId: string, user: Partial<NewUser>): Promi
   return { modified: modifiedCount > 0 }
 }
 
-export async function initiateVerification (email: string, token: string): Promise<void> {
+export async function initiateVerification (userId: string): Promise<void> {
+  const user = await userCollection.findOne({ id: userId })
+  if (user == null) {
+    throw new NotFoundError('No user found with the given ID.', { userId })
+  }
+
+  const { newEmail } = user
+  if (newEmail == null) {
+    throw new NotFoundError('User does not have an email pending verification.', { userId })
+  }
+
+  const id = await longNanoId()
+  await emailVerificationCollection.insertOne({
+    id,
+    userId,
+    email: newEmail,
+    createdAt: new Date()
+  })
+
   const verificationEmail: emailClient.MailDataRequired = {
-    to: email,
+    to: newEmail,
     from: { name: 'Argon Contest Server', email: process.env.EMAIL_SENDER_ADDRESS ?? '' },
     subject: '[ArgonCS] Please Verify Your Email',
-    html: `Token: ${token}`
+    html: `Token: ${id}`
   }
 
   await emailClient.send(verificationEmail)
 }
 
-export async function completeVerification (userId: string, email: string): Promise<{ modified: boolean }> {
+export async function completeVerification (verificationId: string): Promise<{ modified: boolean }> {
+  const verification = await emailVerificationCollection.findOne({ id: verificationId })
+  if (verification == null) {
+    throw new NotFoundError('Invalid verification token.')
+  }
+
+  const { userId, email } = verification
+
   const { modifiedCount, matchedCount } = await userCollection.updateOne({ id: userId }, {
     $set: {
       verifiedEmail: email
@@ -105,8 +130,8 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
 
   const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.credential.hash) {
-    if (user.email !== user.verifiedEmail) {
-      throw new ForbiddenError('Please verify your email before logging in.', { userId: user.id })
+    if (user.email === '') {
+      throw new ForbiddenError('A verified email is requried to login.', { userId: user.id })
     }
     const sessionId = await nanoid()
     await sessionCollection.insertOne({ id: sessionId, userId, userAgent, loginIP })
