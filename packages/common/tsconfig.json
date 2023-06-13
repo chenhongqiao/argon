@@ -16,7 +16,8 @@
     "skipLibCheck": true
   },
   "include": [
-    "./src"
+    "./src",
+    "./package.json"
   ],
   "references": [
     {

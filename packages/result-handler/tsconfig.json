@@ -17,8 +17,7 @@
   },
   "include": [
     "./src",
-    "./package.json",
-    "./configs/*.json"
+    "./package.json"
   ],
   "references": [
     {
