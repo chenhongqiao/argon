@@ -2,9 +2,9 @@ import { Type } from '@sinclair/typebox'
 
 import { verifyDomainScope } from '../auth/scope.auth.js'
 
-import { JWTPayloadType } from '@argoncs/types'
 import { FastifyTypeBox } from '../types.js'
 import { authJWTHook } from '../hooks/authentication.hooks.js'
+import { createUploadSession } from '../services/testcase.services.js'
 
 export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox, options, done) => {
@@ -15,7 +15,7 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
       {
         schema: {
           response: {
-            200: Type.Object({ token: Type.String() })
+            200: Type.Object({ uploadId: Type.String() })
           },
           params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
         },
@@ -23,7 +23,8 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
       },
       async (request, reply) => {
         const { domainId, problemId } = request.params
-        await reply.status(200).send({ token: await reply.jwtSign({ type: JWTPayloadType.Upload, resource: { problemId, domainId }, userId: request.user.userId }, { expiresIn: '10m' }) })
+        const uploadId = await createUploadSession(problemId, domainId)
+        await reply.status(200).send({ uploadId })
       }
     )
 

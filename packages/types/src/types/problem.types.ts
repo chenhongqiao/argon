@@ -28,3 +28,10 @@ export const ProblemSchema = Type.Intersect([NewProblemSchema, Type.Object({
 })])
 
 export type Problem = Static<typeof ProblemSchema>
+
+export interface TestcaseUpload {
+  id: string
+  problemId: string
+  domainId: string
+  createdAt: Date
+}

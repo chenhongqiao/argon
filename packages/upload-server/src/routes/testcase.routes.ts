@@ -1,14 +1,12 @@
-import { uploadTestcase } from '../services/testcase.services.js'
+import { consumeUploadSession, uploadTestcase } from '../services/testcase.services.js'
 
 import { Type } from '@sinclair/typebox'
 import multipart from '@fastify/multipart'
-import { JWTPayloadType } from '@argoncs/types'
 import { FastifyTypeBox } from '../types.js'
-import { BadRequestError, PayloadTooLargeError, UnauthorizedError } from 'http-errors-enhanced'
-import { verifyTestcaseUpload } from '../auth/upload.auth.js'
+import { BadRequestError, PayloadTooLargeError } from 'http-errors-enhanced'
 
 export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
-  await app.register(async (privateRoutes: FastifyTypeBox) => {
+  await app.register(async (publicRoutes: FastifyTypeBox) => {
     await app.register(multipart.default, {
       limits: {
         fileSize: 20971520,
@@ -16,32 +14,22 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
       }
     })
 
-    privateRoutes.addHook('preValidation', async (request, reply) => {
-      try {
-        await request.jwtVerify()
-      } catch (err) {
-        throw new UnauthorizedError('JWT token verification failed.')
-      }
-      if (request.user.type !== JWTPayloadType.Upload) {
-        throw new UnauthorizedError('JWT token must be valid for testcase upload.')
-      }
-    })
-
-    privateRoutes.post(
-      '/:domainId/:problemId',
+    publicRoutes.post(
+      '/:uploadId',
       {
         schema: {
           params:
-            Type.Object({ domainId: Type.String(), problemId: Type.String() }),
+            Type.Object({ uploadId: Type.String() }),
           response: {
             201: Type.Array(Type.Object({ versionId: Type.String(), name: Type.String() }))
           }
-        },
-        preValidation: [privateRoutes.auth([verifyTestcaseUpload]) as any]
+        }
       },
       async (request, reply) => {
+        const { uploadId } = request.params
+        console.log(uploadId)
+        const { domainId, problemId } = await consumeUploadSession(uploadId)
         try {
-          const { domainId, problemId } = request.params
           const testcases = request.files()
           const queue: Array<Promise<{ versionId: string, name: string }>> = []
           for await (const testcase of testcases) {

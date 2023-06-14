@@ -7,7 +7,7 @@ import fastifyAuth from '@fastify/auth'
 import { testcaseRoutes } from './routes/testcase.routes.js'
 import { heartbeatRoutes } from './routes/heartbeat.routes.js'
 
-import { connectMinIO, sentry } from '@argoncs/common'
+import { connectMinIO, connectMongoDB, sentry } from '@argoncs/common'
 
 import fastifySensible from '@fastify/sensible'
 import assert from 'assert'
@@ -27,6 +27,8 @@ sentry.init({
 export async function startUploadServer (): Promise<void> {
   assert(process.env.MINIO_URL != null)
   await connectMinIO(process.env.MINIO_URL)
+  assert(process.env.MONGO_URL != null)
+  await connectMongoDB(process.env.MONGO_URL)
 
   await app.register(fastifyHttpErrorsEnhanced, {
     handle404Errors: false,

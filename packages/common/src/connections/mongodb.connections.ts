@@ -1,4 +1,4 @@
-import { ContestSubmission, Domain, EmailVerification, Problem, TestingSubmission, User, UserSession } from '@argoncs/types'
+import { ContestSubmission, Domain, EmailVerification, Problem, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
 import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
 
 interface Index {
@@ -70,6 +70,7 @@ export let problemBankCollection: Collection<Problem>
 export let submissionCollection: Collection<ContestSubmission | TestingSubmission>
 export let sessionCollection: Collection<UserSession>
 export let emailVerificationCollection: Collection<EmailVerification>
+export let testcaseUploadCollection: Collection<TestcaseUpload>
 
 export async function connectMongoDB (url: string): Promise<void> {
   mongoClient = new MongoClient(url)
@@ -90,5 +91,6 @@ export async function connectMongoDB (url: string): Promise<void> {
   submissionCollection = mongoDB.collection('submissions')
   sessionCollection = mongoDB.collection('sessions')
   emailVerificationCollection = mongoDB.collection('emailVerifications')
+  testcaseUploadCollection = mongoDB.collection('testcaseUploads')
 }
 export { MongoServerError } from 'mongodb'
