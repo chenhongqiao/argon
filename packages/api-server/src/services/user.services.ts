@@ -101,16 +101,19 @@ export async function initiateVerification (userId: string): Promise<void> {
 }
 
 export async function completeVerification (verificationId: string): Promise<{ modified: boolean }> {
-  const verification = await emailVerificationCollection.findOne({ id: verificationId })
-  if (verification == null) {
+  const verification = await emailVerificationCollection.findOneAndDelete({ id: verificationId })
+  if (verification.value == null) {
     throw new NotFoundError('Invalid verification token.')
   }
 
-  const { userId, email } = verification
+  const { userId, email } = verification.value
 
   const { modifiedCount, matchedCount } = await userCollection.updateOne({ id: userId }, {
     $set: {
-      verifiedEmail: email
+      email
+    },
+    $unset: {
+      newEmail: ''
     }
   })
 
