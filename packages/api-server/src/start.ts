@@ -13,7 +13,6 @@ import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, sentr
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
 import fastifySensible from '@fastify/sensible'
-import fastifyJwt from '@fastify/jwt'
 import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
 import assert from 'assert'
 
@@ -49,14 +48,9 @@ export async function startAPIServer (): Promise<void> {
       return err
     }
   })
-  await app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET ?? '',
-    cookie: {
-      cookieName: 'session_token',
-      signed: false
-    }
+  await app.register(fastifyCookie, {
+    secret: process.env.COOKIE_SECRET ?? ''
   })
-  await app.register(fastifyCookie)
   await app.register(fastifySensible)
   await app.register(fastifyAuth)
 

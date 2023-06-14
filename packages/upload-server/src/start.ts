@@ -1,5 +1,4 @@
 import { fastify } from 'fastify'
-import fastifyJwt from '@fastify/jwt'
 
 import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
 import fastifyAuth from '@fastify/auth'
@@ -39,9 +38,6 @@ export async function startUploadServer (): Promise<void> {
       }
       return err
     }
-  })
-  await app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET ?? ''
   })
   await app.register(fastifyAuth)
   await app.register(fastifySensible)

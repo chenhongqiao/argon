@@ -4,7 +4,7 @@ import { addOrUpdateDomainMember, createDomain, fetchDomainDetail, removeDomainM
 import { verifySuperAdmin } from '../auth/role.auth.js'
 import { verifyDomainScope } from '../auth/scope.auth.js'
 import { FastifyTypeBox } from '../types.js'
-import { authJWTHook } from '../hooks/authentication.hooks.js'
+import { userAuthHook } from '../hooks/authentication.hooks.js'
 
 export async function domainRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox, options, done) => {
@@ -28,7 +28,7 @@ export async function domainRoutes (app: FastifyTypeBox): Promise<void> {
   })
 
   await app.register((privateRoutes: FastifyTypeBox, options, done) => {
-    privateRoutes.addHook('preValidation', authJWTHook)
+    privateRoutes.addHook('preValidation', userAuthHook)
 
     privateRoutes.post(
       '/',

@@ -3,12 +3,12 @@ import { Type } from '@sinclair/typebox'
 import { verifyDomainScope } from '../auth/scope.auth.js'
 
 import { FastifyTypeBox } from '../types.js'
-import { authJWTHook } from '../hooks/authentication.hooks.js'
+import { userAuthHook } from '../hooks/authentication.hooks.js'
 import { createUploadSession } from '../services/testcase.services.js'
 
 export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox, options, done) => {
-    privateRoutes.addHook('preValidation', authJWTHook)
+    privateRoutes.addHook('preValidation', userAuthHook)
 
     privateRoutes.get(
       '/:domainId/:problemId/upload-credential',

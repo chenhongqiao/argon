@@ -1,20 +1,19 @@
-import { JWTPayloadType } from '@argoncs/types'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { NotFoundError, UnauthorizedError } from 'http-errors-enhanced'
 import { fetchAuthenticationProfile, fetchSession } from '../services/user.services.js'
 
-export async function authJWTHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
-  try {
-    await request.jwtVerify()
-  } catch (err) {
-    throw new UnauthorizedError('JWT token verification failed.')
+export async function userAuthHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const cookie = request.cookies.session_token
+  if (cookie == null) {
+    throw new UnauthorizedError('Login is required to access this resource.')
   }
-  if (request.user.type !== JWTPayloadType.Identification) {
-    throw new UnauthorizedError('JWT token must be valid for identification.')
+  const sessionId = request.unsignCookie(cookie)
+  if (!sessionId.valid || sessionId.value == null) {
+    throw new UnauthorizedError('Session ID is invalid.')
   }
 
   try {
-    const { userId } = await fetchSession(request.user.sessionId)
+    const { userId } = await fetchSession(sessionId.value)
     const authProfile = await fetchAuthenticationProfile(userId)
     request.auth = authProfile
   } catch (err) {

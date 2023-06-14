@@ -4,7 +4,8 @@ import {
   NewSubmissionSchema,
   SubmissionType,
   TestingSubmissionSchema,
-  ContestSubmissionSchema
+  ContestSubmissionSchema,
+  AuthenticationProfile
 } from '@argoncs/types'
 
 import {
@@ -23,12 +24,12 @@ import { Type } from '@sinclair/typebox'
 
 import { verifyDomainScope } from '../auth/scope.auth.js'
 import { FastifyTypeBox } from '../types.js'
-import { authJWTHook } from '../hooks/authentication.hooks.js'
+import { userAuthHook } from '../hooks/authentication.hooks.js'
 import { fetchFromProblemBank, fetchSubmission } from '@argoncs/common'
 
 export async function problemBankRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox, options, done) => {
-    privateRoutes.addHook('preValidation', authJWTHook)
+    privateRoutes.addHook('preValidation', userAuthHook)
     privateRoutes.post(
       '/:domainId',
       {
@@ -136,7 +137,7 @@ export async function problemBankRoutes (app: FastifyTypeBox): Promise<void> {
         if (problem.testcases == null) {
           return reply.methodNotAllowed('Testcases must be uploaded before a problem can be tested.')
         }
-        const created = await createTestingSubmission(submission, problem.domainId, problem.id, request.user.userId)
+        const created = await createTestingSubmission(submission, problem.domainId, problem.id, (request.auth as AuthenticationProfile).id)
         await queueSubmission(created.submissionId)
         return await reply.status(202).send(created)
       }

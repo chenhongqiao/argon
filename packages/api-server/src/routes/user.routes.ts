@@ -3,11 +3,11 @@ import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, P
 import { fetchUser } from '../services/user.services.js'
 import { verifyUserOwnsership } from '../auth/ownership.auth.js'
 import { FastifyTypeBox } from '../types.js'
-import { authJWTHook } from '../hooks/authentication.hooks.js'
+import { userAuthHook } from '../hooks/authentication.hooks.js'
 
 export async function userRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((privateRoutes: FastifyTypeBox, options, done) => {
-    privateRoutes.addHook('preValidation', authJWTHook)
+    privateRoutes.addHook('preValidation', userAuthHook)
 
     privateRoutes.get(
       '/:userId/public-profile',
