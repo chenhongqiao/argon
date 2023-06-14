@@ -60,12 +60,12 @@ export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> 
       }
     )
 
-    publicRoutes.put(
-      '/complete-verification',
+    publicRoutes.post(
+      '/complete-verification/:verificationId',
       {
         schema: {
-          body: Type.Object({
-            token: Type.String()
+          params: Type.Object({
+            verificationId: Type.String()
           }),
           response: {
             200: Type.Object({ modified: Type.Boolean() })
@@ -73,8 +73,8 @@ export async function authenticationRoutes (app: FastifyTypeBox): Promise<void> 
         }
       },
       async (request, reply) => {
-        const { token } = request.body
-        const { modified } = await completeVerification(token)
+        const { verificationId } = request.params
+        const { modified } = await completeVerification(verificationId)
         return await reply.status(200).send({ modified })
       }
     )
