@@ -168,7 +168,7 @@ export async function runInSandbox (
           }
           return {
             status: SandboxStatus.TimeExceeded,
-            message: result.message ?? 'Isolate reported timeout',
+            message: 'Time limit exceeded.',
             time: result.time,
             wallTime: result['time-wall']
           }
