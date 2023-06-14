@@ -1,21 +1,40 @@
-version: '3.1'
+version: "3.1"
 
 name: argon-dev
 
 services:
   mongo:
-    image: bitnami/mongodb
+    image: mongo
+    hostname: mongo
     restart: always
-    ports: 
+    ports:
       - 27017:27017
     volumes:
-      - mongodb:/bitnami/mongodb
+      - mongodb:/data/db
+      - ./replica.key:/data/replica.key
     environment:
-      MONGODB_ROOT_USER: root
-      MONGODB_ROOT_PASSWORD: password
-      MONGODB_DATABASE: test
-      MONGODB_REPLICA_SET_MODE: primary
-      MONGODB_REPLICA_SET_KEY: ThisIsAUniqueKeyThatShouldBeChanged123
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: test
+    entrypoint:
+      - bash
+      - -c
+      - |
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key
+        exec docker-entrypoint.sh $$@
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
+
+  # config = {
+  #   "_id" : "rs0",
+  #   "members" : [
+  #     {
+  #       "_id" : 0,
+  #       "host" : "mongo:27017"
+  #     },
+  #   ]
+  # };
+  # rs.initiate(config);
 
   minio:
     image: minio/minio
@@ -32,7 +51,6 @@ services:
 
   dragonfly:
     image: docker.dragonflydb.io/dragonflydb/dragonfly
-    restart: always
     ulimits:
       memlock: -1
     ports:
@@ -42,7 +60,6 @@ services:
 
   rabbitmq:
     image: rabbitmq:management
-    restart: always
     ports:
       - 5672:5672
       - 15672:15672
