@@ -23,7 +23,7 @@ export async function testcaseRoutes (app: FastifyTypeBox): Promise<void> {
       },
       async (request, reply) => {
         const { domainId, problemId } = request.params
-        const uploadId = await createUploadSession(problemId, domainId)
+        const { uploadId } = await createUploadSession(problemId, domainId)
         await reply.status(200).send({ uploadId })
       }
     )

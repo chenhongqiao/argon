@@ -17,8 +17,8 @@ export async function testcaseExists (problemId: string, domainId: string, filen
   }
 }
 
-export async function createUploadSession (problemId: string, domainId: string): Promise<string> {
+export async function createUploadSession (problemId: string, domainId: string): Promise<{ uploadId: string }> {
   const id = await longNanoId()
   await testcaseUploadCollection.insertOne({ id, problemId, domainId, createdAt: new Date() })
-  return id
+  return { uploadId: id }
 }
