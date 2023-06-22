@@ -31,7 +31,6 @@ export async function startUploadServer (): Promise<void> {
 
   await app.register(fastifyHttpErrorsEnhanced, {
     handle404Errors: false,
-    convertResponsesValidationErrors: false,
     preHandler (err: any) {
       if (!('statusCode' in err) && !('validation' in err)) {
         sentry.captureException(err)

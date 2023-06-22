@@ -1,6 +1,6 @@
 import { minio, testcaseUploadCollection } from '@argoncs/common'
 import { MultipartFile } from '@fastify/multipart'
-import { NotFoundError } from 'http-errors-enhanced'
+import { UnauthorizedError } from 'http-errors-enhanced'
 import path = require('node:path')
 
 export async function uploadTestcase (domainId: string, problemId: string, testcase: MultipartFile): Promise<{ versionId: string, name: string }> {
@@ -17,7 +17,7 @@ export async function uploadTestcase (domainId: string, problemId: string, testc
 export async function consumeUploadSession (uploadId: string): Promise<{ domainId: string, problemId: string }> {
   const upload = await testcaseUploadCollection.findOneAndDelete({ id: uploadId })
   if (upload.value == null) {
-    throw new NotFoundError('No upload session found with the given ID.')
+    throw new UnauthorizedError('Invalid upload session token.')
   }
   return upload.value
 }

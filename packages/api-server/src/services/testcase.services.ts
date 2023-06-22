@@ -1,5 +1,5 @@
 import { NotFoundError } from 'http-errors-enhanced'
-import { minio, testcaseUploadCollection } from '@argoncs/common'
+import { fetchFromProblemBank, minio, testcaseUploadCollection } from '@argoncs/common'
 
 import path = require('node:path')
 import { longNanoId } from '../utils/nanoid.utils.js'
@@ -19,6 +19,7 @@ export async function testcaseExists (problemId: string, domainId: string, filen
 
 export async function createUploadSession (problemId: string, domainId: string): Promise<{ uploadId: string }> {
   const id = await longNanoId()
+  await fetchFromProblemBank(problemId, domainId) // Could throw not found
   await testcaseUploadCollection.insertOne({ id, problemId, domainId, createdAt: new Date() })
   return { uploadId: id }
 }

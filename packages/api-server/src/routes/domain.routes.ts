@@ -262,13 +262,14 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
   )
 
   problemRoutes.get(
-    '/:problemId/upload-credential',
+    '/:problemId/upload-session',
     {
       schema: {
         response: {
           200: Type.Object({ uploadId: Type.String() }),
           401: unauthorizedSchema,
-          403: forbiddenSchema
+          403: forbiddenSchema,
+          404: notFoundSchema
         },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },

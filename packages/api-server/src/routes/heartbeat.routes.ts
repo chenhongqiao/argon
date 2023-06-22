@@ -15,7 +15,7 @@ export async function heartbeatRoutes (app: FastifyTypeBox): Promise<void> {
       },
       async (request, reply) => {
         console.log(process.env)
-        return await reply.status(200).send({ version: process.env.npm_package_version ?? 'Unknown', online: true, name: process.env.npm_package_name ?? 'Unknown' })
+        return await reply.status(200).send({ version: process.env.npm_package_version ?? 'Unknown', online: true, name: process.env.npm_package_name ?? '@argoncs/api-server' })
       }
     )
 

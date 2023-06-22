@@ -3,7 +3,7 @@ import {
   Problem
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
-import { problemBankCollection } from '@argoncs/common'
+import { mongoClient, problemBankCollection, submissionCollection, testcaseUploadCollection } from '@argoncs/common'
 import { testcaseExists } from './testcase.services.js'
 
 import { nanoid } from '../utils/nanoid.utils.js'
@@ -34,10 +34,18 @@ export async function updateInProblemBank (problemId: string, domainId: string, 
 }
 
 export async function deleteInProblemBank (problemId: string, domainId: string): Promise<void> {
-  const { deletedCount } = await problemBankCollection.deleteOne({ id: problemId, domainId })
+  const session = mongoClient.startSession()
+  try {
+    const { deletedCount } = await problemBankCollection.deleteOne({ id: problemId, domainId }, { session })
 
-  if (deletedCount === 0) {
-    throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
+    if (deletedCount === 0) {
+      throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
+    }
+
+    await testcaseUploadCollection.deleteMany({ problemId })
+    await submissionCollection.deleteMany({ problemId })
+  } finally {
+    await session.endSession()
   }
 }
 
