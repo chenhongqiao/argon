@@ -9,7 +9,7 @@ export const UserSessionSchema = Type.Object({
 })
 export type UserSession = Static<typeof UserSessionSchema>
 
-export type AuthenticationProfile = Pick<User, 'scopes' | 'role' | 'id'>
+export type AuthenticationProfile = Pick<User, 'scopes' | 'role' | 'id' | 'teams'>
 
 export interface EmailVerification {
   id: string

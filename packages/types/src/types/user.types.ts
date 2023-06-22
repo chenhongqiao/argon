@@ -23,7 +23,8 @@ export const UserSchema = Type.Intersect([Type.Omit(NewUserSchema, ['password', 
   id: Type.String(),
   email: Type.String(),
   newEmail: Type.Optional(Type.String()),
-  scopes: Type.Record(Type.String(), Type.Array(Type.String()))
+  scopes: Type.Record(Type.String(), Type.Array(Type.String())),
+  teams: Type.Record(Type.String(), Type.String())
 })])
 export type User = Static<typeof UserSchema>
 

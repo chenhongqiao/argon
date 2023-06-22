@@ -29,15 +29,15 @@ export async function addOrUpdateDomainMember (domainId: string, userId: string,
       const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId },
         { $set: { [`scopes.${domainId}`]: scopes } }, { session })
       if (matchedUser === 0) {
-        throw new NotFoundError('User does not exist.', { userId })
+        throw new NotFoundError('No user found with the given ID.', { userId })
       }
-      modifiedCount += parseInt(modifiedUser.toString())
+      modifiedCount += Math.floor(modifiedUser)
 
       const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ id: domainId }, { $addToSet: { members: userId } }, { session })
       if (matchedDomain === 0) {
         throw new NotFoundError('No domain found with the given ID.', { domainId })
       }
-      modifiedCount += parseInt(modifiedDomain.toString())
+      modifiedCount += Math.floor(modifiedDomain)
 
       const user = await userCollection.findOne({ id: userId }, { session })
       await refreshCache(`auth-profile:${userId}`, user)
@@ -56,15 +56,15 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
       const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId },
         { $unset: { [`scopes.${domainId}`]: '' } }, { session })
       if (matchedUser === 0) {
-        throw new NotFoundError('No user found in this domain with the given ID.', { userId })
+        throw new NotFoundError('No user found with the given ID.', { userId })
       }
-      modifiedCount += parseInt(modifiedUser.toString())
+      modifiedCount += Math.floor(modifiedUser)
 
       const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ id: domainId }, { $pull: { members: userId } }, { session })
       if (matchedDomain === 0) {
         throw new NotFoundError('No domain found with the given ID.', { domainId })
       }
-      modifiedCount += parseInt(modifiedDomain.toString())
+      modifiedCount += Math.floor(modifiedDomain)
 
       const user = await userCollection.findOne({ id: userId }, { session })
       await refreshCache(`auth-profile:${userId}`, user)

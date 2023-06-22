@@ -28,7 +28,8 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
     },
     role: UserRole.User,
     username: newUser.username,
-    scopes: {}
+    scopes: {},
+    teams: {}
   }
 
   try {
@@ -174,7 +175,8 @@ export async function fetchAuthenticationProfile (userId: string): Promise<Authe
   const authProfile: AuthenticationProfile = {
     role: user.role,
     scopes: user.scopes,
-    id: user.id
+    id: user.id,
+    teams: user.teams
   }
 
   await setCache(`auth-profile:${userId}`, authProfile)

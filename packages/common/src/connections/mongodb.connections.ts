@@ -1,4 +1,4 @@
-import { ContestSubmission, Domain, EmailVerification, Problem, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
+import { Contest, ContestSubmission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
 import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
 
 interface Index {
@@ -59,6 +59,26 @@ const collections: CollectionIndex[] = [
       { keys: { id: 1 }, options: { unique: true } },
       { keys: { createdAt: 1 }, options: { expireAfterSeconds: 900 } }
     ]
+  },
+  {
+    name: 'contests',
+    indexes: [
+      { keys: { id: 1 }, options: { unique: true } }
+    ]
+  },
+  {
+    name: 'teams',
+    indexes: [
+      { keys: { contestId: 1, id: 1 }, options: { unique: true } }
+    ]
+  },
+  {
+    name: 'teamInvitations',
+    indexes: [
+      { keys: { userId: 1, id: 1 }, options: { unique: true } },
+      { keys: { teamId: 1 } },
+      { keys: { createdAt: 1 }, options: { expireAfterSeconds: 604800 } }
+    ]
   }
 ]
 
@@ -71,6 +91,9 @@ export let submissionCollection: Collection<ContestSubmission | TestingSubmissio
 export let sessionCollection: Collection<UserSession>
 export let emailVerificationCollection: Collection<EmailVerification>
 export let testcaseUploadCollection: Collection<TestcaseUpload>
+export let contestCollection: Collection<Contest>
+export let teamCollection: Collection<Team>
+export let teamInvitationCollection: Collection<TeamInvitation>
 
 export async function connectMongoDB (url: string): Promise<void> {
   mongoClient = new MongoClient(url)
@@ -92,5 +115,8 @@ export async function connectMongoDB (url: string): Promise<void> {
   sessionCollection = mongoDB.collection('sessions')
   emailVerificationCollection = mongoDB.collection('emailVerifications')
   testcaseUploadCollection = mongoDB.collection('testcaseUploads')
+  contestCollection = mongoDB.collection('contests')
+  teamCollection = mongoDB.collection('teams')
+  teamInvitationCollection = mongoDB.collection('teamInvitations')
 }
-export { MongoServerError } from 'mongodb'
+export { MongoServerError, ClientSession } from 'mongodb'
