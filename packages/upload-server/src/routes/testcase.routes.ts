@@ -39,11 +39,11 @@ export async function testcaseRoutes (routes: FastifyTypeBox): Promise<void> {
         return await reply.status(201).send(await Promise.all(queue))
       } catch (err) {
         if (err instanceof routes.multipartErrors.InvalidMultipartContentTypeError) {
-          throw new BadRequestError('Request must be multipart.')
+          throw new BadRequestError('Request must be multipart')
         } else if (err instanceof routes.multipartErrors.FilesLimitError) {
-          throw new PayloadTooLargeError('Too many files in one request.')
+          throw new PayloadTooLargeError('Too many files in one request')
         } else if (err instanceof routes.multipartErrors.RequestFileTooLargeError) {
-          throw new PayloadTooLargeError('Testcase too large to be processed.')
+          throw new PayloadTooLargeError('Testcase too large to be processed')
         } else {
           throw err
         }

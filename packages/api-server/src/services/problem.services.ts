@@ -27,7 +27,7 @@ export async function updateInProblemBank (problemId: string, domainId: string, 
 
   const { matchedCount, modifiedCount } = await problemBankCollection.updateOne({ id: problemId, domainId }, { $set: problem })
   if (matchedCount === 0) {
-    throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
+    throw new NotFoundError('Problem not found', { problemId, domainId })
   }
 
   return { modified: modifiedCount > 0 }
@@ -39,7 +39,7 @@ export async function deleteInProblemBank (problemId: string, domainId: string):
     const { deletedCount } = await problemBankCollection.deleteOne({ id: problemId, domainId }, { session })
 
     if (deletedCount === 0) {
-      throw new NotFoundError('No problem found in this domain with the given ID.', { problemId, domainId })
+      throw new NotFoundError('Problem not found', { problemId, domainId })
     }
 
     await testcaseUploadCollection.deleteMany({ problemId })

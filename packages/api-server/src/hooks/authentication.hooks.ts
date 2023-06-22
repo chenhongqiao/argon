@@ -5,11 +5,11 @@ import { fetchAuthenticationProfile, fetchSession } from '../services/user.servi
 export async function userAuthHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   const cookie = request.cookies.session_token
   if (cookie == null) {
-    throw new UnauthorizedError('Login is required to access this resource.')
+    throw new UnauthorizedError('Login is required to access this resource')
   }
   const sessionId = request.unsignCookie(cookie)
   if (!sessionId.valid || sessionId.value == null) {
-    throw new UnauthorizedError('Session ID is invalid.')
+    throw new UnauthorizedError('Session ID is invalid')
   }
 
   try {
@@ -18,7 +18,7 @@ export async function userAuthHook (request: FastifyRequest, reply: FastifyReply
     request.auth = authProfile
   } catch (err) {
     if (err instanceof NotFoundError) {
-      throw new UnauthorizedError('Session or user described by the token is invalid.')
+      throw new UnauthorizedError('Session or user described by the token is invalid')
     } else {
       throw err
     }

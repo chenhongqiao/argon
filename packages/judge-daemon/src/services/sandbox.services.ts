@@ -53,7 +53,7 @@ export async function initSandbox (
     workDir = (await exec(`isolate --box-id=${boxId} --cg --init`)).stdout
   } catch (err) {
     if (Boolean((err.message?.startsWith('Box already exists')))) {
-      throw new ConflictError('A box with the same ID already exists.', { boxId })
+      throw new ConflictError('A box with the same ID already exists', { boxId })
     } else {
       throw err
     }
@@ -134,12 +134,12 @@ export async function runInSandbox (
         case 'XX':
           return {
             status: SandboxStatus.SystemError,
-            message: result.message ?? 'Isolate threw system error.'
+            message: result.message ?? 'Isolate threw system error'
           }
         case 'RE':
           return {
             status: SandboxStatus.RuntimeError,
-            message: result.message ?? 'Isolate threw runtime error.'
+            message: result.message ?? 'Isolate threw runtime error'
           }
         case 'CG':
           if (
@@ -150,39 +150,39 @@ export async function runInSandbox (
           ) {
             return {
               status: SandboxStatus.MemoryExceeded,
-              message: 'Memory limit exceeded.',
+              message: 'Memory limit exceeded',
               memory: result.memory
             }
           } else {
             return {
               status: SandboxStatus.RuntimeError,
-              message: result.message ?? 'Program exit on signal.'
+              message: result.message ?? 'Program exit on signal'
             }
           }
         case 'TO':
           if (result.time == null || result['time-wall'] == null) {
             return {
               status: SandboxStatus.SystemError,
-              message: 'Isolate reported timeout but no time info found in meta.'
+              message: 'Isolate reported timeout but no time info found in meta'
             }
           }
           return {
             status: SandboxStatus.TimeExceeded,
-            message: 'Time limit exceeded.',
+            message: 'Time limit exceeded',
             time: result.time,
             wallTime: result['time-wall']
           }
         default:
           return {
             status: SandboxStatus.SystemError,
-            message: 'Unknown status on abnormal termination.'
+            message: 'Unknown status on abnormal termination'
           }
       }
     } catch (err) {
       if (err?.code === 'ENONET') {
         return {
           status: SandboxStatus.SystemError,
-          message: 'Meta file does not exist on abnormal termination.'
+          message: 'Meta file does not exist on abnormal termination'
         }
       } else {
         throw err
@@ -196,7 +196,7 @@ export async function runInSandbox (
     if (result.time == null || result['time-wall'] == null || result.memory == null) {
       return {
         status: SandboxStatus.SystemError,
-        message: 'Isolate reported OK but no time info or memory info found in meta.'
+        message: 'Isolate reported OK but no time info or memory info found in meta'
       }
     }
     return {
@@ -204,13 +204,13 @@ export async function runInSandbox (
       time: result.time,
       wallTime: result['time-wall'],
       memory: result.memory,
-      message: 'Task completed successfully.'
+      message: 'Task completed successfully'
     }
   } catch (err) {
     if (err?.code === 'ENONET') {
       return {
         status: SandboxStatus.SystemError,
-        message: 'Meta file does not exist on abnormal termination.'
+        message: 'Meta file does not exist on abnormal termination'
       }
     } else {
       throw err

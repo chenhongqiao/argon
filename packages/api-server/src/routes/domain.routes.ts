@@ -253,7 +253,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       const { domainId, problemId } = request.params
       const problem = await fetchFromProblemBank(problemId, domainId)
       if (problem.testcases == null) {
-        throw new MethodNotAllowedError('Testcases must be uploaded before a problem can be tested.')
+        throw new MethodNotAllowedError('Testcases must be uploaded before a problem can be tested')
       }
       const created = await createTestingSubmission(submission, problem.domainId, problem.id, (request.auth as AuthenticationProfile).id)
       await queueSubmission(created.submissionId)
@@ -303,7 +303,7 @@ async function domainSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promis
       const submission = await fetchSubmission(submissionId)
 
       if (submission.type !== SubmissionType.Testing || submission.domainId !== domainId) {
-        throw new NotFoundError('No submission found with the given ID.')
+        throw new NotFoundError('Submission not found')
       }
 
       return await reply.status(200).send(submission)

@@ -46,7 +46,7 @@ export async function gradeSubmission (
         time,
         wallTime,
         memory,
-        message: 'Submission Accepted.'
+        message: 'Submission accepted'
       }
     } catch (err) {
       return {
@@ -54,7 +54,7 @@ export async function gradeSubmission (
         time,
         wallTime,
         memory,
-        message: 'Wrong Answer.'
+        message: 'Wrong answer'
       }
     }
   } else {

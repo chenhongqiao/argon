@@ -18,7 +18,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       const submissionTestcases: Array<{ points: number, input: { name: string, versionId: string }, output: { name: string, versionId: string } }> = []
       // @ts-expect-error: Fetch contest problem not implemented
       if (problem.testcases == null) {
-        return await completeGrading(submissionId, 'Problem does not have testcases.')
+        return await completeGrading(submissionId, 'Problem does not have testcases')
       }
       // @ts-expect-error: Fetch contest problem not implemented
       problem.testcases.forEach((testcase, index) => {
@@ -90,7 +90,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
 
   if (submission.status === SubmissionStatus.Grading) {
     if (submission.testcases[testcaseIndex] == null) {
-      throw new NotFoundError('No testcase found at the given index.', { testcaseIndex, submissionId })
+      throw new NotFoundError('No testcase found at the given index', { testcaseIndex, submissionId })
     }
     const score = gradingResult.status === GradingStatus.Accepted ? submission.testcases[testcaseIndex].points : 0
     submission.testcases[testcaseIndex].result = gradingResult

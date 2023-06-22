@@ -26,7 +26,7 @@ export async function startHandler (): Promise<void> {
         } else if (resultMessage.type === JudgerResultType.Grading) {
           await handleGradingResult(resultMessage.result, resultMessage.submissionId, resultMessage.testcaseIndex)
         } else {
-          throw Error('Invalid result type.')
+          throw Error('Invalid result type')
         }
 
         rabbitMQ.ack(message)
@@ -43,7 +43,7 @@ export async function startHandler (): Promise<void> {
       try {
         const letter: CompilingResultMessage | GradingResultMessage = JSON.parse(message.content.toString())
 
-        await completeGrading(letter.submissionId, 'One or more of the grading results failed to be processed.')
+        await completeGrading(letter.submissionId, 'One or more of the grading results failed to be processed')
         rabbitMQ.ack(message)
       } catch (err) {
         sentry.captureException(err)
@@ -57,7 +57,7 @@ export async function startHandler (): Promise<void> {
     if (message != null) {
       try {
         const letter: CompilingTask | GradingTask = JSON.parse(message.content.toString())
-        await completeGrading(letter.submissionId, 'One or more of the grading tasks failed to complete.')
+        await completeGrading(letter.submissionId, 'One or more of the grading tasks failed to complete')
         rabbitMQ.ack(message)
       } catch (err) {
         sentry.captureException(err)

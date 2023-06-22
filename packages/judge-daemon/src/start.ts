@@ -32,7 +32,7 @@ export async function startJudger (): Promise<void> {
 
   const cores = os.cpus().length
 
-  logger.info(`${cores} CPU cores detected.`)
+  logger.info(`${cores} CPU cores detected`)
 
   const destroyQueue: Array<Promise<{ boxId: number }>> = []
   for (let id = 1; id <= cores; id += 1) {
@@ -41,7 +41,7 @@ export async function startJudger (): Promise<void> {
   }
   await Promise.all(destroyQueue)
 
-  logger.info(`Judger ${judgerId} start receiving tasks.`)
+  logger.info(`Judger ${judgerId} start receiving tasks`)
 
   await rabbitMQ.prefetch(availableBoxes.size)
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -50,13 +50,13 @@ export async function startJudger (): Promise<void> {
       const boxId = availableBoxes.values().next().value
       if (boxId == null) {
         rabbitMQ.reject(message, true)
-        logger.info('Received a task when no box is available.')
+        logger.info('Received a task when no box is available')
         return
       }
       try {
         const task: GradingTask | CompilingTask = JSON.parse(message.content.toString())
 
-        logger.info(task, 'Processing a new task.')
+        logger.info(task, 'Processing a new task')
         availableBoxes.delete(boxId)
         await initSandbox(boxId)
 
@@ -76,7 +76,7 @@ export async function startJudger (): Promise<void> {
             submissionId: task.submissionId
           }
         } else {
-          throw Error('Invalid task type.')
+          throw Error('Invalid task type')
         }
 
         rabbitMQ.publish(judgerExchange, judgerResultsKey, Buffer.from(JSON.stringify(result)))

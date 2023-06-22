@@ -38,9 +38,9 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
   } catch (err) {
     if (err instanceof MongoServerError && err.code === 11000 && err.keyValue != null) {
       if (err.keyValue.email !== undefined) {
-        throw new ConflictError('Email taken by another user.', { user })
+        throw new ConflictError('Email taken by another user', { user })
       } else if (err.keyValue.username !== undefined) {
-        throw new ConflictError('Username taken by another user.', { user })
+        throw new ConflictError('Username taken by another user', { user })
       } else {
         throw err
       }
@@ -53,7 +53,7 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
 export async function fetchUser (userId: string): Promise<User> {
   const user = await userCollection.findOne({ id: userId })
   if (user == null) {
-    throw new NotFoundError('No user found with the given ID.', { userId })
+    throw new NotFoundError('User not found', { userId })
   }
 
   return user
@@ -66,7 +66,7 @@ export async function userIdExists (userId: string): Promise<boolean> {
 export async function updateUser (userId: string, user: Partial<NewUser>): Promise<{ modified: boolean }> {
   const { matchedCount, modifiedCount } = await userCollection.updateOne({ id: userId }, { $set: user })
   if (matchedCount === 0) {
-    throw new NotFoundError('No user found with the given ID.', { userId })
+    throw new NotFoundError('User not found', { userId })
   }
 
   return { modified: modifiedCount > 0 }
@@ -75,12 +75,12 @@ export async function updateUser (userId: string, user: Partial<NewUser>): Promi
 export async function initiateVerification (userId: string): Promise<void> {
   const user = await userCollection.findOne({ id: userId })
   if (user == null) {
-    throw new NotFoundError('No user found with the given ID.', { userId })
+    throw new NotFoundError('User not found', { userId })
   }
 
   const { newEmail } = user
   if (newEmail == null) {
-    throw new NotFoundError('User does not have an email pending verification.', { userId })
+    throw new NotFoundError('User does not have an email pending verification', { userId })
   }
 
   const id = await longNanoId()
@@ -104,7 +104,7 @@ export async function initiateVerification (userId: string): Promise<void> {
 export async function completeVerification (verificationId: string): Promise<{ modified: boolean }> {
   const verification = await emailVerificationCollection.findOneAndDelete({ id: verificationId })
   if (verification.value == null) {
-    throw new UnauthorizedError('Invalid verification token.')
+    throw new UnauthorizedError('Invalid verification token')
   }
 
   const { userId, email } = verification.value
@@ -119,7 +119,7 @@ export async function completeVerification (verificationId: string): Promise<{ m
   })
 
   if (matchedCount === 0) {
-    throw new NotFoundError('No user found with the given ID.', { userId })
+    throw new NotFoundError('User not found', { userId })
   }
 
   return { modified: modifiedCount > 0 }
@@ -128,20 +128,20 @@ export async function completeVerification (verificationId: string): Promise<{ m
 export async function authenticateUser (usernameOrEmail: string, password: string, loginIP: string, userAgent: string): Promise<{ userId: string, sessionId: string }> {
   const user = await userCollection.findOne({ $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }] })
   if (user == null) {
-    throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
+    throw new UnauthorizedError('Authentication failed', { usernameOrEmail })
   }
   const { id: userId } = user
 
   const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.credential.hash) {
     if (user.email === '') {
-      throw new ForbiddenError('A verified email is requried to login.', { userId: user.id })
+      throw new ForbiddenError('A verified email is requried to login', { userId: user.id })
     }
     const sessionId = await nanoid()
     await sessionCollection.insertOne({ id: sessionId, userId, userAgent, loginIP })
     return { userId, sessionId }
   } else {
-    throw new UnauthorizedError('Failed to authenticate user with the given credential.', { usernameOrEmail })
+    throw new UnauthorizedError('Authentication failed', { usernameOrEmail })
   }
 }
 
@@ -153,7 +153,7 @@ export async function fetchSession (sessionId: string): Promise<UserSession> {
 
   const session = await sessionCollection.findOne({ id: sessionId })
   if (session == null) {
-    throw new NotFoundError('No session found with the given ID.', { sessionId })
+    throw new NotFoundError('Session not found', { sessionId })
   }
 
   await setCache(`session:${sessionId}`, session)
@@ -169,7 +169,7 @@ export async function fetchAuthenticationProfile (userId: string): Promise<Authe
 
   const user = await userCollection.findOne({ id: userId })
   if (user == null) {
-    throw new NotFoundError('No user found with the given ID.', { userId })
+    throw new NotFoundError('User not found', { userId })
   }
 
   const authProfile: AuthenticationProfile = {

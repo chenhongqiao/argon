@@ -29,13 +29,13 @@ export async function connectMinIO (url: string): Promise<void> {
   })
 
   if (url == null) {
-    throw new Error('Missing MinIO URL.')
+    throw new Error('Missing MinIO URL')
   }
 
   const minioConfig = minioConnectionString.parse(url)
 
   if (minioConfig.hosts[0].host == null || minioConfig.username == null || minioConfig.password == null) {
-    throw new Error('MinIO URL missing required information.')
+    throw new Error('MinIO URL missing required information')
   }
 
   minio = new Client({
