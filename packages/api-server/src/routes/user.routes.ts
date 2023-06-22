@@ -38,7 +38,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
         },
         params: Type.Object({ userId: Type.String() })
       },
-      preValidation: [userAuthHook, profileRoutes.auth([verifyUserOwnsership]) as any]
+      onRequest: [userAuthHook, profileRoutes.auth([verifyUserOwnsership]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params
@@ -60,7 +60,7 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
           403: forbiddenSchema
         }
       },
-      preValidation: [userAuthHook, verificationRoutes.auth([verifyUserOwnsership]) as any]
+      onRequest: [userAuthHook, verificationRoutes.auth([verifyUserOwnsership]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params

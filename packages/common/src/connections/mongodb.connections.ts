@@ -41,7 +41,7 @@ const collections: CollectionIndex[] = [
     ]
   },
   {
-    name: 'problemBank',
+    name: 'domainProblems',
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
       { keys: { domainId: 1, id: 1 }, options: { unique: true } },

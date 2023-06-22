@@ -42,7 +42,7 @@ async function domainManagementRoutes (managementRoutes: FastifyTypeBox): Promis
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, managementRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
+      onRequest: [userAuthHook, managementRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
     async (request, reply) => {
       const { domainId } = request.params
@@ -68,7 +68,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, memberRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
+      onRequest: [userAuthHook, memberRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
     async (request, reply) => {
       const { domainId } = request.params
@@ -89,7 +89,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, memberRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
+      onRequest: [userAuthHook, memberRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
     async (request, reply) => {
       const { domainId, userId } = request.params
@@ -113,7 +113,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, memberRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
+      onRequest: [userAuthHook, memberRoutes.auth([verifySuperAdmin, verifyDomainScope(['domain.manage'])], { relation: 'or' }) as any]
     },
     async (request, reply) => {
       const { domainId, userId } = request.params
@@ -137,7 +137,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           403: forbiddenSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
+      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
     },
     async (request, reply) => {
       const problem = request.body
@@ -158,7 +158,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         },
         params: Type.Object({ domainId: Type.String() })
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.read'])]) as any]
+      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.read'])]) as any]
     },
     async (request, reply) => {
       const { domainId } = request.params
@@ -180,7 +180,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
+      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
 
     },
     async (request, reply) => {
@@ -202,7 +202,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
+      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
@@ -223,7 +223,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.read'])]) as any]
+      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.read'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
@@ -246,7 +246,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           405: methodNotAllowedSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.test'])]) as any]
+      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.test'])]) as any]
     },
     async (request, reply) => {
       const submission = request.body
@@ -273,7 +273,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
+      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
     },
     async (request, reply) => {
       const { domainId, problemId } = request.params
@@ -296,7 +296,7 @@ async function domainSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promis
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, submissionRoutes.auth([verifyDomainScope(['problem.test'])]) as any]
+      onRequest: [userAuthHook, submissionRoutes.auth([verifyDomainScope(['problem.test'])]) as any]
     },
     async (request, reply) => {
       const { domainId, submissionId } = request.params
@@ -322,7 +322,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
           403: forbiddenSchema
         }
       },
-      preValidation: [userAuthHook, routes.auth([verifySuperAdmin]) as any]
+      onRequest: [userAuthHook, routes.auth([verifySuperAdmin]) as any]
     },
     async (request, reply) => {
       const newDomain = request.body
