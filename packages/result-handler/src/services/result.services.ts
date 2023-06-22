@@ -1,4 +1,4 @@
-import { fetchFromProblemBank, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
+import { fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
 import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus, SubmissionType } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
@@ -10,7 +10,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
     if (compileResult.status === CompilingStatus.Succeeded) {
       let problem: Problem
       if (submission.type === SubmissionType.Testing) {
-        problem = await fetchFromProblemBank(submission.problemId, submission.domainId)
+        problem = await fetchDomainProblem(submission.problemId, submission.domainId)
       } else {
         // Fetch Contest Problem
         // TODO

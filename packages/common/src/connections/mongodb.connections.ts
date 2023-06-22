@@ -1,4 +1,4 @@
-import { Contest, ContestSubmission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
+import { Contest, ContestProblem, ContestSubmission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
 import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
 
 interface Index {
@@ -65,7 +65,15 @@ const collections: CollectionIndex[] = [
   {
     name: 'contests',
     indexes: [
-      { keys: { id: 1 }, options: { unique: true } }
+      { keys: { id: 1 }, options: { unique: true } },
+      { keys: { domainId: 1 } }
+    ]
+  },
+  {
+    name: 'contestProblems',
+    indexes: [
+      { keys: { id: 1 }, options: { unique: true } },
+      { keys: { contestId: 1, id: 1 }, options: { unique: true } }
     ]
   },
   {
@@ -88,7 +96,7 @@ export let mongoClient: MongoClient
 export let mongoDB: Db
 export let domainCollection: Collection<Domain>
 export let userCollection: Collection<User>
-export let problemBankCollection: Collection<Problem>
+export let domainProblemCollection: Collection<Problem>
 export let submissionCollection: Collection<ContestSubmission | TestingSubmission>
 export let sessionCollection: Collection<UserSession>
 export let emailVerificationCollection: Collection<EmailVerification>
@@ -96,6 +104,7 @@ export let testcaseUploadCollection: Collection<TestcaseUpload>
 export let contestCollection: Collection<Contest>
 export let teamCollection: Collection<Team>
 export let teamInvitationCollection: Collection<TeamInvitation>
+export let contestProblemCollection: Collection<ContestProblem>
 
 export async function connectMongoDB (url: string): Promise<void> {
   mongoClient = new MongoClient(url)
@@ -111,13 +120,19 @@ export async function connectMongoDB (url: string): Promise<void> {
   await Promise.all(indexPromises)
 
   domainCollection = mongoDB.collection('domains')
+  domainProblemCollection = mongoDB.collection('domainProblems')
+
   userCollection = mongoDB.collection('users')
-  problemBankCollection = mongoDB.collection('problemBank')
-  submissionCollection = mongoDB.collection('submissions')
   sessionCollection = mongoDB.collection('sessions')
   emailVerificationCollection = mongoDB.collection('emailVerifications')
+
+  submissionCollection = mongoDB.collection('submissions')
+
   testcaseUploadCollection = mongoDB.collection('testcaseUploads')
+
   contestCollection = mongoDB.collection('contests')
+  contestProblemCollection = mongoDB.collection('contestProblems')
+
   teamCollection = mongoDB.collection('teams')
   teamInvitationCollection = mongoDB.collection('teamInvitations')
 }

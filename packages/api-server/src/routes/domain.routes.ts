@@ -5,8 +5,8 @@ import { verifySuperAdmin } from '../auth/role.auth.js'
 import { verifyDomainScope } from '../auth/scope.auth.js'
 import { FastifyTypeBox } from '../types.js'
 import { userAuthHook } from '../hooks/authentication.hooks.js'
-import { createInProblemBank, deleteInProblemBank, fetchDomainProblems, updateInProblemBank } from '../services/problem.services.js'
-import { fetchFromProblemBank, fetchSubmission } from '@argoncs/common'
+import { createDomainProblem, deleteDomainProblem, fetchDomainProblems, updateDomainProblem } from '../services/problem.services.js'
+import { fetchDomainProblem, fetchSubmission } from '@argoncs/common'
 import { createTestingSubmission, queueSubmission } from '../services/submission.services.js'
 import { createUploadSession } from '../services/testcase.services.js'
 import { forbiddenSchema, MethodNotAllowedError, methodNotAllowedSchema, NotFoundError, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
@@ -137,12 +137,12 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           403: forbiddenSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
     },
     async (request, reply) => {
       const problem = request.body
       const { domainId } = request.params
-      const created = await createInProblemBank(problem, domainId)
+      const created = await createDomainProblem(problem, domainId)
       return await reply.status(201).send(created)
     }
   )
@@ -158,7 +158,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         },
         params: Type.Object({ domainId: Type.String() })
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.read'])]) as any]
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.read'])]) as any]
     },
     async (request, reply) => {
       const { domainId } = request.params
@@ -180,13 +180,13 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
 
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
       const problem = request.body
-      const { modified } = await updateInProblemBank(problemId, domainId, problem)
+      const { modified } = await updateDomainProblem(problemId, domainId, problem)
       return await reply.status(200).send({ modified })
     }
   )
@@ -202,11 +202,11 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      await deleteInProblemBank(problemId, domainId)
+      await deleteDomainProblem(problemId, domainId)
       return await reply.status(204).send()
     }
   )
@@ -223,11 +223,11 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.read'])]) as any]
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.read'])]) as any]
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      const problem = await fetchFromProblemBank(problemId, domainId)
+      const problem = await fetchDomainProblem(problemId, domainId)
       return await reply.status(200).send(problem)
     }
   )
@@ -246,12 +246,12 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           405: methodNotAllowedSchema
         }
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.test'])]) as any]
     },
     async (request, reply) => {
       const submission = request.body
       const { domainId, problemId } = request.params
-      const problem = await fetchFromProblemBank(problemId, domainId)
+      const problem = await fetchDomainProblem(problemId, domainId)
       if (problem.testcases == null) {
         throw new MethodNotAllowedError('Testcases must be uploaded before a problem can be tested')
       }
@@ -273,7 +273,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         },
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
       },
-      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.manage'])]) as any]
     },
     async (request, reply) => {
       const { domainId, problemId } = request.params
@@ -296,7 +296,7 @@ async function domainSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promis
           404: notFoundSchema
         }
       },
-      preValidation: [userAuthHook, submissionRoutes.auth([verifyDomainScope(['problemBank.test'])]) as any]
+      preValidation: [userAuthHook, submissionRoutes.auth([verifyDomainScope(['problem.test'])]) as any]
     },
     async (request, reply) => {
       const { domainId, submissionId } = request.params
