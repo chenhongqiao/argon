@@ -104,7 +104,7 @@ export async function initiateVerification (userId: string): Promise<void> {
 export async function completeVerification (verificationId: string): Promise<{ modified: boolean }> {
   const verification = await emailVerificationCollection.findOneAndDelete({ id: verificationId })
   if (verification.value == null) {
-    throw new NotFoundError('Invalid verification token.')
+    throw new UnauthorizedError('Invalid verification token.')
   }
 
   const { userId, email } = verification.value

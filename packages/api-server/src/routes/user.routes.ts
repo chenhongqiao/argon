@@ -4,6 +4,7 @@ import { completeVerification, fetchUser, initiateVerification, registerUser } f
 import { verifyUserOwnsership } from '../auth/ownership.auth.js'
 import { FastifyTypeBox } from '../types.js'
 import { userAuthHook } from '../hooks/authentication.hooks.js'
+import { conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 
 async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> {
   profileRoutes.get(
@@ -11,11 +12,11 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     {
       schema: {
         response: {
-          200: PublicUserProfileSchema
+          200: PublicUserProfileSchema,
+          404: notFoundSchema
         },
         params: Type.Object({ userId: Type.String() })
-      },
-      preValidation: [userAuthHook as any]
+      }
     },
     async (request, reply) => {
       const { userId } = request.params
@@ -30,7 +31,10 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     {
       schema: {
         response: {
-          200: PrivateUserProfileSchema
+          200: PrivateUserProfileSchema,
+          401: unauthorizedSchema,
+          403: forbiddenSchema,
+          404: notFoundSchema
         },
         params: Type.Object({ userId: Type.String() })
       },
@@ -50,9 +54,13 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
     '/',
     {
       schema: {
-        params: Type.Object({ userId: Type.String() })
+        params: Type.Object({ userId: Type.String() }),
+        response: {
+          401: unauthorizedSchema,
+          403: forbiddenSchema
+        }
       },
-      preValidation: [userAuthHook, verifyUserOwnsership as any]
+      preValidation: [userAuthHook, verificationRoutes.auth([verifyUserOwnsership]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params
@@ -69,7 +77,9 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
           verificationId: Type.String()
         }),
         response: {
-          200: Type.Object({ modified: Type.Boolean() })
+          200: Type.Object({ modified: Type.Boolean() }),
+          401: unauthorizedSchema,
+          403: notFoundSchema
         }
       }
     },
@@ -88,7 +98,8 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
       schema: {
         body: NewUserSchema,
         response: {
-          201: Type.Object({ userId: Type.String() })
+          201: Type.Object({ userId: Type.String() }),
+          409: conflictSchema
         }
       }
     },

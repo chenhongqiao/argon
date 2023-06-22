@@ -5,6 +5,7 @@ import { delay } from '@argoncs/common'
 
 import { randomInt } from 'node:crypto'
 import { FastifyTypeBox } from '../types.js'
+import { forbiddenSchema, unauthorizedSchema } from 'http-errors-enhanced'
 
 export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox, options, done) => {
@@ -14,7 +15,9 @@ export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {
         schema: {
           body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
           response: {
-            200: Type.Object({ userId: Type.String() })
+            200: Type.Object({ userId: Type.String() }),
+            401: unauthorizedSchema,
+            403: forbiddenSchema
           }
         }
       },
