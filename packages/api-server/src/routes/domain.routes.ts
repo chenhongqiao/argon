@@ -8,6 +8,7 @@ import { userAuthHook } from '../hooks/authentication.hooks.js'
 import { createInProblemBank, deleteInProblemBank, fetchDomainProblems, updateInProblemBank } from '../services/problem.services.js'
 import { fetchFromProblemBank, fetchSubmission } from '@argoncs/common'
 import { createTestingSubmission, queueSubmission } from '../services/submission.services.js'
+import { createUploadSession } from '../services/testcase.services.js'
 
 async function domainManagementRoutes (managementRoutes: FastifyTypeBox): Promise<void> {
   managementRoutes.get(
@@ -212,6 +213,24 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       const created = await createTestingSubmission(submission, problem.domainId, problem.id, (request.auth as AuthenticationProfile).id)
       await queueSubmission(created.submissionId)
       return await reply.status(202).send(created)
+    }
+  )
+
+  problemRoutes.get(
+    '/:problemId/upload-credential',
+    {
+      schema: {
+        response: {
+          200: Type.Object({ uploadId: Type.String() })
+        },
+        params: Type.Object({ domainId: Type.String(), problemId: Type.String() })
+      },
+      preValidation: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problemBank.manage'])]) as any]
+    },
+    async (request, reply) => {
+      const { domainId, problemId } = request.params
+      const { uploadId } = await createUploadSession(problemId, domainId)
+      await reply.status(200).send({ uploadId })
     }
   )
 }

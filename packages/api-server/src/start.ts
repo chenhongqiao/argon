@@ -1,9 +1,7 @@
 import { fastify } from 'fastify'
 
-import { problemBankRoutes } from './routes/problemBank.routes.js'
-import { testcaseRoutes } from './routes/testcase.routes.js'
 import { heartbeatRoutes } from './routes/heartbeat.routes.js'
-import { authenticationRoutes } from './routes/authentication.routes.js'
+import { sessionRoutes } from './routes/session.routes.js'
 import { domainRoutes } from './routes/domain.routes.js'
 import { userRoutes } from './routes/user.routes.js'
 import { judgerRoutes } from './routes/judger.routes.js'
@@ -54,10 +52,8 @@ export async function startAPIServer (): Promise<void> {
   await app.register(fastifySensible)
   await app.register(fastifyAuth)
 
-  await app.register(problemBankRoutes, { prefix: '/problem-bank' })
-  await app.register(testcaseRoutes, { prefix: '/testcases' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
-  await app.register(authenticationRoutes, { prefix: '/authentication' })
+  await app.register(sessionRoutes, { prefix: '/session' })
   await app.register(userRoutes, { prefix: '/users' })
   await app.register(domainRoutes, { prefix: '/domains' })
   await app.register(judgerRoutes, { prefix: '/judger' })
