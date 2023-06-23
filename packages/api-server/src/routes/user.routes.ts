@@ -50,7 +50,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
 }
 
 async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Promise<void> {
-  verificationRoutes.get(
+  verificationRoutes.post(
     '/',
     {
       schema: {
@@ -70,7 +70,7 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
   )
 
   verificationRoutes.post(
-    '/',
+    '/:verificationId',
     {
       schema: {
         params: Type.Object({
