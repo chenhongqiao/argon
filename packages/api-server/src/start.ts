@@ -11,7 +11,7 @@ import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, sentr
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
 import fastifySensible from '@fastify/sensible'
-import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
+import fastifyHttpErrorsEnhanced from '@chenhongqiao/fastify-http-errors-enhanced'
 import assert from 'assert'
 
 const app = fastify({
@@ -38,6 +38,7 @@ export async function startAPIServer (): Promise<void> {
 
   await app.register(fastifyHttpErrorsEnhanced, {
     handle404Errors: false,
+    convertValidationErrors: true,
     preHandler (err: any) {
       if (!('statusCode' in err) && !('validation' in err)) {
         sentry.captureException(err)

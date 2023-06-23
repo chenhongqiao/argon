@@ -27,7 +27,7 @@ export async function fetchContest (contestId: string): Promise<Contest> {
 
   const contest = await contestCollection.findOne({ id: contestId })
   if (contest == null) {
-    throw new NotFoundError('Contest not found', { contestId })
+    throw new NotFoundError('Contest not found')
   }
 
   await setCache(`contest:${contestId}`, contest)
@@ -43,7 +43,7 @@ export async function fetchDomainContests (domainId: string): Promise<Contest[]>
 export async function updateContest (contestId: string, contest: Partial<NewContest>): Promise<{ modified: boolean }> {
   const { matchedCount, modifiedCount } = await contestCollection.updateOne({ id: contestId }, { $set: contest })
   if (matchedCount === 0) {
-    throw new NotFoundError('Contest not found', { contestId })
+    throw new NotFoundError('Contest not found')
   }
 
   await refreshCache(`contest:${contestId}`, contest)
@@ -59,7 +59,7 @@ export async function fetchContestProblemList (contestId: string): Promise<Conet
 
   const problemList = await contestProblemListCollection.findOne({ id: contestId })
   if (problemList == null) {
-    throw new NotFoundError('Contest not found', { contestId })
+    throw new NotFoundError('Contest not found')
   }
 
   await setCache(`problem-list:${contestId}`, problemList)
@@ -74,12 +74,12 @@ export async function syncProblemToContest (contestId: string, problemId: string
     await session.withTransaction(async () => {
       const contest = await contestCollection.findOne({ id: contestId }, { session })
       if (contest == null) {
-        throw new NotFoundError('Contest not found', { contestId })
+        throw new NotFoundError('Contest not found')
       }
 
       const problem = await domainProblemCollection.findOne({ id: problemId, domainId: contest.domainId }, { session })
       if (problem == null) {
-        throw new NotFoundError('Problem not found', { problemId })
+        throw new NotFoundError('Problem not found')
       }
 
       const contestProblem: ContestProblem = { ...problem, obsolete: false, contestId }
@@ -107,7 +107,7 @@ export async function removeProblemFromContest (contestId: string, problemId: st
     await session.withTransaction(async () => {
       const contestProblem = await contestProblemCollection.findOneAndDelete({ id: problemId, contestId })
       if (contestProblem.value == null) {
-        throw new NotFoundError('Problem not found', { problemId })
+        throw new NotFoundError('Problem not found')
       }
 
       const problemList = await contestProblemListCollection.findOneAndUpdate(

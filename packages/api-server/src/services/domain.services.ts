@@ -15,7 +15,7 @@ export async function createDomain (newDomain: NewDomain): Promise<{ domainId: s
 export async function updateDomain (domainId: string, domain: Partial<NewDomain>): Promise<{ modified: boolean }> {
   const { matchedCount, modifiedCount } = await domainCollection.updateOne({ id: domainId }, { $set: domain })
   if (matchedCount === 0) {
-    throw new NotFoundError('Domain not found', { domainId })
+    throw new NotFoundError('Domain not found')
   }
 
   return { modified: modifiedCount > 0 }
@@ -29,13 +29,13 @@ export async function addOrUpdateDomainMember (domainId: string, userId: string,
       const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId },
         { $set: { [`scopes.${domainId}`]: scopes } }, { session })
       if (matchedUser === 0) {
-        throw new NotFoundError('User not found', { userId })
+        throw new NotFoundError('User not found')
       }
       modifiedCount += Math.floor(modifiedUser)
 
       const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ id: domainId }, { $addToSet: { members: userId } }, { session })
       if (matchedDomain === 0) {
-        throw new NotFoundError('Domain not found', { domainId })
+        throw new NotFoundError('Domain not found')
       }
       modifiedCount += Math.floor(modifiedDomain)
 
@@ -56,13 +56,13 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
       const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId },
         { $unset: { [`scopes.${domainId}`]: '' } }, { session })
       if (matchedUser === 0) {
-        throw new NotFoundError('User not found', { userId })
+        throw new NotFoundError('User not found')
       }
       modifiedCount += Math.floor(modifiedUser)
 
       const { matchedCount: matchedDomain, modifiedCount: modifiedDomain } = await domainCollection.updateOne({ id: domainId }, { $pull: { members: userId } }, { session })
       if (matchedDomain === 0) {
-        throw new NotFoundError('Domain not found', { domainId })
+        throw new NotFoundError('Domain not found')
       }
       modifiedCount += Math.floor(modifiedDomain)
 
@@ -79,7 +79,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
 export async function fetchDomain (domainId: string): Promise<Domain> {
   const domain = await domainCollection.findOne({ id: domainId })
   if (domain == null) {
-    throw new NotFoundError('Domain not found', { domainId })
+    throw new NotFoundError('Domain not found')
   }
 
   return domain
@@ -101,7 +101,7 @@ export async function fetchDomainMembers (domainId: string): Promise<DomainMembe
     }
   ]).toArray())[0]
   if (domain == null) {
-    throw new NotFoundError('Domain not found', { domainId })
+    throw new NotFoundError('Domain not found')
   }
 
   return domain.members

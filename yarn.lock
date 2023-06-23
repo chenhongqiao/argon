@@ -22,6 +22,7 @@ __metadata:
   dependencies:
     "@argoncs/common": "workspace:*"
     "@argoncs/types": "workspace:*"
+    "@chenhongqiao/fastify-http-errors-enhanced": ^4.1.0
     "@fastify/auth": ^4.1.0
     "@fastify/cookie": ^8.3.0
     "@fastify/sensible": ^5.1.1
@@ -29,7 +30,6 @@ __metadata:
     "@sendgrid/mail": ^7.7.0
     "@sinclair/typebox": ^0.28.18
     fastify: ^4.18.0
-    fastify-http-errors-enhanced: ^4.1.0
     http-errors-enhanced: ^1.0.13
     nanoid: ^4.0.2
     typescript: ^5.1.3
@@ -93,17 +93,28 @@ __metadata:
   resolution: "@argoncs/upload-server@workspace:packages/upload-server"
   dependencies:
     "@argoncs/common": "workspace:*"
+    "@chenhongqiao/fastify-http-errors-enhanced": ^4.1.0
     "@fastify/auth": ^4.3.0
     "@fastify/multipart": ^6.0.1
     "@fastify/sensible": ^5.1.1
     "@fastify/type-provider-typebox": ^3.2.0
     "@sinclair/typebox": ^0.28.18
     fastify: ^4.18.0
-    fastify-http-errors-enhanced: ^4.1.0
     http-errors-enhanced: ^1.0.13
     typescript: ^5.1.3
   languageName: unknown
   linkType: soft
+
+"@chenhongqiao/fastify-http-errors-enhanced@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@chenhongqiao/fastify-http-errors-enhanced@npm:4.1.0"
+  dependencies:
+    ajv: ^8.11.2
+    fastify-plugin: ^4.3.0
+    http-errors-enhanced: ^1.0.13
+  checksum: f8f785143b8a58a7d27d17fa593eb83a06128b72b025f9e3bb4a032b5ff1c2436b3936dc45f00bf05dc6bcf05d7141cb5919b3618081d1eb4715109780aebd66
+  languageName: node
+  linkType: hard
 
 "@eslint/eslintrc@npm:^1.3.3":
   version: 1.3.3
@@ -1574,17 +1585,6 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: d32b22005504eeb207249bf40dc82d0994b5bb9ca9dcc731d335a1f425e47fe085b3cace3cf9d32172dd1a5544193c49e8615ca95b4bf95a4a4920a226b06d80
-  languageName: node
-  linkType: hard
-
-"fastify-http-errors-enhanced@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "fastify-http-errors-enhanced@npm:4.1.0"
-  dependencies:
-    ajv: ^8.11.2
-    fastify-plugin: ^4.3.0
-    http-errors-enhanced: ^1.0.13
-  checksum: 0e2cc95c97c5d14583e1233ca11975f0b3ff2cc029b13188ac2694648e1c0a58684d7ed82347cc87142d745aecaa05fafd52d5ae00e3a1ff0e38c9ba20f12dcc
   languageName: node
   linkType: hard
 

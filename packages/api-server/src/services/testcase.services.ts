@@ -10,10 +10,10 @@ export async function testcaseExists (problemId: string, domainId: string, filen
     const stat = await minio.statObject('testcases', objectName, { versionId })
 
     if (stat == null || stat.versionId !== versionId) {
-      throw new NotFoundError('One of the testcases not found', { domainId, problemId, filename, versionId })
+      throw new NotFoundError('One of the testcases not found')
     }
   } catch (err) {
-    throw new NotFoundError('One of the testcases not found', { domainId, problemId, filename, versionId })
+    throw new NotFoundError('One of the testcases not found')
   }
 }
 

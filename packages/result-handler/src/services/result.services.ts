@@ -92,7 +92,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
 
   if (submission.status === SubmissionStatus.Grading) {
     if (submission.testcases[testcaseIndex] == null) {
-      throw new NotFoundError('No testcase found at the given index', { testcaseIndex, submissionId })
+      throw new NotFoundError('No testcase found at the given index')
     }
     const score = gradingResult.status === GradingStatus.Accepted ? submission.testcases[testcaseIndex].points : 0
     submission.testcases[testcaseIndex].result = gradingResult

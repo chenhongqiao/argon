@@ -27,7 +27,7 @@ export async function updateDomainProblem (problemId: string, domainId: string, 
 
   const { matchedCount, modifiedCount } = await domainProblemCollection.updateOne({ id: problemId, domainId }, { $set: problem })
   if (matchedCount === 0) {
-    throw new NotFoundError('Problem not found', { problemId, domainId })
+    throw new NotFoundError('Problem not found')
   }
 
   return { modified: modifiedCount > 0 }
@@ -40,7 +40,7 @@ export async function deleteDomainProblem (problemId: string, domainId: string):
       const { deletedCount } = await domainProblemCollection.deleteOne({ id: problemId, domainId }, { session })
 
       if (deletedCount === 0) {
-        throw new NotFoundError('Problem not found', { problemId, domainId })
+        throw new NotFoundError('Problem not found')
       }
 
       await testcaseUploadCollection.deleteMany({ problemId })

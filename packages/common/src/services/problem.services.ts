@@ -5,7 +5,7 @@ import { contestProblemCollection, domainProblemCollection } from '../connection
 export async function fetchDomainProblem (problemId: string, domainId: string): Promise<Problem> {
   const problem = await domainProblemCollection.findOne({ id: problemId, domainId })
   if (problem == null) {
-    throw new NotFoundError('Problem not found', { problemId, domainId })
+    throw new NotFoundError('Problem not found')
   }
   return problem
 }
@@ -13,7 +13,7 @@ export async function fetchDomainProblem (problemId: string, domainId: string): 
 export async function fetchContestProblem (problemId: string, contestId: string): Promise<ContestProblem> {
   const problem = await contestProblemCollection.findOne({ id: problemId, contestId })
   if (problem == null) {
-    throw new NotFoundError('Problem not found', { problemId, contestId })
+    throw new NotFoundError('Problem not found')
   }
   return problem
 }

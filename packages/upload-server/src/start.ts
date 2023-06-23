@@ -1,6 +1,6 @@
 import { fastify } from 'fastify'
 
-import fastifyHttpErrorsEnhanced from 'fastify-http-errors-enhanced'
+import fastifyHttpErrorsEnhanced from '@chenhongqiao/fastify-http-errors-enhanced'
 import fastifyAuth from '@fastify/auth'
 
 import { testcaseRoutes } from './routes/testcase.routes.js'
@@ -31,6 +31,7 @@ export async function startUploadServer (): Promise<void> {
 
   await app.register(fastifyHttpErrorsEnhanced, {
     handle404Errors: false,
+    convertValidationErrors: true,
     preHandler (err: any) {
       if (!('statusCode' in err) && !('validation' in err)) {
         sentry.captureException(err)
