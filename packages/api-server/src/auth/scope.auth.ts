@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { ForbiddenError, UnauthorizedError } from 'http-errors-enhanced'
+import { ForbiddenError, InternalServerError, UnauthorizedError } from 'http-errors-enhanced'
+import { fetchContest } from '../services/contest.services.js'
 
 export function verifyAnyScope (scopes: string[]) {
   return function handler (request: FastifyRequest, reply: FastifyReply, done) {
@@ -20,25 +21,29 @@ export function verifyAnyScope (scopes: string[]) {
 }
 
 export function verifyDomainScope (scopes: string[]) {
-  return function handler (request: FastifyRequest, reply: FastifyReply, done) {
+  return async function handler (request: FastifyRequest, reply: FastifyReply) {
     if (request.auth == null) {
-      return done(new ForbiddenError('User not logged in'))
+      return new ForbiddenError('User not logged in')
     }
 
-    // @ts-expect-error: url of domain resources always includes domainId as a parameter.
-    const domainId = request.params.domainId
+    let { domainId } = request.params as { domainId: string | undefined }
+    const { contestId } = request.params as { contestId: string | undefined }
+
     if (domainId == null || typeof domainId !== 'string') {
-      return done(new ForbiddenError('Resource not associated with a domain'))
+      if (contestId != null && typeof contestId === 'string') {
+        const contest = await fetchContest(contestId)
+        domainId = contest.domainId
+      } else {
+        return new InternalServerError('Resource not associated with a domain')
+      }
     }
 
     const userScopes = request.auth.scopes
 
     scopes.forEach((scope) => {
-      if (userScopes[domainId] == null || !Boolean(userScopes[domainId].includes(scope))) {
-        return done(new ForbiddenError('Insufficient domain scope'))
+      if (userScopes[domainId as string] == null || !Boolean(userScopes[domainId as string].includes(scope))) {
+        return new ForbiddenError('Insufficient domain scope')
       }
     })
-
-    done()
   }
 }
