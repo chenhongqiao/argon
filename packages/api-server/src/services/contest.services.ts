@@ -1,5 +1,5 @@
-import { contestCollection, contestProblemListCollection, mongoClient } from '@argoncs/common'
-import { ConetstProblemList, Contest, NewContest } from '@argoncs/types'
+import { contestCollection, contestProblemCollection, contestProblemListCollection, domainProblemCollection, mongoClient } from '@argoncs/common'
+import { ConetstProblemList, Contest, ContestProblem, NewContest } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 import { fetchCache, refreshCache, setCache } from './cache.services.js'
@@ -65,4 +65,60 @@ export async function fetchContestProblemList (contestId: string): Promise<Conet
   await setCache(`problem-list:${contestId}`, problemList)
 
   return problemList
+}
+
+export async function syncProblemToContest (contestId: string, problemId: string): Promise<{ modified: boolean }> {
+  const session = mongoClient.startSession()
+  let modifiedCount = 0
+  try {
+    await session.withTransaction(async () => {
+      const contest = await contestCollection.findOne({ id: contestId }, { session })
+      if (contest == null) {
+        throw new NotFoundError('Contest not found', { contestId })
+      }
+
+      const problem = await domainProblemCollection.findOne({ id: problemId, domainId: contest.domainId }, { session })
+      if (problem == null) {
+        throw new NotFoundError('Problem not found', { problemId })
+      }
+
+      const contestProblem: ContestProblem = { ...problem, obsolete: false, contestId }
+      const { modifiedCount: modifiedProblem } = await contestProblemCollection.replaceOne({ id: problemId, contestId }, contestProblem, { upsert: true })
+      modifiedCount += Math.floor(modifiedProblem)
+
+      const { modifiedCount: modifiedList } = await contestProblemListCollection.updateOne(
+        { id: contestId },
+        { $addToSet: { problems: { id: contestProblem.id, name: contestProblem.name } } }
+      )
+      modifiedCount += Math.floor(modifiedList)
+
+      const problemList = await contestProblemListCollection.findOne({ id: contestId }) as ConetstProblemList
+      await refreshCache(`problem-list:${contestId}`, problemList)
+    })
+  } finally {
+    await session.endSession()
+  }
+  return { modified: modifiedCount > 0 }
+}
+
+export async function removeProblemFromContest (contestId: string, problemId: string): Promise<void> {
+  const session = mongoClient.startSession()
+  try {
+    await session.withTransaction(async () => {
+      const contestProblem = await contestProblemCollection.findOneAndDelete({ id: problemId, contestId })
+      if (contestProblem.value == null) {
+        throw new NotFoundError('Problem not found', { problemId })
+      }
+
+      const problemList = await contestProblemListCollection.findOneAndUpdate(
+        { id: contestId },
+        { $pull: { problems: { id: contestProblem.value.id, name: contestProblem.value.name } } }
+      )
+
+      await refreshCache(`problem-list:${contestId}`, problemList)
+      // TODO: remove all related submissions
+    })
+  } finally {
+    await session.endSession()
+  }
 }
