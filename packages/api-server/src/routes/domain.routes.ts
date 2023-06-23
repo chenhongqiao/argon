@@ -131,7 +131,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
     '/:problemId',
     {
       schema: {
-        body: Type.Partial(NewProblemSchema),
+        body: NewProblemSchema,
         response: {
           200: Type.Object({ modified: Type.Boolean() }),
           401: unauthorizedSchema,
@@ -356,7 +356,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
     '/:domainId',
     {
       schema: {
-        body: Type.Partial(NewDomainSchema),
+        body: NewDomainSchema,
         params: Type.Object({ domainId: Type.String() }),
         response: {
           200: Type.Object({ modified: Type.Boolean() }),
