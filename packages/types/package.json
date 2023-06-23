@@ -14,10 +14,10 @@
     "prepack": "tsc --build ."
   },
   "devDependencies": {
-    "typescript": "^4.3.2"
+    "typescript": "^5.1.3"
   },
   "dependencies": {
-    "@sinclair/typebox": "^0.25.0"
+    "@sinclair/typebox": "^0.28.18"
   },
   "type": "module"
 }

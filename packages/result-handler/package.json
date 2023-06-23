@@ -14,8 +14,7 @@
     "prepack": "tsc --build ."
   },
   "devDependencies": {
-    "@types/long": "^4.0.2",
-    "typescript": "^4.3.2"
+    "typescript": "^5.1.3"
   },
   "dependencies": {
     "@argoncs/common": "workspace:*",
