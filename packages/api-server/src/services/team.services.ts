@@ -16,9 +16,7 @@ export async function createTeam (newTeam: NewTeam, contestId: string, userId: s
   try {
     await session.withTransaction(async () => {
       await teamCollection.insertOne(team, { session })
-      // @ts-expect-error
       const { matchedCount: matchedUser } = await userCollection.updateOne({ id: userId },
-      // @ts-expect-error
         { $set: { [`teams.${contestId}`]: id } }, { session })
       if (matchedUser === 0) {
         throw new NotFoundError('User not found', { userId })

@@ -1,4 +1,4 @@
-import { ConetstProblemList, Contest, ContestProblem, ContestSubmission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
+import { ConetstProblemList, Contest, ContestProblem, Submission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, User, UserSession } from '@argoncs/types'
 import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
 
 interface Index {
@@ -103,7 +103,7 @@ export let mongoDB: Db
 export let domainCollection: Collection<Domain>
 export let userCollection: Collection<User>
 export let domainProblemCollection: Collection<Problem>
-export let submissionCollection: Collection<ContestSubmission | TestingSubmission>
+export let submissionCollection: Collection<Submission>
 export let sessionCollection: Collection<UserSession>
 export let emailVerificationCollection: Collection<EmailVerification>
 export let testcaseUploadCollection: Collection<TestcaseUpload>

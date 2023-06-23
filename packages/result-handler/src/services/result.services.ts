@@ -1,5 +1,5 @@
 import { fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
-import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus, SubmissionType } from '@argoncs/types'
+import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
 
@@ -9,7 +9,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
   if (submission.status === SubmissionStatus.Compiling) {
     if (compileResult.status === CompilingStatus.Succeeded) {
       let problem: Problem
-      if (submission.type === SubmissionType.Testing) {
+      if (submission.contestId == null) {
         problem = await fetchDomainProblem(submission.problemId, submission.domainId)
       } else {
         // Fetch Contest Problem
@@ -44,6 +44,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       })
 
       await submissionCollection.updateOne({ id: submissionId }, {
+        // @ts-expect-error
         $set: {
           status: SubmissionStatus.Grading,
           gradedCases: 0,
@@ -78,6 +79,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
           status: SubmissionStatus.Graded
         },
         $unset: {
+          // @ts-expect-error
           gradedCases: ''
         }
       })

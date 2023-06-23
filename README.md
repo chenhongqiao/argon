@@ -39,4 +39,4 @@ Utilities and libraries used by both the server and the judger to interact with 
 
 TeamsCode is a student organization and this project is developed entirely by high school students. We developed this project with the hope that it can benefit the community while serving as TeamsCode's contest server.
 
-We are looking for people to join our team! If you are a high school student and knows web development, please email us at contact@teamscode.org for more info!
+We are looking for people to join our team! If you are a high school student and knows web development, please email us at [contact@teamscode.org](mailto:contact@teamscode.org) for more info!

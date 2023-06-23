@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { AuthenticationProfile, ContestSchema, ContestSubmissionSchema, DomainDetailSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema, SubmissionType, TestingSubmissionSchema } from '@argoncs/types'
+import { AuthenticationProfile, ContestSchema, SubmissionSchema, DomainDetailSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema } from '@argoncs/types'
 import { addOrUpdateDomainMember, createDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services.js'
 import { verifySuperAdmin } from '../auth/role.auth.js'
 import { verifyDomainScope } from '../auth/scope.auth.js'
@@ -250,7 +250,7 @@ async function domainSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promis
       schema: {
         params: Type.Object({ domainId: Type.String(), submissionId: Type.String() }),
         response: {
-          200: Type.Union([TestingSubmissionSchema, ContestSubmissionSchema]),
+          200: SubmissionSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -262,7 +262,7 @@ async function domainSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promis
       const { domainId, submissionId } = request.params
       const submission = await fetchSubmission(submissionId)
 
-      if (submission.type !== SubmissionType.Testing || submission.domainId !== domainId) {
+      if (submission.domainId !== domainId) {
         throw new NotFoundError('Submission not found')
       }
 

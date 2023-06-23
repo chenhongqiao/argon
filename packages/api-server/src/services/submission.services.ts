@@ -3,8 +3,7 @@ import {
   JudgerTaskType,
   NewSubmission,
   SubmissionStatus,
-  TestingSubmission,
-  SubmissionType
+  Submission
 } from '@argoncs/types'
 import { rabbitMQ, judgerExchange, judgerTasksKey, fetchSubmission, submissionCollection } from '@argoncs/common'
 import { languageConfigs } from '../../configs/language.configs.js'
@@ -13,13 +12,13 @@ import { nanoid } from '../utils/nanoid.utils.js'
 
 export async function createTestingSubmission (submission: NewSubmission, domainId: string, problemId: string, userId: string): Promise<{ submissionId: string }> {
   const submissionId = await nanoid()
-  const pendingSubmission: TestingSubmission = {
+  const pendingSubmission: Submission = {
     ...submission,
     id: submissionId,
     status: SubmissionStatus.Compiling,
     domainId,
     problemId,
-    type: SubmissionType.Testing
+    userId
   }
 
   await submissionCollection.insertOne(pendingSubmission)
