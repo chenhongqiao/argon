@@ -8,7 +8,7 @@ export function verifySuperAdmin (request: FastifyRequest, reply: FastifyReply, 
   }
 
   if (request.auth.role !== UserRole.Admin) {
-    return done(new ForbiddenError('Insufficient user role privilege (needs to be admin)'))
+    return done(new ForbiddenError('User needs admin privilege to perform this action'))
   }
 
   done()

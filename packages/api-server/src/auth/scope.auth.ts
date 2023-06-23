@@ -23,7 +23,7 @@ export function verifyAnyScope (scopes: string[]) {
 export function verifyDomainScope (scopes: string[]) {
   return async function handler (request: FastifyRequest, reply: FastifyReply) {
     if (request.auth == null) {
-      return new ForbiddenError('User not logged in')
+      throw new ForbiddenError('User not logged in')
     }
 
     let { domainId } = request.params as { domainId: string | undefined }
@@ -34,7 +34,7 @@ export function verifyDomainScope (scopes: string[]) {
         const contest = await fetchContest(contestId)
         domainId = contest.domainId
       } else {
-        return new InternalServerError('Resource not associated with a domain')
+        throw new InternalServerError('Resource not associated with a domain')
       }
     }
 
@@ -42,7 +42,7 @@ export function verifyDomainScope (scopes: string[]) {
 
     scopes.forEach((scope) => {
       if (userScopes[domainId as string] == null || !Boolean(userScopes[domainId as string].includes(scope))) {
-        return new ForbiddenError('Insufficient domain scope')
+        throw new ForbiddenError('Insufficient domain scope')
       }
     })
   }
