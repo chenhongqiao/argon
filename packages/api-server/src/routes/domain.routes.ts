@@ -7,7 +7,7 @@ import { FastifyTypeBox } from '../types.js'
 import { userAuthHook } from '../hooks/authentication.hooks.js'
 import { createDomainProblem, deleteDomainProblem, fetchDomainProblems, updateDomainProblem } from '../services/problem.services.js'
 import { fetchDomainProblem, fetchSubmission } from '@argoncs/common'
-import { createTestingSubmission, queueSubmission } from '../services/submission.services.js'
+import { createSubmission } from '../services/submission.services.js'
 import { createUploadSession } from '../services/testcase.services.js'
 import { badRequestSchema, forbiddenSchema, MethodNotAllowedError, methodNotAllowedSchema, NotFoundError, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { createContest, fetchDomainContests } from '../services/contest.services.js'
@@ -243,8 +243,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       if (problem.testcases == null) {
         throw new MethodNotAllowedError('Testcases must be uploaded before a problem can be tested')
       }
-      const created = await createTestingSubmission(submission, problem.domainId, problem.id, (request.auth as AuthenticationProfile).id)
-      await queueSubmission(created.submissionId)
+      const created = await createSubmission(submission, problem.domainId, problem.id, (request.auth as AuthenticationProfile).id)
       return await reply.status(202).send(created)
     }
   )
