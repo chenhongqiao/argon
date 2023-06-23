@@ -2,7 +2,7 @@ import { Static, Type } from '@sinclair/typebox'
 
 export const NewTeamSchema = Type.Object({
   name: Type.String()
-})
+}, { additionalProperties: false })
 export type NewTeam = Static<typeof NewTeamSchema>
 
 export const TeamSchema = Type.Intersect([NewTeamSchema, Type.Object({

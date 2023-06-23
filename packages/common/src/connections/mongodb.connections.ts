@@ -1,4 +1,4 @@
-import { Contest, ContestProblem, ContestSubmission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
+import { ConetstProblemList, Contest, ContestProblem, ContestSubmission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, TestingSubmission, User, UserSession } from '@argoncs/types'
 import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
 
 interface Index {
@@ -66,7 +66,7 @@ const collections: CollectionIndex[] = [
     name: 'contests',
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
-      { keys: { domainId: 1 } }
+      { keys: { domainId: 1, _id: -1 }, options: { unique: true } }
     ]
   },
   {
@@ -74,6 +74,12 @@ const collections: CollectionIndex[] = [
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
       { keys: { contestId: 1, id: 1 }, options: { unique: true } }
+    ]
+  },
+  {
+    name: 'contestProblemLists',
+    indexes: [
+      { keys: { id: 1 }, options: { unique: true } }
     ]
   },
   {
@@ -105,6 +111,7 @@ export let contestCollection: Collection<Contest>
 export let teamCollection: Collection<Team>
 export let teamInvitationCollection: Collection<TeamInvitation>
 export let contestProblemCollection: Collection<ContestProblem>
+export let contestProblemListCollection: Collection<ConetstProblemList>
 
 export async function connectMongoDB (url: string): Promise<void> {
   mongoClient = new MongoClient(url)
@@ -132,6 +139,7 @@ export async function connectMongoDB (url: string): Promise<void> {
 
   contestCollection = mongoDB.collection('contests')
   contestProblemCollection = mongoDB.collection('contestProblems')
+  contestProblemListCollection = mongoDB.collection('contestProblemList')
 
   teamCollection = mongoDB.collection('teams')
   teamInvitationCollection = mongoDB.collection('teamInvitations')

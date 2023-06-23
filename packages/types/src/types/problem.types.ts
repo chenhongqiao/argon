@@ -28,7 +28,7 @@ export const ProblemSchema = Type.Intersect([NewProblemSchema, Type.Object({
 })])
 export type Problem = Static<typeof ProblemSchema>
 
-export const ContestProblemSchema = Type.Intersect([ProblemSchema, Type.Object({ contestId: Type.String() })])
+export const ContestProblemSchema = Type.Intersect([ProblemSchema, Type.Object({ contestId: Type.String(), obsolete: Type.Boolean() })])
 export type ContestProblem = Static<typeof ContestProblemSchema>
 
 export interface TestcaseUpload {

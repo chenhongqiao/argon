@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile, NewUserSchema } from '@argoncs/types'
 import { completeVerification, fetchUser, initiateVerification, registerUser } from '../services/user.services.js'
-import { verifyUserOwnsership } from '../auth/ownership.auth.js'
+import { verifyUserOwnership } from '../auth/ownership.auth.js'
 import { FastifyTypeBox } from '../types.js'
 import { userAuthHook } from '../hooks/authentication.hooks.js'
 import { conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
@@ -38,7 +38,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
         },
         params: Type.Object({ userId: Type.String() })
       },
-      onRequest: [userAuthHook, profileRoutes.auth([verifyUserOwnsership]) as any]
+      onRequest: [userAuthHook, profileRoutes.auth([verifyUserOwnership]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params
@@ -60,7 +60,7 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
           403: forbiddenSchema
         }
       },
-      onRequest: [userAuthHook, verificationRoutes.auth([verifyUserOwnsership]) as any]
+      onRequest: [userAuthHook, verificationRoutes.auth([verifyUserOwnership]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params
