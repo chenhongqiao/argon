@@ -1,4 +1,4 @@
-import { NewDomain, Domain, DomainDetail } from '@argoncs/types'
+import { NewDomain, Domain, DomainMembers } from '@argoncs/types'
 import { mongoClient, domainCollection, userCollection } from '@argoncs/common'
 import { NotFoundError } from 'http-errors-enhanced'
 
@@ -85,7 +85,7 @@ export async function fetchDomain (domainId: string): Promise<Domain> {
   return domain
 }
 
-export async function fetchDomainDetail (domainId: string): Promise<DomainDetail> {
+export async function fetchDomainMembers (domainId: string): Promise<DomainMembers> {
   const domain = (await domainCollection.aggregate([
     { $match: { id: domainId } },
     {
@@ -99,10 +99,10 @@ export async function fetchDomainDetail (domainId: string): Promise<DomainDetail
         ]
       }
     }
-  ]).toArray())[0] as DomainDetail | undefined
+  ]).toArray())[0]
   if (domain == null) {
     throw new NotFoundError('Domain not found', { domainId })
   }
 
-  return domain
+  return domain.members
 }

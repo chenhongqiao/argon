@@ -13,7 +13,5 @@ export const DomainSchema = Type.Intersect([NewDomainSchema, Type.Object({
 })])
 export type Domain = Static<typeof DomainSchema>
 
-export const DomainDetailSchema = Type.Intersect([Type.Omit(DomainSchema, ['members']), Type.Object({
-  members: Type.Array(PublicUserProfileSchema)
-})])
-export type DomainDetail = Static<typeof DomainDetailSchema>
+export const DomainMembersSchema = Type.Array(PublicUserProfileSchema)
+export type DomainMembers = Static<typeof DomainMembersSchema>

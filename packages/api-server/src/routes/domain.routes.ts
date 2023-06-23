@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
-import { AuthenticationProfile, ContestSchema, SubmissionSchema, DomainDetailSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema } from '@argoncs/types'
-import { addOrUpdateDomainMember, createDomain, fetchDomainDetail, removeDomainMember, updateDomain } from '../services/domain.services.js'
+import { AuthenticationProfile, ContestSchema, SubmissionSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema, DomainMembersSchema, DomainSchema } from '@argoncs/types'
+import { addOrUpdateDomainMember, createDomain, fetchDomain, fetchDomainMembers, removeDomainMember, updateDomain } from '../services/domain.services.js'
 import { verifySuperAdmin } from '../auth/role.auth.js'
 import { verifyDomainScope } from '../auth/scope.auth.js'
 import { FastifyTypeBox } from '../types.js'
@@ -35,6 +35,24 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
       const { userId, scopes } = request.body
       await addOrUpdateDomainMember(domainId, userId, scopes)
       return await reply.status(204).send()
+    }
+  )
+
+  memberRoutes.get(
+    '/',
+    {
+      schema: {
+        params: Type.Object({ domainId: Type.String() }),
+        response: {
+          200: DomainMembersSchema,
+          404: notFoundSchema
+        }
+      }
+    },
+    async (request, reply) => {
+      const { domainId } = request.params
+      const members = await fetchDomainMembers(domainId)
+      return members
     }
   )
 
@@ -341,15 +359,15 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
       schema: {
         params: Type.Object({ domainId: Type.String() }),
         response: {
-          200: DomainDetailSchema,
+          200: DomainSchema,
           404: notFoundSchema
         }
       }
     },
     async (request, reply) => {
       const { domainId } = request.params
-      const domainDetail = await fetchDomainDetail(domainId)
-      return domainDetail
+      const domain = await fetchDomain(domainId)
+      return domain
     })
 
   routes.put(
