@@ -36,14 +36,16 @@ export async function updateDomainProblem (problemId: string, domainId: string, 
 export async function deleteDomainProblem (problemId: string, domainId: string): Promise<void> {
   const session = mongoClient.startSession()
   try {
-    const { deletedCount } = await domainProblemCollection.deleteOne({ id: problemId, domainId }, { session })
+    await session.withTransaction(async () => {
+      const { deletedCount } = await domainProblemCollection.deleteOne({ id: problemId, domainId }, { session })
 
-    if (deletedCount === 0) {
-      throw new NotFoundError('Problem not found', { problemId, domainId })
-    }
+      if (deletedCount === 0) {
+        throw new NotFoundError('Problem not found', { problemId, domainId })
+      }
 
-    await testcaseUploadCollection.deleteMany({ problemId })
-    await submissionCollection.deleteMany({ problemId })
+      await testcaseUploadCollection.deleteMany({ problemId })
+      await submissionCollection.deleteMany({ problemId })
+    })
   } finally {
     await session.endSession()
   }

@@ -90,14 +90,18 @@ export async function completeTeamInvitation (invitationId: string, userId: stri
 export async function makeTeamCaptain (teamId: string, contestId: string, userId: string): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
   try {
-    const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
-    if (team == null) {
-      throw new NotFoundError('Team not found', { teamId })
-    }
-    if (team.members.find((value) => value === userId) == null) {
-      throw new NotFoundError('User is not part of the team', { userId, teamId })
-    }
-    const { modifiedCount } = await teamCollection.updateOne({ id: teamId, contestId }, { $set: { captain: userId } }, { session })
+    let modifiedCount = 0
+    await session.withTransaction(async () => {
+      const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
+      if (team == null) {
+        throw new NotFoundError('Team not found', { teamId })
+      }
+      if (team.members.find((value) => value === userId) == null) {
+        throw new NotFoundError('User is not part of the team', { userId, teamId })
+      }
+      const { modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $set: { captain: userId } }, { session })
+      modifiedCount += Math.floor(modifiedTeam)
+    })
     return { modified: modifiedCount > 0 }
   } finally {
     await session.endSession()
@@ -108,23 +112,24 @@ export async function removeTeamMember (teamId: string, contestId: string, userI
   const session = rootSession ?? mongoClient.startSession()
   let modifiedCount = 0
   try {
-    const { matchedCount: matchedTeam, modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $pull: { members: userId } }, { session })
-    if (matchedTeam === 0) {
-      throw new NotFoundError('Team not found', { teamId })
-    }
-    modifiedCount += Math.floor(modifiedTeam)
+    await session.withTransaction(async () => {
+      const { matchedCount: matchedTeam, modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $pull: { members: userId } }, { session })
+      if (matchedTeam === 0) {
+        throw new NotFoundError('Team not found', { teamId })
+      }
+      modifiedCount += Math.floor(modifiedTeam)
 
-    const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
-    if (team == null) {
-      throw new NotFoundError('Team not found', { teamId })
-    }
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId }, { $unset: { [`members.${team.contestId}`]: '' } }, { session })
-    if (matchedUser === 0) {
-      throw new NotFoundError('User not found', { userId })
-    }
-    modifiedCount += Math.floor(modifiedUser)
-
+      const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
+      if (team == null) {
+        throw new NotFoundError('Team not found', { teamId })
+      }
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId }, { $unset: { [`members.${team.contestId}`]: '' } }, { session })
+      if (matchedUser === 0) {
+        throw new NotFoundError('User not found', { userId })
+      }
+      modifiedCount += Math.floor(modifiedUser)
+    })
     return { modified: modifiedCount > 0 }
   } finally {
     await session.endSession()
