@@ -4,8 +4,8 @@ import { ContestProblemSchema } from './problem.types.js'
 export const NewContestSchema = Type.Object({
   name: Type.String(),
   description: Type.String(),
-  startTime: Type.Date(),
-  endTime: Type.Date(),
+  startTime: Type.Number(),
+  endTime: Type.Number(),
   teamSize: Type.Number()
 }, { additionalProperties: false })
 export type NewContest = Static<typeof NewContestSchema>

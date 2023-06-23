@@ -35,5 +35,5 @@ export interface TestcaseUpload {
   id: string
   problemId: string
   domainId: string
-  createdAt: Date
+  createdAt: number
 }

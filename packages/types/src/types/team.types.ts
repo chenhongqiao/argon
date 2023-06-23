@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
+import { PublicUserProfileSchema } from './user.types.js'
 
 export const NewTeamSchema = Type.Object({
   name: Type.String()
@@ -13,10 +14,14 @@ export const TeamSchema = Type.Intersect([NewTeamSchema, Type.Object({
 })])
 export type Team = Static<typeof TeamSchema>
 
-export interface TeamInvitation {
-  id: string
-  teamId: string
-  userId: string
-  contestId: string
-  createdAt: Date
-}
+export const TeamInvitationSchema = Type.Object({
+  id: Type.String(),
+  teamId: Type.String(),
+  userId: Type.String(),
+  contestId: Type.String(),
+  createdAt: Type.Number()
+})
+export type TeamInvitation = Static<typeof TeamInvitationSchema>
+
+export const TeamMembersSchema = Type.Array(PublicUserProfileSchema)
+export type TeamMembers = Static<typeof TeamMembersSchema>

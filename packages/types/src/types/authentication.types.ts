@@ -15,5 +15,5 @@ export interface EmailVerification {
   id: string
   userId: string
   email: string
-  createdAt: Date
+  createdAt: number
 }

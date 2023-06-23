@@ -20,6 +20,6 @@ export async function testcaseExists (problemId: string, domainId: string, filen
 export async function createUploadSession (problemId: string, domainId: string): Promise<{ uploadId: string }> {
   const id = await longNanoId()
   await fetchDomainProblem(problemId, domainId) // Could throw not found
-  await testcaseUploadCollection.insertOne({ id, problemId, domainId, createdAt: new Date() })
+  await testcaseUploadCollection.insertOne({ id, problemId, domainId, createdAt: (new Date()).getTime() })
   return { uploadId: id }
 }

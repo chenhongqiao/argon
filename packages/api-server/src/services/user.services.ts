@@ -88,7 +88,7 @@ export async function initiateVerification (userId: string): Promise<void> {
     id,
     userId,
     email: newEmail,
-    createdAt: new Date()
+    createdAt: (new Date()).getTime()
   })
 
   const verificationEmail: emailClient.MailDataRequired = {
