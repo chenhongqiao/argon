@@ -5,7 +5,7 @@ import { fetchAuthenticationProfile, fetchSession } from '../services/user.servi
 export async function userAuthHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   const cookie = request.cookies.session_token
   if (cookie == null) {
-    throw new UnauthorizedError('Login is required to access this resource')
+    throw new UnauthorizedError('User not logged in')
   }
   const sessionId = request.unsignCookie(cookie)
   if (!sessionId.valid || sessionId.value == null) {

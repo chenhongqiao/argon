@@ -9,7 +9,7 @@ import { createDomainProblem, deleteDomainProblem, fetchDomainProblems, updateDo
 import { fetchDomainProblem, fetchSubmission } from '@argoncs/common'
 import { createTestingSubmission, queueSubmission } from '../services/submission.services.js'
 import { createUploadSession } from '../services/testcase.services.js'
-import { forbiddenSchema, MethodNotAllowedError, methodNotAllowedSchema, NotFoundError, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
+import { badRequestSchema, forbiddenSchema, MethodNotAllowedError, methodNotAllowedSchema, NotFoundError, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { createContest, fetchDomainContests } from '../services/contest.services.js'
 
 async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> {
@@ -23,6 +23,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
           scopes: Type.Array(Type.String())
         }),
         response: {
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -45,6 +46,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
         params: Type.Object({ domainId: Type.String() }),
         response: {
           200: DomainMembersSchema,
+          400: badRequestSchema,
           404: notFoundSchema
         }
       }
@@ -62,6 +64,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
       schema: {
         params: Type.Object({ domainId: Type.String(), userId: Type.String() }),
         response: {
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -86,6 +89,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
         }),
         response: {
           200: Type.Object({ modified: Type.Boolean() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -111,6 +115,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         params: Type.Object({ domainId: Type.String() }),
         response: {
           201: Type.Object({ problemId: Type.String() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema
         }
@@ -131,6 +136,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       schema: {
         response: {
           200: Type.Array(ProblemSchema),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema
         },
@@ -152,6 +158,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         body: NewProblemSchema,
         response: {
           200: Type.Object({ modified: Type.Boolean() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -175,6 +182,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       schema: {
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -196,6 +204,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
           200: ProblemSchema,
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -218,6 +227,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
         params: Type.Object({ domainId: Type.String(), problemId: Type.String() }),
         response: {
           202: Type.Object({ submissionId: Type.String() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema,
@@ -245,6 +255,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       schema: {
         response: {
           200: Type.Object({ uploadId: Type.String() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -269,6 +280,7 @@ async function domainSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promis
         params: Type.Object({ domainId: Type.String(), submissionId: Type.String() }),
         response: {
           200: SubmissionSchema,
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -297,6 +309,7 @@ async function domainContestRoutes (contestRoutes: FastifyTypeBox): Promise<void
         body: NewContestSchema,
         response: {
           201: Type.Object({ contestId: Type.String() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema
         }
@@ -318,6 +331,7 @@ async function domainContestRoutes (contestRoutes: FastifyTypeBox): Promise<void
         params: Type.Object({ domainId: Type.String() }),
         response: {
           200: Type.Array(ContestSchema),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema
         }
@@ -340,6 +354,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
         body: NewDomainSchema,
         response: {
           201: Type.Object({ domainId: Type.String() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema
         }
@@ -360,6 +375,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
         params: Type.Object({ domainId: Type.String() }),
         response: {
           200: DomainSchema,
+          400: badRequestSchema,
           404: notFoundSchema
         }
       }
@@ -378,6 +394,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
         params: Type.Object({ domainId: Type.String() }),
         response: {
           200: Type.Object({ modified: Type.Boolean() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema

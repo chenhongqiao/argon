@@ -4,7 +4,7 @@ import { completeVerification, fetchUser, initiateVerification, registerUser } f
 import { verifyUserOwnership } from '../auth/ownership.auth.js'
 import { FastifyTypeBox } from '../types.js'
 import { userAuthHook } from '../hooks/authentication.hooks.js'
-import { conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
+import { badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 
 async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> {
   profileRoutes.get(
@@ -13,6 +13,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
       schema: {
         response: {
           200: PublicUserProfileSchema,
+          400: badRequestSchema,
           404: notFoundSchema
         },
         params: Type.Object({ userId: Type.String() })
@@ -32,6 +33,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
       schema: {
         response: {
           200: PrivateUserProfileSchema,
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
           404: notFoundSchema
@@ -56,6 +58,7 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
       schema: {
         params: Type.Object({ userId: Type.String() }),
         response: {
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema
         }
@@ -78,6 +81,7 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
         }),
         response: {
           200: Type.Object({ modified: Type.Boolean() }),
+          400: badRequestSchema,
           401: unauthorizedSchema,
           403: notFoundSchema
         }
@@ -99,6 +103,7 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
         body: NewUserSchema,
         response: {
           201: Type.Object({ userId: Type.String() }),
+          400: badRequestSchema,
           409: conflictSchema
         }
       }
