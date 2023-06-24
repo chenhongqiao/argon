@@ -1,4 +1,4 @@
-import { fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
+import { fetchContestProblem, fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
 import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
@@ -12,15 +12,12 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       if (submission.contestId == null) {
         problem = await fetchDomainProblem(submission.problemId, submission.domainId)
       } else {
-        // Fetch Contest Problem
-        // TODO
+        problem = await fetchContestProblem(submission.problemId, submission.contestId)
       }
       const submissionTestcases: Array<{ points: number, input: { name: string, versionId: string }, output: { name: string, versionId: string } }> = []
-      // @ts-expect-error: Fetch contest problem not implemented
       if (problem.testcases == null) {
         return await completeGrading(submissionId, 'Problem does not have testcases')
       }
-      // @ts-expect-error: Fetch contest problem not implemented
       problem.testcases.forEach((testcase, index) => {
         const task: GradingTask = {
           constraints: problem.constraints,
@@ -83,6 +80,8 @@ export async function completeGrading (submissionId: string, log?: string): Prom
           gradedCases: ''
         }
       })
+
+      // TODO: update contest ranklist
     }
   }
 }
