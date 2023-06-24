@@ -65,24 +65,17 @@ export async function fetchTeamMembers (teamId: string, contestId: string): Prom
 }
 
 export async function createTeamInvitation (teamId: string, contestId: string, userId: string): Promise<{ invitationId: string }> {
-  const session = mongoClient.startSession()
   const id = await nanoid()
-  try {
-    await session.withTransaction(async () => {
-      const user = await userCollection.findOne({ id: userId }, { session })
-      if (user == null) {
-        throw new NotFoundError('User not found')
-      }
-      const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
-      if (team == null) {
-        throw new NotFoundError('Team not found')
-      }
-      await teamInvitationCollection.insertOne({ id, userId, teamId, contestId, createdAt: (new Date()).getTime() }, { session })
-    })
-    return { invitationId: id }
-  } finally {
-    await session.endSession()
+  const user = await userCollection.findOne({ id: userId })
+  if (user == null) {
+    throw new NotFoundError('User not found')
   }
+  const team = await teamCollection.findOne({ id: teamId, contestId })
+  if (team == null) {
+    throw new NotFoundError('Team not found')
+  }
+  await teamInvitationCollection.insertOne({ id, userId, teamId, contestId, createdAt: (new Date()).getTime() })
+  return { invitationId: id }
 }
 
 export async function completeTeamInvitation (invitationId: string, userId: string): Promise<{ modified: boolean }> {
