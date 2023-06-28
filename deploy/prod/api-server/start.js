@@ -1,3 +1,3 @@
-const { startAPIServer } = require('@argoncs/api-server')
-
-startAPIServer()
+import('@argoncs/api-server').then(mod => {
+  mod.startAPIServer()
+})

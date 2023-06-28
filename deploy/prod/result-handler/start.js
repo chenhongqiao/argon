@@ -1,3 +1,3 @@
-const { startHandler } = require('@argoncs/result-handler')
-
-startHandler()
+import('@argoncs/result-handler').then(mod => {
+  mod.startHandler()
+})

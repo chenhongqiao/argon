@@ -1,3 +1,3 @@
-const { startJudger } = require('@argoncs/judge-daemon')
-
-startJudger()
+import('@argoncs/judge-daemon').then(mod => {
+  mod.startJudger()
+})

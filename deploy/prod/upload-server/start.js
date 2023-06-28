@@ -1,3 +1,3 @@
-const { startUploadServer } = require('@argoncs/upload-server')
-
-startUploadServer()
+import('@argoncs/upload-server').then(mod => {
+  mod.startUploadServer()
+})
