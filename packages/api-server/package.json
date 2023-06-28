@@ -1,6 +1,6 @@
 {
   "name": "@argoncs/api-server",
-  "version": "1.0.0-re",
+  "version": "1.0.1-re",
   "description": "Argon Contest Server Backend",
   "author": "Harry Chen",
   "license": "AGPL-3.0",
