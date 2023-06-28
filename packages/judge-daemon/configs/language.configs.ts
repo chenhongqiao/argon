@@ -24,5 +24,18 @@ export const languageConfigs = {
       totalStorage: 262144,
       processes: 5
     }
+  },
+  Python: {
+    srcFile: 'program.py',
+    binaryFile: 'run.py',
+    displayName: 'Python 3',
+    compileCommand: '/usr/bin/cp {src_path} {binary_path}',
+    executeCommand: '/usr/bin/python3 {binary_path}',
+    constraints: {
+      time: 1000,
+      memory: 10240,
+      totalStorage: 10240,
+      processes: 1
+    }
   }
 }
