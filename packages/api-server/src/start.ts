@@ -60,7 +60,7 @@ export async function startAPIServer (): Promise<void> {
 
   try {
     const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')
-    await app.listen({ port })
+    await app.listen({ port, host: '0.0.0.0' })
   } catch (err) {
     sentry.captureException(err)
     app.log.error(err)

@@ -47,7 +47,7 @@ export async function startUploadServer (): Promise<void> {
 
   try {
     const port: number = parseInt(process.env.UPLOAD_SERVER_PORT ?? '8001')
-    await app.listen({ port })
+    await app.listen({ port, host: '0.0.0.0' })
   } catch (err) {
     sentry.captureException(err)
     app.log.error(err)
