@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ForbiddenError, InternalServerError, UnauthorizedError } from 'http-errors-enhanced'
-import { fetchContest } from '../services/contest.services.js'
 
 export function verifyAnyScope (scopes: string[]) {
   return function handler (request: FastifyRequest, reply: FastifyReply, done) {
@@ -26,22 +25,16 @@ export function verifyDomainScope (scopes: string[]) {
       throw new ForbiddenError('User not logged in')
     }
 
-    let { domainId } = request.params as { domainId: string | undefined }
-    const { contestId } = request.params as { contestId: string | undefined }
+    const { domainId } = request.params as { domainId: string | undefined }
 
     if (domainId == null || typeof domainId !== 'string') {
-      if (contestId != null && typeof contestId === 'string') {
-        const contest = await fetchContest(contestId)
-        domainId = contest.domainId
-      } else {
-        throw new InternalServerError('Resource not associated with a domain')
-      }
+      throw new InternalServerError('Resource not associated with a domain')
     }
 
     const userScopes = request.auth.scopes
 
     scopes.forEach((scope) => {
-      if (userScopes[domainId as string] == null || !Boolean(userScopes[domainId as string].includes(scope))) {
+      if (userScopes[domainId] == null || !Boolean(userScopes[domainId].includes(scope))) {
         throw new ForbiddenError('Insufficient domain scope')
       }
     })

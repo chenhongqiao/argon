@@ -1,4 +1,4 @@
-import { ConetstProblemList, Contest, ContestProblem, Submission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, User, UserSession } from '@argoncs/types'
+import { Submission, Domain, EmailVerification, Problem, TestcaseUpload, User, UserSession } from '@argoncs/types'
 import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
 
 interface Index {
@@ -61,40 +61,6 @@ const collections: CollectionIndex[] = [
       { keys: { problemId: 1 } },
       { keys: { createdAt: 1 }, options: { expireAfterSeconds: 900 } }
     ]
-  },
-  {
-    name: 'contests',
-    indexes: [
-      { keys: { id: 1 }, options: { unique: true } },
-      { keys: { domainId: 1, _id: -1 }, options: { unique: true } }
-    ]
-  },
-  {
-    name: 'contestProblems',
-    indexes: [
-      { keys: { id: 1 }, options: { unique: true } },
-      { keys: { contestId: 1, id: 1 }, options: { unique: true } }
-    ]
-  },
-  {
-    name: 'contestProblemLists',
-    indexes: [
-      { keys: { id: 1 }, options: { unique: true } }
-    ]
-  },
-  {
-    name: 'teams',
-    indexes: [
-      { keys: { contestId: 1, id: 1 }, options: { unique: true } }
-    ]
-  },
-  {
-    name: 'teamInvitations',
-    indexes: [
-      { keys: { userId: 1, id: 1 }, options: { unique: true } },
-      { keys: { teamId: 1 } },
-      { keys: { createdAt: 1 }, options: { expireAfterSeconds: 604800 } }
-    ]
   }
 ]
 
@@ -107,11 +73,6 @@ export let submissionCollection: Collection<Submission>
 export let sessionCollection: Collection<UserSession>
 export let emailVerificationCollection: Collection<EmailVerification>
 export let testcaseUploadCollection: Collection<TestcaseUpload>
-export let contestCollection: Collection<Contest>
-export let teamCollection: Collection<Team>
-export let teamInvitationCollection: Collection<TeamInvitation>
-export let contestProblemCollection: Collection<ContestProblem>
-export let contestProblemListCollection: Collection<ConetstProblemList>
 
 export async function connectMongoDB (url: string): Promise<void> {
   mongoClient = new MongoClient(url)
@@ -136,12 +97,5 @@ export async function connectMongoDB (url: string): Promise<void> {
   submissionCollection = mongoDB.collection('submissions')
 
   testcaseUploadCollection = mongoDB.collection('testcaseUploads')
-
-  contestCollection = mongoDB.collection('contests')
-  contestProblemCollection = mongoDB.collection('contestProblems')
-  contestProblemListCollection = mongoDB.collection('contestProblemList')
-
-  teamCollection = mongoDB.collection('teams')
-  teamInvitationCollection = mongoDB.collection('teamInvitations')
 }
 export { MongoServerError, ClientSession } from 'mongodb'

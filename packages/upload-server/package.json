@@ -1,6 +1,6 @@
 {
   "name": "@argoncs/upload-server",
-  "version": "0.2.1",
+  "version": "1.0.0-re",
   "description": "Argon Contest Server Upload Processor",
   "author": "Harry Chen",
   "license": "AGPL-3.0",

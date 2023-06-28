@@ -1,6 +1,6 @@
 {
   "name": "@argoncs/result-handler",
-  "version": "0.2.1",
+  "version": "1.0.0-re",
   "description": "Argon Contest Server Judging Result Handler",
   "author": "Harry Chen",
   "license": "AGPL-3.0",

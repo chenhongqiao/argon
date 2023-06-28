@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { AuthenticationProfile, ContestSchema, SubmissionSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema, DomainMembersSchema, DomainSchema } from '@argoncs/types'
+import { AuthenticationProfile, SubmissionSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema, DomainMembersSchema, DomainSchema } from '@argoncs/types'
 import { addOrUpdateDomainMember, createDomain, fetchDomain, fetchDomainMembers, removeDomainMember, updateDomain } from '../services/domain.services.js'
 import { verifySuperAdmin } from '../auth/role.auth.js'
 import { verifyDomainScope } from '../auth/scope.auth.js'
@@ -10,7 +10,6 @@ import { fetchDomainProblem, fetchSubmission } from '@argoncs/common'
 import { createSubmission } from '../services/submission.services.js'
 import { createUploadSession } from '../services/testcase.services.js'
 import { badRequestSchema, forbiddenSchema, MethodNotAllowedError, methodNotAllowedSchema, NotFoundError, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
-import { createContest, fetchDomainContests } from '../services/contest.services.js'
 
 async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> {
   memberRoutes.post(
@@ -299,52 +298,6 @@ async function domainSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promis
     })
 }
 
-async function domainContestRoutes (contestRoutes: FastifyTypeBox): Promise<void> {
-  contestRoutes.post(
-    '/',
-    {
-      schema: {
-        params: Type.Object({ domainId: Type.String() }),
-        body: NewContestSchema,
-        response: {
-          201: Type.Object({ contestId: Type.String() }),
-          400: badRequestSchema,
-          401: unauthorizedSchema,
-          403: forbiddenSchema
-        }
-      },
-      onRequest: [userAuthHook, contestRoutes.auth([verifyDomainScope(['contest.manage'])]) as any]
-    },
-    async (request, reply) => {
-      const newContest = request.body
-      const { domainId } = request.params
-      const result = await createContest(newContest, domainId)
-      return await reply.status(201).send(result)
-    }
-  )
-
-  contestRoutes.get(
-    '/',
-    {
-      schema: {
-        params: Type.Object({ domainId: Type.String() }),
-        response: {
-          200: Type.Array(ContestSchema),
-          400: badRequestSchema,
-          401: unauthorizedSchema,
-          403: forbiddenSchema
-        }
-      },
-      onRequest: [userAuthHook, contestRoutes.auth([verifyDomainScope(['contest.read'])]) as any]
-    },
-    async (request, reply) => {
-      const { domainId } = request.params
-      const contests = await fetchDomainContests(domainId)
-      return await reply.status(200).send(contests)
-    }
-  )
-}
-
 export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
   routes.post(
     '/',
@@ -411,5 +364,4 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
   await routes.register(domainMemberRoutes, { prefix: '/:domainId/members' })
   await routes.register(domainProblemRoutes, { prefix: '/:domainId/problems' })
   await routes.register(domainSubmissionRoutes, { prefix: '/:domainId/submissions' })
-  await routes.register(domainContestRoutes, { prefix: '/:domainId/contests' })
 }

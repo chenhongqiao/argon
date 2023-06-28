@@ -1,5 +1,5 @@
-import { fetchContestProblem, fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
-import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus } from '@argoncs/types'
+import { fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
+import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, SubmissionStatus } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
 
@@ -8,12 +8,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
 
   if (submission.status === SubmissionStatus.Compiling) {
     if (compileResult.status === CompilingStatus.Succeeded) {
-      let problem: Problem
-      if (submission.contestId == null) {
-        problem = await fetchDomainProblem(submission.problemId, submission.domainId)
-      } else {
-        problem = await fetchContestProblem(submission.problemId, submission.contestId)
-      }
+      const problem = await fetchDomainProblem(submission.problemId, submission.domainId)
       const submissionTestcases: Array<{ points: number, input: { name: string, versionId: string }, output: { name: string, versionId: string } }> = []
       if (problem.testcases == null) {
         return await completeGrading(submissionId, 'Problem does not have testcases')
