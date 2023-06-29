@@ -139,14 +139,21 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
           401: unauthorizedSchema,
           403: forbiddenSchema
         },
-        params: Type.Object({ domainId: Type.String() })
+        params: Type.Object({ domainId: Type.String() }),
+        querystring: Type.Object({ name: Type.Optional(Type.String()) })
       },
       onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['problem.read'])]) as any]
     },
     async (request, reply) => {
+      const { name } = request.query
       const { domainId } = request.params
-      const problems = await fetchDomainProblems(domainId)
-      return await reply.status(200).send(problems)
+      if (name != null) {
+        const problems = await fetchDomainProblems(domainId, { name })
+        return await reply.status(200).send(problems)
+      } else {
+        const problems = await fetchDomainProblems(domainId)
+        return await reply.status(200).send(problems)
+      }
     }
   )
 

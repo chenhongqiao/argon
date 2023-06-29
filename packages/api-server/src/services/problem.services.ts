@@ -51,8 +51,14 @@ export async function deleteDomainProblem (problemId: string, domainId: string):
   }
 }
 
-export async function fetchDomainProblems (domainId: string): Promise<Problem[]> {
-  const problems = await domainProblemCollection.find({ domainId }).sort({ _id: -1 }).toArray()
+export async function fetchDomainProblems (domainId: string, query?: Record<string, string>): Promise<Problem[]> {
+  if (query != null) {
+    const problems = await domainProblemCollection.find({ domainId, ...query }).sort({ _id: -1 }).toArray()
 
-  return problems
+    return problems
+  } else {
+    const problems = await domainProblemCollection.find({ domainId }).sort({ _id: -1 }).toArray()
+
+    return problems
+  }
 }
