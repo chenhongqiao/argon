@@ -106,8 +106,11 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
       }
     })
 
-    if (submission.gradedCases + 1 === submission.testcases.length) {
-      await completeGrading(submissionId)
+    const updatedSubmission = await fetchSubmission(submissionId)
+    if (updatedSubmission.status === SubmissionStatus.Grading) {
+      if (updatedSubmission.gradedCases === updatedSubmission.testcases.length) {
+        await completeGrading(submissionId)
+      }
     }
   }
 }
