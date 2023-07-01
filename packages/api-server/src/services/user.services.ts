@@ -1,5 +1,5 @@
 import { User, NewUser, UserRole, UserSession, AuthenticationProfile } from '@argoncs/types'
-import { NotFoundError, ForbiddenError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
+import { NotFoundError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
 import { emailVerificationCollection, MongoServerError, sessionCollection, userCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
@@ -134,9 +134,6 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
 
   const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.credential.hash) {
-    if (user.email === '') {
-      throw new ForbiddenError('A verified email is requried to login')
-    }
     const sessionId = await nanoid()
     await sessionCollection.insertOne({ id: sessionId, userId, userAgent, loginIP })
     return { userId, sessionId }
