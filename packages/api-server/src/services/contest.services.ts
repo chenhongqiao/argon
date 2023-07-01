@@ -1,5 +1,5 @@
-import { contestCollection, contestProblemCollection, contestProblemListCollection, domainProblemCollection, mongoClient } from '@argoncs/common'
-import { ConetstProblemList, Contest, ContestProblem, NewContest } from '@argoncs/types'
+import { contestCollection, contestProblemCollection, contestProblemListCollection, domainProblemCollection, mongoClient, ranklistRedis, teamScoreCollection } from '@argoncs/common'
+import { ConetstProblemList, Contest, ContestProblem, NewContest, TeamScore } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 import { fetchCache, refreshCache, setCache } from './cache.services.js'
@@ -121,4 +121,18 @@ export async function removeProblemFromContest (contestId: string, problemId: st
   } finally {
     await session.endSession()
   }
+}
+
+export async function fetchContestRanklist (contestId: string): Promise<TeamScore[]> {
+  const cache = await ranklistRedis.get(contestId)
+  if (cache == null ||
+    (946080000 * 1000 - (await ranklistRedis.pttl(contestId)) > 1000 &&
+    (await ranklistRedis.getdel(`${contestId}-obsolete`)) != null)) {
+    const ranklist = await teamScoreCollection.find({ contestId }).sort({ totalScore: -1, lastTime: 1 }).toArray()
+    await ranklistRedis.set(contestId, JSON.stringify(ranklist))
+    await ranklistRedis.expire(contestId, 946080000)
+    return ranklist
+  }
+
+  return JSON.parse(cache) as TeamScore[]
 }

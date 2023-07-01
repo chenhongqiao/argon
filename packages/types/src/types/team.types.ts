@@ -25,3 +25,12 @@ export type TeamInvitation = Static<typeof TeamInvitationSchema>
 
 export const TeamMembersSchema = Type.Array(PublicUserProfileSchema)
 export type TeamMembers = Static<typeof TeamMembersSchema>
+
+export const TeamScoreSchema = Type.Object({
+  id: Type.String(),
+  scores: Type.Record(Type.String(), Type.Number()),
+  time: Type.Record(Type.String(), Type.Number()),
+  totalScore: Type.Number(),
+  lastTime: Type.Number()
+})
+export type TeamScore = Static<typeof TeamScoreSchema>

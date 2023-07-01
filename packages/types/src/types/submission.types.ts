@@ -23,7 +23,9 @@ const BaseSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
   problemId: Type.String(),
   domainId: Type.String(),
   contestId: Type.Optional(Type.String()),
-  userId: Type.String()
+  teamId: Type.Optional(Type.String()),
+  userId: Type.String(),
+  createdAt: Type.Number()
 })])
 
 const CompilingSubmissionSchema = Type.Intersect([BaseSubmissionSchema, Type.Object({

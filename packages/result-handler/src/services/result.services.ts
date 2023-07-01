@@ -1,4 +1,4 @@
-import { fetchContestProblem, fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, submissionCollection } from '@argoncs/common'
+import { fetchContestProblem, fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, ranklistRedis, submissionCollection, teamScoreCollection } from '@argoncs/common'
 import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
@@ -81,7 +81,35 @@ export async function completeGrading (submissionId: string, log?: string): Prom
         }
       })
 
-      // TODO: update contest ranklist
+      if (submission.contestId != null && submission.teamId != null) {
+        const { modifiedCount } = await teamScoreCollection.updateOne({ id: submission.teamId }, {
+          $max: { [`scores.${submission.problemId}`]: score }
+        })
+        await teamScoreCollection.updateOne({ id: submission.teamId }, [
+          {
+            $project: { scores: { $objectToArray: '$scores' } }
+          },
+          {
+            $set: { totalScore: { $sum: '$scores.v' } }
+          }
+        ])
+        if (modifiedCount > 0) {
+          await teamScoreCollection.updateOne({ id: submission.teamId }, {
+            $max: { [`time.${submission.problemId}`]: submission.createdAt }
+          })
+          await teamScoreCollection.updateOne({ id: submission.teamId }, [
+            {
+              $project: { time: { $objectToArray: '$time' } }
+
+            },
+            {
+              $set: { lastTime: { $max: '$time.v' } }
+            }
+          ])
+
+          await ranklistRedis.set(`${submission.contestId}-obsolete`, 1)
+        }
+      }
     }
   }
 }

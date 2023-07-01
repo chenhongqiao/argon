@@ -10,7 +10,7 @@ import { languageConfigs } from '../../configs/language.configs.js'
 
 import { nanoid } from '../utils/nanoid.utils.js'
 
-export async function createSubmission (submission: NewSubmission, domainId: string, problemId: string, userId: string, contestId?: string): Promise<{ submissionId: string }> {
+export async function createSubmission (submission: NewSubmission, domainId: string, problemId: string, userId: string, contestId?: string, teamId?: string): Promise<{ submissionId: string }> {
   const submissionId = await nanoid()
   const pendingSubmission: Submission = {
     ...submission,
@@ -18,11 +18,15 @@ export async function createSubmission (submission: NewSubmission, domainId: str
     status: SubmissionStatus.Compiling,
     domainId,
     problemId,
-    userId
+    userId,
+    createdAt: (new Date()).getTime()
   }
 
   if (contestId != null) {
     pendingSubmission.contestId = contestId
+  }
+  if (teamId != null) {
+    pendingSubmission.teamId = teamId
   }
 
   await submissionCollection.insertOne(pendingSubmission)

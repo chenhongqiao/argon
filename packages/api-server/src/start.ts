@@ -6,7 +6,7 @@ import { domainRoutes } from './routes/domain.routes.js'
 import { userRoutes } from './routes/user.routes.js'
 import { judgerRoutes } from './routes/judger.routes.js'
 
-import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
+import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, connectRanklistRedis, sentry } from '@argoncs/common'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
@@ -35,6 +35,8 @@ export async function startAPIServer (): Promise<void> {
   await connectCacheRedis(process.env.CACHEREDIS_URL)
   assert(process.env.MINIO_URL != null)
   await connectMinIO(process.env.MINIO_URL)
+  assert(process.env.RANKLISTREDIS_URL != null)
+  await connectRanklistRedis(process.env.RANKLISTREDIS_URL)
 
   await app.register(fastifyHttpErrorsEnhanced, {
     handle404Errors: false,

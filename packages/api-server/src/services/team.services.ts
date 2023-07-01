@@ -1,4 +1,4 @@
-import { ClientSession, mongoClient, teamCollection, teamInvitationCollection, userCollection } from '@argoncs/common'
+import { ClientSession, mongoClient, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
 import { NewTeam, Team, TeamMembers } from '@argoncs/types'
 import { ConflictError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
@@ -27,6 +27,8 @@ export async function createTeam (newTeam: NewTeam, contestId: string, userId: s
       await teamCollection.insertOne(team, { session })
       await userCollection.updateOne({ id: userId },
         { $set: { [`teams.${contestId}`]: id } }, { session })
+
+      await teamScoreCollection.insertOne({ id, scores: {}, time: {}, lastTime: 0, totalScore: 0 })
     })
     return { teamId: id }
   } finally {

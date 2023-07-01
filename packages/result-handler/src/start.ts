@@ -1,4 +1,4 @@
-import { connectMongoDB, connectRabbitMQ, deadResultsQueue, deadTasksQueue, judgerResultsQueue, rabbitMQ, sentry } from '@argoncs/common'
+import { connectMongoDB, connectRabbitMQ, connectRanklistRedis, deadResultsQueue, deadTasksQueue, judgerResultsQueue, rabbitMQ, sentry } from '@argoncs/common'
 import { CompilingResultMessage, CompilingTask, GradingResultMessage, GradingTask, JudgerResultType } from '@argoncs/types'
 import assert from 'assert'
 import { completeGrading, handleCompileResult, handleGradingResult } from './services/result.services.js'
@@ -14,6 +14,8 @@ export async function startHandler (): Promise<void> {
   await connectRabbitMQ(process.env.RABBITMQ_URL)
   assert(process.env.MONGO_URL != null)
   await connectMongoDB(process.env.MONGO_URL)
+  assert(process.env.RANKLISTREDIS_URL != null)
+  await connectRanklistRedis(process.env.RANKLISTREDIS_URL)
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   await rabbitMQ.consume(judgerResultsQueue, async (message) => {

@@ -6,4 +6,10 @@ export async function connectCacheRedis (url: string): Promise<void> {
   cacheRedis = new Redis(url)
 }
 
-export { cacheRedis }
+let ranklistRedis: Redis
+
+export async function connectRanklistRedis (url: string): Promise<void> {
+  ranklistRedis = new Redis(url)
+}
+
+export { cacheRedis, ranklistRedis }
