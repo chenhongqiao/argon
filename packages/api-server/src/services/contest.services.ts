@@ -1,4 +1,4 @@
-import { contestCollection, contestProblemCollection, contestProblemListCollection, domainProblemCollection, mongoClient, ranklistRedis, teamScoreCollection } from '@argoncs/common'
+import { contestCollection, contestProblemCollection, contestProblemListCollection, domainProblemCollection, mongoClient, ranklistRedis, recalculateTeamTotalScore, teamScoreCollection } from '@argoncs/common'
 import { ConetstProblemList, Contest, ContestProblem, NewContest, TeamScore } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
@@ -116,7 +116,13 @@ export async function removeProblemFromContest (contestId: string, problemId: st
       )
 
       await refreshCache(`problem-list:${contestId}`, problemList)
-      // TODO: remove all related submissions
+      await teamScoreCollection.updateMany({ contestId },
+        { $unset: { [`scores.${problemId}`]: '' } }
+      )
+      await teamScoreCollection.updateMany({ contestId },
+        { $unset: { [`time.${problemId}`]: '' } }
+      )
+      await recalculateTeamTotalScore(contestId)
     })
   } finally {
     await session.endSession()
