@@ -49,14 +49,23 @@ services:
       MINIO_ROOT_PASSWORD: password
     command: server /data --console-address ":9001"
 
-  dragonfly:
+  dragonfly_cache:
     image: docker.dragonflydb.io/dragonflydb/dragonfly
     ulimits:
       memlock: -1
     ports:
       - "6379:6379"
     volumes:
-      - redis:/data
+      - cache:/data
+
+  dragonfly_ranklist:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    ulimits:
+      memlock: -1
+    ports:
+      - "6380:6380"
+    volumes:
+      - ranklist:/data
 
   rabbitmq:
     image: rabbitmq:management
@@ -72,5 +81,6 @@ services:
 volumes:
   mongodb:
   minio:
-  redis:
+  cache:
+  ranklist:
   rabbitmq:
