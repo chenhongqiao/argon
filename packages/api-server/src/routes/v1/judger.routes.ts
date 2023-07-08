@@ -1,9 +1,9 @@
 import { Type } from '@sinclair/typebox'
-import { languageConfigs } from '../../configs/language.configs.js'
+import { languageConfigs } from '../../../configs/language.configs.js'
 
 import { SubmissionLang, LanguageConfigSchema } from '@argoncs/types'
 
-import { FastifyTypeBox } from '../types.js'
+import { FastifyTypeBox } from '../../types.js'
 
 export async function judgerRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox, options, done) => {

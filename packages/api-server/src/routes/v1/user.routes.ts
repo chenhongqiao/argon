@@ -1,9 +1,9 @@
 import { Type } from '@sinclair/typebox'
 import { PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, PrivateUserProfile, NewUserSchema } from '@argoncs/types'
-import { completeVerification, fetchUser, initiateVerification, registerUser } from '../services/user.services.js'
-import { verifyUserOwnership } from '../auth/ownership.auth.js'
-import { FastifyTypeBox } from '../types.js'
-import { userAuthHook } from '../hooks/authentication.hooks.js'
+import { completeVerification, fetchUser, initiateVerification, registerUser } from '../../services/user.services.js'
+import { verifyUserOwnership } from '../../auth/ownership.auth.js'
+import { FastifyTypeBox } from '../../types.js'
+import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 
 async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> {

@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
 
-import { FastifyTypeBox } from '../types.js'
+import { FastifyTypeBox } from '../../types.js'
 
 export async function heartbeatRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox, options, done) => {

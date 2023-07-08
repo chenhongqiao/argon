@@ -1,10 +1,10 @@
-import { authenticateUser } from '../services/user.services.js'
+import { authenticateUser } from '../../services/user.services.js'
 
 import { Type } from '@sinclair/typebox'
 import { delay } from '@argoncs/common'
 
 import { randomInt } from 'node:crypto'
-import { FastifyTypeBox } from '../types.js'
+import { FastifyTypeBox } from '../../types.js'
 import { badRequestSchema, unauthorizedSchema } from 'http-errors-enhanced'
 
 export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {

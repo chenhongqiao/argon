@@ -1,10 +1,6 @@
 import { fastify } from 'fastify'
 
-import { heartbeatRoutes } from './routes/heartbeat.routes.js'
-import { sessionRoutes } from './routes/session.routes.js'
-import { domainRoutes } from './routes/domain.routes.js'
-import { userRoutes } from './routes/user.routes.js'
-import { judgerRoutes } from './routes/judger.routes.js'
+import { v1APIRoutes } from './routes/v1.routes.js'
 
 import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, connectRanklistRedis, sentry } from '@argoncs/common'
 
@@ -54,12 +50,7 @@ export async function startAPIServer (): Promise<void> {
   await app.register(fastifySensible)
   await app.register(fastifyAuth)
 
-  await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
-  await app.register(sessionRoutes, { prefix: '/session' })
-  await app.register(userRoutes, { prefix: '/users' })
-  await app.register(domainRoutes, { prefix: '/domains' })
-  await app.register(judgerRoutes, { prefix: '/judger' })
-
+  await app.register(v1APIRoutes, { prefix: '/v1' })
   try {
     const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')
     await app.listen({ port, host: '0.0.0.0' })
