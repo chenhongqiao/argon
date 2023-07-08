@@ -22,7 +22,8 @@ const collections: CollectionIndex[] = [
     name: 'submissions',
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
-      { keys: { problemId: 1, userId: 1 } }
+      { keys: { problemId: 1, userId: 1 } },
+      { keys: { contestId: 1, teamId: 1 } }
     ]
   },
   {
@@ -99,7 +100,7 @@ const collections: CollectionIndex[] = [
     name: 'teamInvitations',
     indexes: [
       { keys: { userId: 1, id: 1 }, options: { unique: true } },
-      { keys: { teamId: 1 } },
+      { keys: { contestId: 1, teamId: 1, id: 1 }, options: { unique: true } },
       { keys: { createdAt: 1 }, options: { expireAfterSeconds: 604800 } }
     ]
   }
