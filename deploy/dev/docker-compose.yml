@@ -51,24 +51,27 @@ services:
 
   dragonfly_cache:
     image: docker.dragonflydb.io/dragonflydb/dragonfly
+    restart: always
     ulimits:
       memlock: -1
     ports:
-      - "6379:6379"
+      - 6379:6379
     volumes:
       - cache:/data
 
   dragonfly_ranklist:
     image: docker.dragonflydb.io/dragonflydb/dragonfly
+    restart: always
     ulimits:
       memlock: -1
     ports:
-      - "6380:6380"
+      - 6380:6379
     volumes:
       - ranklist:/data
 
   rabbitmq:
     image: rabbitmq:management
+    restart: always
     ports:
       - 5672:5672
       - 15672:15672
