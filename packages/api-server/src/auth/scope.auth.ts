@@ -1,47 +1,57 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { ForbiddenError, InternalServerError, UnauthorizedError } from 'http-errors-enhanced'
-import { fetchContest } from '../services/contest.services.js'
+import { ForbiddenError, InternalServerError } from 'http-errors-enhanced'
+import { userAuthHook } from '../hooks/authentication.hooks.js'
+import { contestAnnotateHook } from '../hooks/contest.hooks.js'
+import { submissionAnnotateHook } from '../hooks/submission.hooks.js'
 
 export function verifyAnyScope (scopes: string[]) {
-  return function handler (request: FastifyRequest, reply: FastifyReply, done) {
+  return async function handler (request: FastifyRequest, reply: FastifyReply) {
     if (request.auth == null) {
-      return done(new UnauthorizedError('User not logged in'))
+      await userAuthHook(request, reply)
+      if (request.auth == null) {
+        throw new ForbiddenError('User not logged in')
+      }
     }
 
     const allScopes = Object.values(request.auth.scopes).flat(1)
 
     scopes.forEach((scope) => {
       if (!allScopes.includes(scope)) {
-        return done(new ForbiddenError('Insufficient user scope'))
+        throw new ForbiddenError('Insufficient user scope')
       }
     })
-
-    done()
   }
 }
 
 export function verifyDomainScope (scopes: string[]) {
   return async function handler (request: FastifyRequest, reply: FastifyReply) {
     if (request.auth == null) {
-      throw new ForbiddenError('User not logged in')
+      await userAuthHook(request, reply)
+      if (request.auth == null) {
+        throw new ForbiddenError('User not logged in')
+      }
     }
 
-    let { domainId } = request.params as { domainId: string | undefined }
-    const { contestId } = request.params as { contestId: string | undefined }
+    // @ts-expect-error
+    if (request.params.domainId == null && request.params.contestId != null) {
+      await contestAnnotateHook(request, reply)
+    }
+
+    // @ts-expect-error
+    if (request.params.domainId == null && request.params.submissionId != null) {
+      await submissionAnnotateHook(request, reply)
+    }
+
+    const { domainId } = request.params as { domainId: string | undefined }
 
     if (domainId == null || typeof domainId !== 'string') {
-      if (contestId != null && typeof contestId === 'string') {
-        const contest = await fetchContest(contestId)
-        domainId = contest.domainId
-      } else {
-        throw new InternalServerError('Resource not associated with a domain')
-      }
+      throw new InternalServerError('Resource not associated with a domain')
     }
 
     const userScopes = request.auth.scopes
 
     scopes.forEach((scope) => {
-      if (userScopes[domainId as string] == null || !Boolean(userScopes[domainId as string].includes(scope))) {
+      if (userScopes[domainId] == null || !Boolean(userScopes[domainId].includes(scope))) {
         throw new ForbiddenError('Insufficient domain scope')
       }
     })

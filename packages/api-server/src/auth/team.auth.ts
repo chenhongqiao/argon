@@ -2,20 +2,26 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ForbiddenError, InternalServerError, UnauthorizedError } from 'http-errors-enhanced'
 import { fetchTeam } from '../services/team.services.js'
+import { submissionAnnotateHook } from '../hooks/submission.hooks.js'
 
-export function verifyTeamMembership (request: FastifyRequest, reply: FastifyReply, done): void {
+export async function verifyTeamMembership (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   if (request.auth == null) {
-    return done(new UnauthorizedError('User not logged in'))
+    throw new UnauthorizedError('User not logged in')
+  }
+
+  // @ts-expect-error
+  if ((request.params.teamId == null || request.params.contestId == null) && request.params.submissionId != null) {
+    await submissionAnnotateHook(request, reply)
   }
 
   const { contestId, teamId } = request.params as { contestId: string | undefined, teamId: string | undefined }
 
   if (contestId == null || typeof contestId !== 'string' || teamId == null || typeof teamId !== 'string') {
-    return done(new InternalServerError('Resource not associated with a contest or a team'))
+    throw new InternalServerError('Resource not associated with a contest or a team')
   }
 
   if (request.auth.teams[contestId] == null || request.auth.teams[contestId] !== teamId) {
-    return done(new ForbiddenError('User is not a member of this team'))
+    throw new ForbiddenError('User is not a member of this team')
   }
 }
 

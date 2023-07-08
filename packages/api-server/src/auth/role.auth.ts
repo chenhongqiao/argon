@@ -1,15 +1,17 @@
 import { UserRole } from '@argoncs/types'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { ForbiddenError, UnauthorizedError } from 'http-errors-enhanced'
+import { ForbiddenError } from 'http-errors-enhanced'
+import { userAuthHook } from '../hooks/authentication.hooks.js'
 
-export function verifySuperAdmin (request: FastifyRequest, reply: FastifyReply, done): void {
+export async function verifySuperAdmin (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   if (request.auth == null) {
-    return done(new UnauthorizedError('User not logged in'))
+    await userAuthHook(request, reply)
+    if (request.auth == null) {
+      throw new ForbiddenError('User not logged in')
+    }
   }
 
   if (request.auth.role !== UserRole.Admin) {
-    return done(new ForbiddenError('User needs admin privilege to perform this action'))
+    throw new ForbiddenError('User needs admin privilege to perform this action')
   }
-
-  done()
 }

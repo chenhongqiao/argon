@@ -28,6 +28,7 @@ export type TeamMembers = Static<typeof TeamMembersSchema>
 
 export const TeamScoreSchema = Type.Object({
   id: Type.String(),
+  contestId: Type.String(),
   scores: Type.Record(Type.String(), Type.Number()),
   time: Type.Record(Type.String(), Type.Number()),
   totalScore: Type.Number(),

@@ -1,13 +1,12 @@
 import { fetchContestProblem } from '@argoncs/common'
 import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema } from '@argoncs/types'
 import { Type } from '@sinclair/typebox'
-import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
+import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { verifyContestBegan, verifyContestNotBegan, verifyContestPublished, verifyContestRegistration } from '../../auth/contest.auth.js'
 import { verifyDomainScope } from '../../auth/scope.auth.js'
-import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { fetchContest, fetchContestProblemList, removeProblemFromContest, syncProblemToContest } from '../../services/contest.services.js'
 import { FastifyTypeBox } from '../../types.js'
-import { completeTeamInvitation, createTeam, createTeamInvitation, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
+import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
 import { verifyTeamCaptain } from '../../auth/team.auth.js'
 
 async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void> {
@@ -24,8 +23,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, problemRoutes.auth([
-        // @ts-expect-error: official documentation allows array in an array (and relation)
+      onRequest: [problemRoutes.auth([
         [verifyContestRegistration, verifyContestBegan],
         verifyDomainScope(['contest.read'])]) as any]
     },
@@ -49,8 +47,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, problemRoutes.auth([
-        // @ts-expect-error: official documentation allows array in an array (and relation)
+      onRequest: [problemRoutes.auth([
         [verifyContestRegistration, verifyContestBegan],
         verifyDomainScope(['contest.read'])]) as any]
     },
@@ -74,7 +71,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['contest.manage'])]) as any]
+      onRequest: [problemRoutes.auth([verifyDomainScope(['contest.manage'])]) as any]
     },
     async (request, reply) => {
       const { contestId, problemId } = request.params
@@ -95,7 +92,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, problemRoutes.auth([verifyDomainScope(['contest.manage'])]) as any]
+      onRequest: [problemRoutes.auth([verifyDomainScope(['contest.manage'])]) as any]
     },
     async (request, reply) => {
       const { contestId, problemId } = request.params
@@ -121,7 +118,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           409: conflictSchema
         }
       },
-      onRequest: [userAuthHook, teamRoutes.auth([verifyContestPublished, verifyContestNotBegan], { relation: 'and' }) as any]
+      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan], { relation: 'and' }) as any]
     },
     async (request, reply) => {
       if (request.auth == null) {
@@ -132,6 +129,29 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       const { contestId } = request.params
       const result = await createTeam(newTeam, contestId, request.auth.id)
       return await reply.status(201).send(result)
+    }
+  )
+
+  teamRoutes.delete(
+    '/:teamId',
+    {
+      schema: {
+        params: Type.Object({ contestId: Type.String(), teamId: Type.String() }),
+        resposne: {
+          400: badRequestSchema,
+          401: unauthorizedSchema,
+          403: forbiddenSchema,
+          404: notFoundSchema,
+          405: methodNotAllowedSchema
+        }
+      },
+      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan, verifyTeamCaptain], { relation: 'and' }) as any]
+    },
+    async (request, reply) => {
+      const { teamId, contestId } = request.params
+      await deleteTeam(teamId, contestId)
+
+      return await reply.status(204).send()
     }
   )
 
@@ -148,7 +168,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, teamRoutes.auth([verifyContestPublished, verifyContestNotBegan, verifyTeamCaptain], { relation: 'and' }) as any]
+      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan, verifyTeamCaptain], { relation: 'and' }) as any]
     },
     async (request, reply) => {
       const { userId } = request.body
@@ -171,7 +191,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, teamRoutes.auth([verifyContestPublished, verifyContestNotBegan], { relation: 'and' }) as any]
+      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan], { relation: 'and' }) as any]
     },
     async (request, reply) => {
       if (request.auth == null) {
@@ -213,10 +233,11 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
-          404: notFoundSchema
+          404: notFoundSchema,
+          405: methodNotAllowedSchema
         }
       },
-      onRequest: [userAuthHook, teamRoutes.auth([verifyTeamCaptain]) as any]
+      onRequest: [teamRoutes.auth([verifyTeamCaptain]) as any]
     },
     async (request, reply) => {
       const { contestId, teamId, userId } = request.params
@@ -239,7 +260,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, teamRoutes.auth([verifyTeamCaptain]) as any]
+      onRequest: [teamRoutes.auth([verifyTeamCaptain]) as any]
     },
     async (request, reply) => {
       const { contestId, teamId } = request.params

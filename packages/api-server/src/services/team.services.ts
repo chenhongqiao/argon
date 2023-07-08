@@ -1,6 +1,6 @@
-import { ClientSession, mongoClient, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
+import { ClientSession, mongoClient, submissionCollection, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
 import { NewTeam, Team, TeamMembers } from '@argoncs/types'
-import { ConflictError, NotFoundError } from 'http-errors-enhanced'
+import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 
 export async function createTeam (newTeam: NewTeam, contestId: string, userId: string): Promise<{ teamId: string }> {
@@ -28,7 +28,7 @@ export async function createTeam (newTeam: NewTeam, contestId: string, userId: s
       await userCollection.updateOne({ id: userId },
         { $set: { [`teams.${contestId}`]: id } }, { session })
 
-      await teamScoreCollection.insertOne({ id, scores: {}, time: {}, lastTime: 0, totalScore: 0 })
+      await teamScoreCollection.insertOne({ id, contestId, scores: {}, time: {}, lastTime: 0, totalScore: 0 })
     })
     return { teamId: id }
   } finally {
@@ -78,6 +78,13 @@ export async function createTeamInvitation (teamId: string, contestId: string, u
   }
   await teamInvitationCollection.insertOne({ id, userId, teamId, contestId, createdAt: (new Date()).getTime() })
   return { invitationId: id }
+}
+
+export async function deleteTeamInvitation (teamId: string, contestId: string, invitationId: string): Promise<void> {
+  const { deletedCount } = await teamInvitationCollection.deleteOne({ teamId, contestId, invitationId })
+  if (deletedCount === 0) {
+    throw new NotFoundError('User not found')
+  }
 }
 
 export async function completeTeamInvitation (invitationId: string, userId: string): Promise<{ modified: boolean }> {
@@ -142,16 +149,19 @@ export async function removeTeamMember (teamId: string, contestId: string, userI
   let modifiedCount = 0
   try {
     await session.withTransaction(async () => {
-      const { matchedCount: matchedTeam, modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $pull: { members: userId } }, { session })
-      if (matchedTeam === 0) {
-        throw new NotFoundError('Team not found')
-      }
-      modifiedCount += Math.floor(modifiedTeam)
-
       const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
       if (team == null) {
         throw new NotFoundError('Team not found')
       }
+      if (rootSession == null) {
+        if (team.captain === userId) {
+          throw new MethodNotAllowedError('Team captain cannot be removed')
+        }
+      }
+
+      const { modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $pull: { members: userId } }, { session })
+      modifiedCount += Math.floor(modifiedTeam)
+
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId }, { $unset: { [`members.${team.contestId}`]: '' } }, { session })
       if (matchedUser === 0) {
@@ -160,6 +170,31 @@ export async function removeTeamMember (teamId: string, contestId: string, userI
       modifiedCount += Math.floor(modifiedUser)
     })
     return { modified: modifiedCount > 0 }
+  } finally {
+    await session.endSession()
+  }
+}
+
+export async function deleteTeam (teamId: string, contestId: string): Promise<void> {
+  const session = mongoClient.startSession()
+  try {
+    await session.withTransaction(async () => {
+      const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
+      if (team == null) {
+        throw new NotFoundError('Team not found')
+      }
+      if (team.members.length > 1) {
+        throw new MethodNotAllowedError('Cannot disband a team when there are more than one member')
+      }
+
+      await removeTeamMember(teamId, contestId, team.members[0], session)
+
+      await teamInvitationCollection.deleteMany({ teamId, contestId }, { session })
+      await teamScoreCollection.deleteOne({ teamId, contestId }, { session })
+      await submissionCollection.deleteMany({ teamId, contestId }, { session })
+
+      await teamCollection.deleteOne({ teamId, contestId }, { session })
+    })
   } finally {
     await session.endSession()
   }

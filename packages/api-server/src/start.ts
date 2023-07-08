@@ -3,12 +3,14 @@ import { fastify } from 'fastify'
 import { v1APIRoutes } from './routes/v1.routes.js'
 
 import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, connectRanklistRedis, sentry } from '@argoncs/common'
+import { promises as fs } from 'node:fs'
 
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
 import fastifySensible from '@fastify/sensible'
 import fastifyHttpErrorsEnhanced from '@chenhongqiao/fastify-http-errors-enhanced'
 import assert from 'assert'
+import fastifySwagger from '@fastify/swagger'
 
 const app = fastify({
   logger: {
@@ -49,11 +51,13 @@ export async function startAPIServer (): Promise<void> {
   })
   await app.register(fastifySensible)
   await app.register(fastifyAuth)
+  await app.register(fastifySwagger)
 
   await app.register(v1APIRoutes, { prefix: '/v1' })
   try {
     const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')
     await app.listen({ port, host: '0.0.0.0' })
+    await fs.writeFile('swagger.yaml', app.swagger({ yaml: true }))
   } catch (err) {
     sentry.captureException(err)
     app.log.error(err)

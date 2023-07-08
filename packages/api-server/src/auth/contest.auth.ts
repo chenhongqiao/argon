@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { ForbiddenError, InternalServerError, NotFoundError, UnauthorizedError } from 'http-errors-enhanced'
+import { ForbiddenError, InternalServerError, NotFoundError } from 'http-errors-enhanced'
 import { fetchContest } from '../services/contest.services.js'
+import { userAuthHook } from '../hooks/authentication.hooks.js'
 
 export async function verifyContestPublished (request: FastifyRequest, reply: FastifyReply) {
   // @ts-expect-error: url of contest resources always includes contestId as a parameter.
@@ -15,22 +16,23 @@ export async function verifyContestPublished (request: FastifyRequest, reply: Fa
   }
 }
 
-export function verifyContestRegistration (request: FastifyRequest, reply: FastifyReply, done) {
+export async function verifyContestRegistration (request: FastifyRequest, reply: FastifyReply) {
   if (request.auth == null) {
-    return done(new UnauthorizedError('User not logged in'))
+    await userAuthHook(request, reply)
+    if (request.auth == null) {
+      throw new ForbiddenError('User not logged in')
+    }
   }
 
   // @ts-expect-error: url of contest resources always includes contestId as a parameter.
   const contestId = request.params.contestId
   if (contestId == null || typeof contestId !== 'string') {
-    return done(new InternalServerError('Resource not associated with a contest'))
+    throw new InternalServerError('Resource not associated with a contest')
   }
 
   if (request.auth.teams[contestId] == null || typeof request.auth.teams[contestId] !== 'string') {
-    return done(new ForbiddenError('Contest registration is required'))
+    throw new ForbiddenError('Contest registration is required')
   }
-
-  done()
 }
 
 export async function verifyContestBegan (request: FastifyRequest, reply: FastifyReply) {
