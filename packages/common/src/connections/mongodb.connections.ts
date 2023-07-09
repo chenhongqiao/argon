@@ -22,8 +22,9 @@ const collections: CollectionIndex[] = [
     name: 'submissions',
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
-      { keys: { problemId: 1, userId: 1 } },
-      { keys: { contestId: 1, teamId: 1 } }
+      { keys: { userId: 1, createdAt: -1 } },
+      { keys: { contestId: 1, teamId: 1, problemId: 1 } },
+      { keys: { domainId: 1, problemId: 1, contestId: 1, createdAt: -1 } }
     ]
   },
   {

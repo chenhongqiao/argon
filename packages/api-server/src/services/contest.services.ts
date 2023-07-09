@@ -1,6 +1,6 @@
 import { contestCollection, contestProblemCollection, contestProblemListCollection, domainProblemCollection, mongoClient, ranklistRedis, recalculateTeamTotalScore, teamScoreCollection } from '@argoncs/common'
 import { ConetstProblemList, Contest, ContestProblem, NewContest, TeamScore } from '@argoncs/types'
-import { NotFoundError } from 'http-errors-enhanced'
+import { MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 import { fetchCache, refreshCache, setCache } from './cache.services.js'
 
@@ -80,6 +80,9 @@ export async function syncProblemToContest (contestId: string, problemId: string
       const problem = await domainProblemCollection.findOne({ id: problemId, domainId: contest.domainId }, { session })
       if (problem == null) {
         throw new NotFoundError('Problem not found')
+      }
+      if (problem.testcases == null) {
+        throw new MethodNotAllowedError('Testcases must be uploaded before a problem can be added to contests')
       }
 
       const contestProblem: ContestProblem = { ...problem, obsolete: false, contestId }

@@ -9,6 +9,7 @@ import { completeTeamInvitation } from '../../services/team.services.js'
 import { verifyDomainScope } from '../../auth/scope.auth.js'
 import { verifyTeamMembership } from '../../auth/team.auth.js'
 import { fetchSubmission } from '@argoncs/common'
+import { verifySuperAdmin } from '../../auth/role.auth.js'
 
 async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> {
   profileRoutes.get(
@@ -44,7 +45,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
         },
         params: Type.Object({ userId: Type.String() })
       },
-      onRequest: [profileRoutes.auth([verifyUserOwnership]) as any]
+      onRequest: [profileRoutes.auth([verifyUserOwnership, verifySuperAdmin]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params
@@ -124,6 +125,30 @@ export async function userContestRoutes (contestRoutes: FastifyTypeBox): Promise
 }
 
 async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<void> {
+  submissionRoutes.get(
+    '/',
+    {
+      schema: {
+        params: Type.Object({ userId: Type.String() }),
+        response: {
+          200: Type.Array(SubmissionSchema),
+          400: badRequestSchema,
+          401: unauthorizedSchema,
+          403: forbiddenSchema
+        }
+      },
+      onRequest: [submissionRoutes.auth([
+        verifyUserOwnership,
+        verifySuperAdmin
+      ]) as any]
+    },
+    async (request, reply) => {
+      const { userId } = request.params
+      const submissions = await fetchUser(userId)
+      return await reply.status(200).send(submissions)
+    }
+  )
+
   submissionRoutes.get(
     '/:submissionId',
     {

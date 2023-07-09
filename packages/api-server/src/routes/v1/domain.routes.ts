@@ -1,14 +1,14 @@
 import { Type } from '@sinclair/typebox'
-import { AuthenticationProfile, ContestSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema, DomainMembersSchema, DomainSchema } from '@argoncs/types'
+import { ContestSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema, DomainMembersSchema, DomainSchema } from '@argoncs/types'
 import { addOrUpdateDomainMember, createDomain, fetchDomain, fetchDomainMembers, removeDomainMember, updateDomain } from '../../services/domain.services.js'
 import { verifySuperAdmin } from '../../auth/role.auth.js'
 import { verifyDomainScope } from '../../auth/scope.auth.js'
 import { FastifyTypeBox } from '../../types.js'
 import { createDomainProblem, deleteDomainProblem, fetchDomainProblems, updateDomainProblem } from '../../services/problem.services.js'
 import { fetchDomainProblem } from '@argoncs/common'
-import { createSubmission } from '../../services/submission.services.js'
+import { createTestingSubmission } from '../../services/submission.services.js'
 import { createUploadSession } from '../../services/testcase.services.js'
-import { badRequestSchema, forbiddenSchema, MethodNotAllowedError, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
+import { UnauthorizedError, badRequestSchema, forbiddenSchema, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { createContest, fetchDomainContests } from '../../services/contest.services.js'
 
 async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> {
@@ -236,13 +236,13 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       onRequest: [problemRoutes.auth([verifyDomainScope(['problem.test'])]) as any]
     },
     async (request, reply) => {
+      if (request.auth == null) {
+        throw new UnauthorizedError('User not logged in')
+      }
+
       const submission = request.body
       const { domainId, problemId } = request.params
-      const problem = await fetchDomainProblem(problemId, domainId)
-      if (problem.testcases == null) {
-        throw new MethodNotAllowedError('Testcases must be uploaded before a problem can be tested')
-      }
-      const created = await createSubmission(submission, problem.domainId, problem.id, (request.auth as AuthenticationProfile).id)
+      const created = await createTestingSubmission(submission, problemId, request.auth.id, domainId)
       return await reply.status(202).send(created)
     }
   )
