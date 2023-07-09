@@ -1,10 +1,10 @@
 import { fetchContestProblem } from '@argoncs/common'
-import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema, NewSubmissionSchema, SubmissionSchema } from '@argoncs/types'
+import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema, NewSubmissionSchema, SubmissionSchema, TeamScoreSchema } from '@argoncs/types'
 import { Type } from '@sinclair/typebox'
 import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { verifyContestBegan, verifyContestNotBegan, verifyContestPublished, verifyContestRegistration, verifyContestRunning } from '../../auth/contest.auth.js'
 import { verifyDomainScope } from '../../auth/scope.auth.js'
-import { fetchContest, fetchContestProblemList, removeProblemFromContest, syncProblemToContest } from '../../services/contest.services.js'
+import { fetchContest, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest } from '../../services/contest.services.js'
 import { FastifyTypeBox } from '../../types.js'
 import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
 import { verifyTeamCaptain, verifyTeamMembership } from '../../auth/team.auth.js'
@@ -145,7 +145,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
       },
       onRequest: [problemRoutes.auth([
         verifyDomainScope(['contest.manage']),
-        verifyContestRegistration
+        [verifyContestRegistration, verifyContestBegan]
       ]) as any]
     },
     async (request, reply) => {
@@ -341,7 +341,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
         }
       },
       onRequest: [teamRoutes.auth([
-        verifyTeamMembership
+        [verifyTeamMembership, verifyContestBegan]
       ]) as any]
     },
     async (request, reply) => {
@@ -352,6 +352,26 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       const { contestId, teamId } = request.params
       const submissions = await fetchContestTeamSubmissions(contestId, teamId)
       return await reply.status(200).send(submissions)
+    }
+  )
+}
+
+async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<void> {
+  ranklistRoutes.get(
+    '/',
+    {
+      schema: {
+        params: Type.Object({ contestId: Type.String() }),
+        response: {
+          200: Type.Array(TeamScoreSchema),
+          400: badRequestSchema
+        }
+      }
+    },
+    async (request, reply) => {
+      const { contestId } = request.params
+      const ranklist = await fetchContestRanklist(contestId)
+      return await reply.status(200).send(ranklist)
     }
   )
 }
@@ -378,4 +398,5 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
 
   await routes.register(contestProblemRoutes, { prefix: '/:contestId/problems' })
   await routes.register(contestTeamRoutes, { prefix: '/:contestId/teams' })
+  await routes.register(contestRanklistRoutes, { prefix: '/:contestId/ranklist' })
 }
