@@ -1,5 +1,5 @@
-import { Constraints, JudgerTaskType, ConstraintsSchema, JudgerResultType } from './judger.types.js'
-import { Static, Type } from '@sinclair/typebox'
+import { type Constraints, type JudgerTaskType, ConstraintsSchema, type JudgerResultType } from './judger.types.js'
+import { type Static, Type } from '@sinclair/typebox'
 
 export enum SubmissionLang {
   C = 'C',

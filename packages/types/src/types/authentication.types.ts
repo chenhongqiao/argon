@@ -1,5 +1,5 @@
-import { Static, Type } from '@sinclair/typebox'
-import { User } from './user.types.js'
+import { type Static, Type } from '@sinclair/typebox'
+import { type User } from './user.types.js'
 
 export const UserSessionSchema = Type.Object({
   id: Type.String(),
@@ -9,7 +9,7 @@ export const UserSessionSchema = Type.Object({
 })
 export type UserSession = Static<typeof UserSessionSchema>
 
-export type AuthenticationProfile = Pick<User, 'scopes' | 'role' | 'id' | 'teams'>
+export type AuthenticationProfile = Pick<User, 'scopes' | 'role' | 'id' | 'teams' | 'email'>
 
 export interface EmailVerification {
   id: string

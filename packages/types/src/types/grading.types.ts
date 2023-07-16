@@ -1,16 +1,16 @@
-import { SubmissionLang } from './compilation.types.js'
+import { type SubmissionLang } from './compilation.types.js'
 
 import {
-  Constraints,
-  JudgerResultType,
-  JudgerTaskType,
+  type Constraints,
+  type JudgerResultType,
+  type JudgerTaskType,
   SandboxMemoryExceededSchema,
   SandboxRuntimeErrorSchema,
   SandboxSystemErrorSchema,
   SandboxTimeExceededSchema
 } from './judger.types.js'
 
-import { Static, Type } from '@sinclair/typebox'
+import { type Static, Type } from '@sinclair/typebox'
 
 export enum GradingStatus {
   Accepted = 'AC',

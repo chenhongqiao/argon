@@ -1,4 +1,4 @@
-import { Static, Type } from '@sinclair/typebox'
+import { type Static, Type } from '@sinclair/typebox'
 
 import { SubmissionLang } from './compilation.types.js'
 
@@ -15,10 +15,13 @@ export enum SubmissionStatus {
 export const NewSubmissionSchema = Type.Object({
   language: Type.Enum(SubmissionLang),
   source: Type.String()
-})
+}, { additionalProperties: false })
 export type NewSubmission = Static<typeof NewSubmissionSchema>
 
-const BaseSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
+const BaseSubmissionSchema = Type.Object({
+  language: Type.Enum(SubmissionLang),
+  source: Type.String(),
+
   id: Type.String(),
   problemId: Type.String(),
   domainId: Type.String(),
@@ -26,7 +29,7 @@ const BaseSubmissionSchema = Type.Intersect([NewSubmissionSchema, Type.Object({
   teamId: Type.Optional(Type.String()),
   userId: Type.String(),
   createdAt: Type.Number()
-})])
+})
 
 const CompilingSubmissionSchema = Type.Intersect([BaseSubmissionSchema, Type.Object({
   status: Type.Literal(SubmissionStatus.Compiling)
