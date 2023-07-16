@@ -4,7 +4,7 @@ import { ForbiddenError } from 'http-errors-enhanced'
 import { fetchTeam } from '../services/team.services.js'
 import { requestAuthProfile, requestParameter } from '../utils/auth.utils.js'
 
-export async function verifyTeamMembership (request: FastifyRequest, reply: FastifyReply): Promise<void> {
+export async function isTeamMember (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   const auth = requestAuthProfile(request)
   const contestId = requestParameter(request, 'contestId')
   const teamId = requestParameter(request, 'teamId')
@@ -14,7 +14,7 @@ export async function verifyTeamMembership (request: FastifyRequest, reply: Fast
   }
 }
 
-export async function verifyTeamCaptain (request: FastifyRequest, reply: FastifyReply) {
+export async function isTeamCaptain (request: FastifyRequest, reply: FastifyReply) {
   const auth = requestAuthProfile(request)
   const contestId = requestParameter(request, 'contestId')
   const teamId = requestParameter(request, 'teamId')

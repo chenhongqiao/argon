@@ -4,7 +4,7 @@ import { ForbiddenError, NotFoundError } from 'http-errors-enhanced'
 import { fetchContest } from '../services/contest.services.js'
 import { requestAuthProfile, requestParameter } from '../utils/auth.utils.js'
 
-export async function verifyContestPublished (request: FastifyRequest, reply: FastifyReply) {
+export async function contestPublished (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
   const contest = await fetchContest(contestId)
@@ -13,7 +13,7 @@ export async function verifyContestPublished (request: FastifyRequest, reply: Fa
   }
 }
 
-export async function verifyContestRegistration (request: FastifyRequest, reply: FastifyReply) {
+export async function registeredForContest (request: FastifyRequest, reply: FastifyReply) {
   const auth = requestAuthProfile(request)
 
   const contestId = requestParameter(request, 'contestId')
@@ -23,7 +23,7 @@ export async function verifyContestRegistration (request: FastifyRequest, reply:
   }
 }
 
-export async function verifyContestBegan (request: FastifyRequest, reply: FastifyReply) {
+export async function contestBegan (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
   const contest = await fetchContest(contestId)
@@ -33,7 +33,7 @@ export async function verifyContestBegan (request: FastifyRequest, reply: Fastif
   }
 }
 
-export async function verifyContestNotBegan (request: FastifyRequest, reply: FastifyReply) {
+export async function contestNotBegan (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
   const contest = await fetchContest(contestId)
@@ -43,7 +43,7 @@ export async function verifyContestNotBegan (request: FastifyRequest, reply: Fas
   }
 }
 
-export async function verifyContestRunning (request: FastifyRequest, reply: FastifyReply) {
+export async function contestRunning (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
   const contest = await fetchContest(contestId)

@@ -3,7 +3,7 @@ import { type FastifyReply, type FastifyRequest } from 'fastify'
 import { ForbiddenError } from 'http-errors-enhanced'
 import { requestAuthProfile } from '../utils/auth.utils.js'
 
-export async function verifySuperAdmin (request: FastifyRequest, reply: FastifyReply): Promise<void> {
+export async function isSuperAdmin (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   const auth = requestAuthProfile(request)
 
   if (auth.role !== UserRole.Admin) {
