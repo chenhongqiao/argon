@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs'
 
 import { runInSandbox } from './sandbox.services.js'
 
-import { CompilingTask, SandboxStatus, CompileSucceeded, CompileFailed, CompilingStatus } from '@argoncs/types'
+import { type CompilingTask, SandboxStatus, type CompileSucceeded, type CompileFailed, CompilingStatus } from '@argoncs/types'
 import { minio } from '@argoncs/common'
 import { languageConfigs } from '../../configs/language.configs.js'
 

@@ -1,4 +1,4 @@
-import { User, NewUser, UserRole, UserSession, AuthenticationProfile } from '@argoncs/types'
+import { type User, type NewUser, UserRole, type UserSession, type AuthenticationProfile } from '@argoncs/types'
 import { NotFoundError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
 import { emailVerificationCollection, MongoServerError, sessionCollection, userCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
@@ -21,7 +21,7 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
     id: userId,
     name: newUser.name,
     email: '',
-    newEmail: newUser.email,
+    newEmail: newUser.newEmail,
     credential: {
       salt,
       hash
@@ -126,6 +126,7 @@ export async function completeVerification (verificationId: string): Promise<{ m
 }
 
 export async function authenticateUser (usernameOrEmail: string, password: string, loginIP: string, userAgent: string): Promise<{ userId: string, sessionId: string }> {
+  console.log(userCollection)
   const user = await userCollection.findOne({ $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }] })
   if (user == null) {
     throw new UnauthorizedError('Authentication failed')
@@ -173,7 +174,8 @@ export async function fetchAuthenticationProfile (userId: string): Promise<Authe
     role: user.role,
     scopes: user.scopes,
     id: user.id,
-    teams: user.teams
+    teams: user.teams,
+    email: user.email
   }
 
   await setCache(`auth-profile:${userId}`, authProfile)

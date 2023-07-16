@@ -1,4 +1,4 @@
-import { ContestProblem, Problem } from '@argoncs/types'
+import { type ContestProblem, type Problem } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import { contestProblemCollection, domainProblemCollection } from '../connections/mongodb.connections.js'
 

@@ -1,5 +1,5 @@
-import { ClientSession, mongoClient, submissionCollection, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
-import { NewTeam, Team, TeamMembers } from '@argoncs/types'
+import { type ClientSession, mongoClient, submissionCollection, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
+import { type NewTeam, type Team, type TeamMembers } from '@argoncs/types'
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 
@@ -109,9 +109,7 @@ export async function completeTeamInvitation (invitationId: string, userId: stri
         throw new ConflictError('User is already a member of another team for this contest')
       }
 
-      // @ts-expect-error
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      const { modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId }, { $set: { [`teams.${team.contestId}`]: teamId } }, { session })
+      const { modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId }, { $set: { [`teams.${contestId}`]: teamId } }, { session })
       modifiedCount += Math.floor(modifiedUser)
 
       const { modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $addToSet: { members: userId } }, { session })

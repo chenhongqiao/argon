@@ -1,5 +1,5 @@
-import { FastifyBaseLogger, FastifyInstance, RawReplyDefaultExpression, RawRequestDefaultExpression, RawServerDefault } from 'fastify'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { type FastifyBaseLogger, type FastifyInstance, type RawReplyDefaultExpression, type RawRequestDefaultExpression, type RawServerDefault } from 'fastify'
+import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 export type FastifyTypeBox = FastifyInstance<
 RawServerDefault,

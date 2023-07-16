@@ -3,7 +3,7 @@ import { ContestSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, New
 import { addOrUpdateDomainMember, createDomain, fetchDomain, fetchDomainMembers, removeDomainMember, updateDomain } from '../../services/domain.services.js'
 import { verifySuperAdmin } from '../../auth/role.auth.js'
 import { verifyDomainScope } from '../../auth/scope.auth.js'
-import { FastifyTypeBox } from '../../types.js'
+import { type FastifyTypeBox } from '../../types.js'
 import { createDomainProblem, deleteDomainProblem, fetchDomainProblems, updateDomainProblem } from '../../services/problem.services.js'
 import { fetchDomainProblem } from '@argoncs/common'
 import { createTestingSubmission } from '../../services/submission.services.js'

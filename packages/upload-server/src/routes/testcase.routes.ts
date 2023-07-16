@@ -2,7 +2,7 @@ import { consumeUploadSession, uploadTestcase } from '../services/testcase.servi
 
 import { Type } from '@sinclair/typebox'
 import multipart from '@fastify/multipart'
-import { FastifyTypeBox } from '../types.js'
+import { type FastifyTypeBox } from '../types.js'
 import { BadRequestError, badRequestSchema, PayloadTooLargeError, unauthorizedSchema } from 'http-errors-enhanced'
 
 export async function testcaseRoutes (routes: FastifyTypeBox): Promise<void> {

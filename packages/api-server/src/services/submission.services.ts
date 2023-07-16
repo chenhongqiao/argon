@@ -1,10 +1,10 @@
 import {
-  CompilingTask,
+  type CompilingTask,
   JudgerTaskType,
-  NewSubmission,
+  type NewSubmission,
   SubmissionStatus,
-  Submission,
-  Problem
+  type Submission,
+  type Problem
 } from '@argoncs/types'
 import { rabbitMQ, judgerExchange, judgerTasksKey, submissionCollection, fetchDomainProblem, fetchContestProblem } from '@argoncs/common'
 import { languageConfigs } from '../../configs/language.configs.js'

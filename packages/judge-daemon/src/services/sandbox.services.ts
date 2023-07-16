@@ -2,12 +2,12 @@ import { exec } from '../utils/system.utils.js'
 import { promises as fs } from 'node:fs'
 
 import {
-  Constraints,
+  type Constraints,
   SandboxStatus,
-  SandboxRuntimeError,
-  SandboxSystemError,
-  SandboxTimeExceeded,
-  SandboxMemoryExceeded
+  type SandboxRuntimeError,
+  type SandboxSystemError,
+  type SandboxTimeExceeded,
+  type SandboxMemoryExceeded
 } from '@argoncs/types'
 
 import { ConflictError } from 'http-errors-enhanced'

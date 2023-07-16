@@ -7,7 +7,7 @@ import { minio } from '@argoncs/common'
 let cache: LRUCache<string, string>
 let cacheDir: string
 
-const downloading: Map<string, Promise<void>> = new Map()
+const downloading = new Map<string, Promise<void>>()
 
 export async function prepareStorage (dir: string): Promise<void> {
   cacheDir = dir
@@ -33,7 +33,7 @@ async function cacheTestcase (objectName: string, versionId: string): Promise<vo
 export async function fetchTestcase (objectName: string, versionId: string, destPath: string): Promise<void> {
   const key = path.join(cacheDir, 'testcases', objectName, versionId)
   if (cache.get(key) != null) {
-    return await fs.copyFile(key, destPath)
+    await fs.copyFile(key, destPath); return
   }
   if (downloading.get(key) != null) {
     await downloading.get(key)
@@ -58,7 +58,7 @@ async function cacheBinary (objectName: string): Promise<void> {
 export async function fetchBinary (objectName: string, destPath: string): Promise<void> {
   const key = path.join(cacheDir, 'binaries', objectName)
   if (cache.get(key) != null) {
-    return await fs.copyFile(key, destPath)
+    await fs.copyFile(key, destPath); return
   }
   if (downloading.get(key) != null) {
     await downloading.get(key)

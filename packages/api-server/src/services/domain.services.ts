@@ -1,4 +1,4 @@
-import { NewDomain, Domain, DomainMembers } from '@argoncs/types'
+import { type NewDomain, type Domain, type DomainMembers } from '@argoncs/types'
 import { mongoClient, domainCollection, userCollection } from '@argoncs/common'
 import { NotFoundError } from 'http-errors-enhanced'
 

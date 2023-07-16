@@ -1,4 +1,4 @@
-import amqplib, { Channel } from 'amqplib'
+import amqplib, { type Channel } from 'amqplib'
 
 let rabbitMQ: Channel
 

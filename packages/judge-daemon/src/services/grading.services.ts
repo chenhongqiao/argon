@@ -1,5 +1,5 @@
 import {
-  SandboxStatus, GradingStatus, GradingTask, GradingResult
+  SandboxStatus, GradingStatus, type GradingTask, type GradingResult
 } from '@argoncs/types'
 import { languageConfigs } from '../../configs/language.configs.js'
 

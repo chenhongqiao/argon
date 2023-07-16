@@ -1,12 +1,12 @@
-import { AuthenticationProfile } from '@argoncs/types'
+import { type AuthenticationProfile } from '@argoncs/types'
 import {
-  FastifyInstance,
-  FastifyBaseLogger,
-  RawReplyDefaultExpression,
-  RawRequestDefaultExpression,
-  RawServerDefault
+  type FastifyInstance,
+  type FastifyBaseLogger,
+  type RawReplyDefaultExpression,
+  type RawRequestDefaultExpression,
+  type RawServerDefault
 } from 'fastify'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 declare module 'fastify' {
   interface FastifyRequest {

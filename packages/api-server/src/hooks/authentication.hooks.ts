@@ -1,4 +1,4 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import { type FastifyRequest, type FastifyReply } from 'fastify'
 import { NotFoundError, UnauthorizedError } from 'http-errors-enhanced'
 import { fetchAuthenticationProfile, fetchSession } from '../services/user.services.js'
 

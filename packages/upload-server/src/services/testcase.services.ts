@@ -1,5 +1,5 @@
 import { minio, testcaseUploadCollection } from '@argoncs/common'
-import { MultipartFile } from '@fastify/multipart'
+import { type MultipartFile } from '@fastify/multipart'
 import { UnauthorizedError } from 'http-errors-enhanced'
 import path = require('node:path')
 

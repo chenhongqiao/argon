@@ -1,4 +1,4 @@
-import { FastifyTypeBox } from '../types.js'
+import { type FastifyTypeBox } from '../types.js'
 import { heartbeatRoutes } from './v1/heartbeat.routes.js'
 import { sessionRoutes } from './v1/session.routes.js'
 import { domainRoutes } from './v1/domain.routes.js'

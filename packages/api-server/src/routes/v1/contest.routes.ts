@@ -5,10 +5,11 @@ import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, m
 import { verifyContestBegan, verifyContestNotBegan, verifyContestPublished, verifyContestRegistration, verifyContestRunning } from '../../auth/contest.auth.js'
 import { verifyDomainScope } from '../../auth/scope.auth.js'
 import { fetchContest, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest } from '../../services/contest.services.js'
-import { FastifyTypeBox } from '../../types.js'
+import { type FastifyTypeBox } from '../../types.js'
 import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
 import { verifyTeamCaptain, verifyTeamMembership } from '../../auth/team.auth.js'
 import { createContestSubmission, fetchContestProblemSubmissions, fetchContestTeamSubmissions } from '../../services/submission.services.js'
+import { verifyEmail } from '../../auth/email.auth.js'
 
 async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void> {
   problemRoutes.get(
@@ -176,7 +177,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           409: conflictSchema
         }
       },
-      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan], { relation: 'and' }) as any]
+      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan, verifyEmail], { relation: 'and' }) as any]
     },
     async (request, reply) => {
       if (request.auth == null) {
@@ -249,7 +250,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           404: notFoundSchema
         }
       },
-      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan], { relation: 'and' }) as any]
+      onRequest: [teamRoutes.auth([verifyContestPublished, verifyContestNotBegan, verifyEmail], { relation: 'and' }) as any]
     },
     async (request, reply) => {
       if (request.auth == null) {

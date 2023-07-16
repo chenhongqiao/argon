@@ -1,5 +1,5 @@
 import { connectMongoDB, connectRabbitMQ, connectRanklistRedis, deadResultsQueue, deadTasksQueue, judgerResultsQueue, rabbitMQ, sentry } from '@argoncs/common'
-import { CompilingResultMessage, CompilingTask, GradingResultMessage, GradingTask, JudgerResultType } from '@argoncs/types'
+import { type CompilingResultMessage, type CompilingTask, type GradingResultMessage, type GradingTask, JudgerResultType } from '@argoncs/types'
 import assert from 'assert'
 import { completeGrading, handleCompileResult, handleGradingResult } from './services/result.services.js'
 

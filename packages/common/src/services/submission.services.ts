@@ -1,4 +1,4 @@
-import { Submission } from '@argoncs/types'
+import { type Submission } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import { submissionCollection } from '../connections/mongodb.connections.js'
 

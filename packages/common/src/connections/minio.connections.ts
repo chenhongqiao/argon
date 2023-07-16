@@ -1,7 +1,7 @@
-import { Client, MinIOTypeHack } from 'minio'
+import { Client, type MinIOTypeHack } from 'minio'
 
 import { ConnectionStringParser } from 'connection-string-parser'
-import { ReadableStream } from 'stream/web'
+import { type ReadableStream } from 'stream/web'
 
 declare module 'minio' {
   export interface BucketItemStat {

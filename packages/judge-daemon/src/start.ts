@@ -2,7 +2,7 @@ import { destroySandbox, initSandbox } from './services/sandbox.services.js'
 import { gradeSubmission } from './services/grading.services.js'
 import { compileSubmission } from './services/compile.services.js'
 
-import { GradingTask, CompilingTask, JudgerTaskType, GradingResultMessage, JudgerResultType, CompilingResultMessage } from '@argoncs/types'
+import { type GradingTask, type CompilingTask, JudgerTaskType, type GradingResultMessage, JudgerResultType, type CompilingResultMessage } from '@argoncs/types'
 import { rabbitMQ, judgerTasksQueue, judgerExchange, judgerResultsKey, sentry, connectRabbitMQ, connectMinIO } from '@argoncs/common'
 
 import os = require('node:os')

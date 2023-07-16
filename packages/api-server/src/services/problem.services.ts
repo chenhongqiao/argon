@@ -1,6 +1,6 @@
 import {
-  NewProblem,
-  Problem
+  type NewProblem,
+  type Problem
 } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import { mongoClient, domainProblemCollection, submissionCollection, testcaseUploadCollection } from '@argoncs/common'

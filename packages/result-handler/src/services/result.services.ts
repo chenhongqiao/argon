@@ -1,5 +1,5 @@
 import { fetchContestProblem, fetchDomainProblem, fetchSubmission, judgerExchange, judgerTasksKey, rabbitMQ, ranklistRedis, recalculateTeamTotalScore, submissionCollection, teamScoreCollection } from '@argoncs/common'
-import { CompilingResult, CompilingStatus, GradingResult, GradingStatus, GradingTask, JudgerTaskType, Problem, SubmissionStatus } from '@argoncs/types'
+import { type CompilingResult, CompilingStatus, type GradingResult, GradingStatus, type GradingTask, JudgerTaskType, type Problem, SubmissionStatus } from '@argoncs/types'
 import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
 
@@ -16,7 +16,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       }
       const submissionTestcases: Array<{ points: number, input: { name: string, versionId: string }, output: { name: string, versionId: string } }> = []
       if (problem.testcases == null) {
-        return await completeGrading(submissionId, 'Problem does not have testcases')
+        await completeGrading(submissionId, 'Problem does not have testcases'); return
       }
       problem.testcases.forEach((testcase, index) => {
         const task: GradingTask = {
@@ -41,7 +41,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       })
 
       await submissionCollection.updateOne({ id: submissionId }, {
-        // @ts-expect-error
+        // @ts-expect-error mongodb typing bug
         $set: {
           status: SubmissionStatus.Grading,
           gradedCases: 0,
@@ -76,7 +76,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
           status: SubmissionStatus.Graded
         },
         $unset: {
-          // @ts-expect-error
+          // @ts-expect-error mongodb typing bug
           gradedCases: ''
         }
       })

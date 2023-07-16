@@ -10,8 +10,8 @@ import fastifySensible from '@fastify/sensible'
 import fastifyHttpErrorsEnhanced from '@chenhongqiao/fastify-http-errors-enhanced'
 import assert from 'assert'
 import fastifySwagger from '@fastify/swagger'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import { FastifyTypeBox } from './types.js'
+import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { type FastifyTypeBox } from './types.js'
 
 sentry.init({
   dsn: 'https://5aec7cfe257348109da4882fbb807e3a@o1044666.ingest.sentry.io/4505310995218432',

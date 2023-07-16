@@ -1,5 +1,5 @@
 import { contestCollection, contestProblemCollection, contestProblemListCollection, domainProblemCollection, mongoClient, ranklistRedis, recalculateTeamTotalScore, teamScoreCollection } from '@argoncs/common'
-import { ConetstProblemList, Contest, ContestProblem, NewContest, TeamScore } from '@argoncs/types'
+import { type ConetstProblemList, type Contest, type ContestProblem, type NewContest, type TeamScore } from '@argoncs/types'
 import { MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 import { fetchCache, refreshCache, setCache } from './cache.services.js'

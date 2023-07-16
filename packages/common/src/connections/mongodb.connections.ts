@@ -1,5 +1,5 @@
-import { ConetstProblemList, Contest, ContestProblem, Submission, Domain, EmailVerification, Problem, Team, TeamInvitation, TestcaseUpload, User, UserSession, TeamScore } from '@argoncs/types'
-import { MongoClient, IndexSpecification, CreateIndexesOptions, Db, Collection } from 'mongodb'
+import { type ConetstProblemList, type Contest, type ContestProblem, type Submission, type Domain, type EmailVerification, type Problem, type Team, type TeamInvitation, type TestcaseUpload, type User, type UserSession, type TeamScore } from '@argoncs/types'
+import { MongoClient, type IndexSpecification, type CreateIndexesOptions, type Db, type Collection } from 'mongodb'
 
 interface Index {
   keys: IndexSpecification
