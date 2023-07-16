@@ -1,19 +1,12 @@
-import { FastifyReply, FastifyRequest } from 'fastify'
-import { ForbiddenError, InternalServerError } from 'http-errors-enhanced'
-import { userAuthHook } from '../hooks/authentication.hooks.js'
-import { contestAnnotateHook } from '../hooks/contest.hooks.js'
-import { submissionAnnotateHook } from '../hooks/submission.hooks.js'
+import { type FastifyReply, type FastifyRequest } from 'fastify'
+import { ForbiddenError } from 'http-errors-enhanced'
+import { requestAuthProfile, requestParameter } from '../utils/auth.utils.js'
 
 export function verifyAnyScope (scopes: string[]) {
   return async function handler (request: FastifyRequest, reply: FastifyReply) {
-    if (request.auth == null) {
-      await userAuthHook(request, reply)
-      if (request.auth == null) {
-        throw new ForbiddenError('User not logged in')
-      }
-    }
+    const auth = requestAuthProfile(request)
 
-    const allScopes = Object.values(request.auth.scopes).flat(1)
+    const allScopes = Object.values(auth.scopes).flat(1)
 
     scopes.forEach((scope) => {
       if (!allScopes.includes(scope)) {
@@ -25,30 +18,10 @@ export function verifyAnyScope (scopes: string[]) {
 
 export function verifyDomainScope (scopes: string[]) {
   return async function handler (request: FastifyRequest, reply: FastifyReply) {
-    if (request.auth == null) {
-      await userAuthHook(request, reply)
-      if (request.auth == null) {
-        throw new ForbiddenError('User not logged in')
-      }
-    }
+    const auth = requestAuthProfile(request)
 
-    // @ts-expect-error
-    if (request.params.domainId == null && request.params.contestId != null) {
-      await contestAnnotateHook(request, reply)
-    }
-
-    // @ts-expect-error
-    if (request.params.domainId == null && request.params.submissionId != null) {
-      await submissionAnnotateHook(request, reply)
-    }
-
-    const { domainId } = request.params as { domainId: string | undefined }
-
-    if (domainId == null || typeof domainId !== 'string') {
-      throw new InternalServerError('Resource not associated with a domain')
-    }
-
-    const userScopes = request.auth.scopes
+    const domainId = requestParameter(request, 'domainId')
+    const userScopes = auth.scopes
 
     scopes.forEach((scope) => {
       if (userScopes[domainId] == null || !Boolean(userScopes[domainId].includes(scope))) {
