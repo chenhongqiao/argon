@@ -1,15 +1,18 @@
 import { Type } from '@sinclair/typebox'
 import { type PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, type PrivateUserProfile, NewUserSchema, SubmissionSchema } from '@argoncs/types'
 import { completeVerification, fetchUser, initiateVerification, registerUser } from '../../services/user.services.js'
-import { verifyUserOwnership } from '../../auth/ownership.auth.js'
+import { ownsResource } from '../../auth/ownership.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
 import { badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
-import { verifyContestNotBegan, verifyContestPublished } from '../../auth/contest.auth.js'
+import { contestNotBegan, contestPublished } from '../../auth/contest.auth.js'
 import { completeTeamInvitation } from '../../services/team.services.js'
-import { verifyDomainScope } from '../../auth/scope.auth.js'
-import { verifyTeamMembership } from '../../auth/team.auth.js'
+import { hasDomainPrivilege, hasNoPrivilege } from '../../auth/scope.auth.js'
+import { isTeamMember } from '../../auth/team.auth.js'
 import { fetchSubmission } from '@argoncs/common'
-import { verifySuperAdmin } from '../../auth/role.auth.js'
+import { isSuperAdmin } from '../../auth/role.auth.js'
+import { userAuthHook } from '../../hooks/authentication.hooks.js'
+import { contestInfoHook } from '../../hooks/contest.hooks.js'
+import { submissionInfoHook } from '../../hooks/submission.hooks.js'
 
 async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> {
   profileRoutes.get(
@@ -45,7 +48,9 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
         },
         params: Type.Object({ userId: Type.String() })
       },
-      onRequest: [profileRoutes.auth([verifyUserOwnership, verifySuperAdmin]) as any]
+      onRequest: [userAuthHook, profileRoutes.auth([
+        [ownsResource],
+        [isSuperAdmin]]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params
@@ -68,7 +73,9 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
           403: forbiddenSchema
         }
       },
-      onRequest: [verificationRoutes.auth([verifyUserOwnership]) as any]
+      onRequest: [userAuthHook, verificationRoutes.auth([
+        [ownsResource]
+      ]) as any]
     },
     async (request, reply) => {
       const { userId } = request.params
@@ -113,7 +120,9 @@ export async function userContestRoutes (contestRoutes: FastifyTypeBox): Promise
           404: notFoundSchema
         }
       },
-      onRequest: [contestRoutes.auth([verifyContestPublished, verifyContestNotBegan, verifyUserOwnership], { relation: 'and' }) as any]
+      onRequest: [userAuthHook, contestInfoHook, contestRoutes.auth([[
+        hasNoPrivilege, contestPublished, contestNotBegan, ownsResource]
+      ]) as any]
     },
     async (request, reply) => {
       const { invitationId, userId } = request.params
@@ -137,9 +146,9 @@ async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<
           403: forbiddenSchema
         }
       },
-      onRequest: [submissionRoutes.auth([
-        verifyUserOwnership,
-        verifySuperAdmin
+      onRequest: [userAuthHook, submissionRoutes.auth([
+        [ownsResource],
+        [isSuperAdmin]
       ]) as any]
     },
     async (request, reply) => {
@@ -162,10 +171,10 @@ async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<
           404: notFoundSchema
         }
       },
-      onRequest: [submissionRoutes.auth([
-        verifyUserOwnership, // User viewing their own submission
-        verifyDomainScope(['problem.manage']), // Admin viewing all submissions to problems in their domain
-        verifyTeamMembership // User viewing submissions from other team members
+      onRequest: [userAuthHook, submissionInfoHook, submissionRoutes.auth([
+        [isTeamMember], // User viewing submissions from other team members
+        [hasDomainPrivilege(['problem.manage'])], // Admin viewing all submissions to problems in their domain
+        [ownsResource] // User viewing their own submission
       ]) as any]
     },
     async (request, reply) => {
