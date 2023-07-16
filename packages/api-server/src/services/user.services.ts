@@ -21,7 +21,7 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
     id: userId,
     name: newUser.name,
     email: '',
-    newEmail: newUser.newEmail,
+    newEmail: newUser.email,
     credential: {
       salt,
       hash

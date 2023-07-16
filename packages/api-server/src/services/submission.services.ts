@@ -10,17 +10,17 @@ import { rabbitMQ, judgerExchange, judgerTasksKey, submissionCollection, fetchDo
 import { languageConfigs } from '../../configs/language.configs.js'
 
 import { nanoid } from '../utils/nanoid.utils.js'
-import { MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
+import { MethodNotAllowedError } from 'http-errors-enhanced'
 
-async function createSubmission (submission: NewSubmission, problemId: string, userId: string, domainId?: string, contestId?: string, teamId?: string): Promise<{ submissionId: string }> {
+async function createSubmission (submission: NewSubmission, userId: string, target: { problemId: string, domainId: string } | { problemId: string, contestId: string, teamId?: string }): Promise<{ submissionId: string }> {
   let problem: Problem
-  if (contestId == null && domainId != null) {
-    problem = await fetchDomainProblem(problemId, domainId)
-  } else if (contestId != null && domainId == null) {
-    problem = await fetchContestProblem(problemId, contestId)
+  const { problemId } = target
+  if ('contestId' in target) {
+    problem = await fetchContestProblem(problemId, target.contestId)
   } else {
-    throw new NotFoundError('Unable to locate problem')
+    problem = await fetchDomainProblem(problemId, target.domainId)
   }
+
   if (problem.testcases == null) {
     throw new MethodNotAllowedError('Problem does not have testcases uploaded')
   }
@@ -36,11 +36,9 @@ async function createSubmission (submission: NewSubmission, problemId: string, u
     createdAt: (new Date()).getTime()
   }
 
-  if (contestId != null) {
-    pendingSubmission.contestId = contestId
-  }
-  if (teamId != null) {
-    pendingSubmission.teamId = teamId
+  if ('contestId' in target) {
+    pendingSubmission.contestId = target.contestId
+    pendingSubmission.teamId = target.teamId
   }
 
   await submissionCollection.insertOne(pendingSubmission)
@@ -58,11 +56,11 @@ async function createSubmission (submission: NewSubmission, problemId: string, u
 }
 
 export async function createTestingSubmission (submission: NewSubmission, problemId: string, userId: string, domainId: string): Promise<{ submissionId: string }> {
-  return await createSubmission(submission, problemId, userId, domainId, undefined, undefined)
+  return await createSubmission(submission, userId, { problemId, domainId })
 }
 
 export async function createContestSubmission (submission: NewSubmission, problemId: string, userId: string, contestId: string, teamId?: string): Promise<{ submissionId: string }> {
-  return await createSubmission(submission, problemId, userId, undefined, contestId, teamId)
+  return await createSubmission(submission, userId, { problemId, contestId, teamId })
 }
 
 export async function markSubmissionAsCompiling (submissionId: string): Promise<void> {
@@ -73,18 +71,6 @@ export async function markSubmissionAsCompiling (submissionId: string): Promise<
   })
 }
 
-export async function fetchContestProblemSubmissions (contestId: string, problemId: string, teamId?: string): Promise<Submission[]> {
-  if (teamId != null) {
-    return await submissionCollection.find({ contestId, problemId, teamId }).sort({ createdAt: -1 }).toArray()
-  } else {
-    return await submissionCollection.find({ contestId, problemId }).sort({ createdAt: -1 }).toArray()
-  }
-}
-
-export async function fetchContestTeamSubmissions (contestId: string, teamId: string): Promise<Submission[]> {
-  return await submissionCollection.find({ contestId, teamId }).sort({ createdAt: -1 }).toArray()
-}
-
-export async function fetchUserSubmissions (userId: string): Promise<Submission[]> {
-  return await submissionCollection.find({ userId }).sort({ createdAt: -1 }).toArray()
+export async function querySubmissions (query: { problemId?: string, teamId?: string, userId?: string, contestId?: string, domainId?: string }): Promise<Submission[]> {
+  return await submissionCollection.find(query).sort({ createdAt: -1 }).toArray()
 }
