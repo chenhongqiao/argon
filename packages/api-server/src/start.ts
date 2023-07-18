@@ -12,6 +12,7 @@ import assert from 'assert'
 import fastifySwagger from '@fastify/swagger'
 import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { type FastifyTypeBox } from './types.js'
+import fastifyCors from '@fastify/cors'
 
 sentry.init({
   dsn: 'https://5aec7cfe257348109da4882fbb807e3a@o1044666.ingest.sentry.io/4505310995218432',
@@ -42,6 +43,10 @@ export async function loadFastify (): Promise<FastifyTypeBox> {
   await app.register(fastifySensible)
   await app.register(fastifyAuth)
   await app.register(fastifySwagger)
+  await app.register(fastifyCors, {
+    origin: [/\.teamscode\.org$/, /\.argoncs\.io$/, 'http://localhost:3000'],
+    credentials: true
+  })
 
   await app.register(v1APIRoutes, { prefix: '/v1' })
 
