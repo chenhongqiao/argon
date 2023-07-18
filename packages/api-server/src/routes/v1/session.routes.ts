@@ -6,6 +6,7 @@ import { delay } from '@argoncs/common'
 import { randomInt } from 'node:crypto'
 import { type FastifyTypeBox } from '../../types.js'
 import { badRequestSchema, unauthorizedSchema } from 'http-errors-enhanced'
+import { UserLoginSchema } from '@argoncs/types'
 
 export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register((publicRoutes: FastifyTypeBox, options, done) => {
@@ -13,7 +14,7 @@ export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {
       '/',
       {
         schema: {
-          body: Type.Object({ usernameOrEmail: Type.String(), password: Type.String() }),
+          body: UserLoginSchema,
           response: {
             200: Type.Object({ userId: Type.String() }),
             400: badRequestSchema,

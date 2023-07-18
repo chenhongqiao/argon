@@ -17,3 +17,6 @@ export interface EmailVerification {
   email: string
   createdAt: number
 }
+
+export const UserLoginSchema = Type.Object({ usernameOrEmail: Type.String(), password: Type.String() })
+export type UserLogin = Static<typeof UserLoginSchema>

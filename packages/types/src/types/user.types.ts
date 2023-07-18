@@ -1,10 +1,10 @@
 import { type Static, Type } from '@sinclair/typebox'
 
 export const NewUserSchema = Type.Object({
-  name: Type.String(),
-  email: Type.String(),
-  password: Type.String(),
-  username: Type.String()
+  name: Type.String({ maxLength: 32 }),
+  email: Type.String({ maxLength: 32, format: 'email' }),
+  password: Type.String({ maxLength: 32, minLength: 8 }),
+  username: Type.String({ maxLength: 16, pattern: '^[A-Za-z0-9_]*$' })
 }, { additionalProperties: false })
 export type NewUser = Static<typeof NewUserSchema>
 
