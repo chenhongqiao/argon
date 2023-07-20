@@ -36,7 +36,7 @@ export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Pro
     {
       schema: {
         response: {
-          200: Type.Array(UserSessionSchema),
+          200: Type.Array(Type.Omit(UserSessionSchema, ['token'])),
           400: badRequestSchema,
           401: unauthorizedSchema,
           404: notFoundSchema
@@ -57,7 +57,7 @@ export async function currentSessionRoutes (currentSessionRoutes: FastifyTypeBox
     {
       schema: {
         response: {
-          200: Type.Array(UserSessionSchema),
+          200: Type.Object({ userId: Type.String(), sessionId: Type.String() }),
           400: badRequestSchema,
           401: unauthorizedSchema,
           404: notFoundSchema
@@ -67,7 +67,8 @@ export async function currentSessionRoutes (currentSessionRoutes: FastifyTypeBox
     },
     async (request, reply) => {
       const { token } = requestSessionToken(request)
-      await reply.status(200).send([fetchSessionByToken({ sessionToken: token })])
+      const { userId, id } = await fetchSessionByToken({ sessionToken: token })
+      return await reply.status(200).send({ userId, sessionId: id })
     }
   )
 }
