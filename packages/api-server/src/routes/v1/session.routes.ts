@@ -6,9 +6,10 @@ import { delay } from '@argoncs/common'
 import { randomInt } from 'node:crypto'
 import { type FastifyTypeBox } from '../../types.js'
 import { badRequestSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
-import { UserLoginSchema, UserSessionSchema } from '@argoncs/types'
+import { type PrivateUserProfile, PrivateUserProfileSchema, UserLoginSchema, UserSessionSchema } from '@argoncs/types'
 import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { requestAuthProfile, requestSessionToken } from '../../utils/auth.utils.js'
+import { fetchUser } from '../../services/user.services.js'
 
 export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Promise<void> {
   userSessionRoutes.post(
@@ -57,40 +58,42 @@ export async function currentSessionRoutes (currentSessionRoutes: FastifyTypeBox
     {
       schema: {
         response: {
-          200: Type.Object({ userId: Type.String(), sessionId: Type.String() }),
-          400: badRequestSchema,
+          200: Type.Union([Type.Object({
+            session: Type.Object({ userId: Type.String(), sessionId: Type.String() }),
+            profile: PrivateUserProfileSchema
+          }), Type.Null()])
+        }
+      }
+    },
+    async (request, reply) => {
+      try {
+        await userAuthHook(request, reply)
+        const { token } = requestSessionToken(request)
+        const { userId, id } = await fetchSessionByToken({ sessionToken: token })
+        const { username, name, email, newEmail, scopes, role, teams } = await fetchUser({ userId })
+        const privateProfile: PrivateUserProfile = { username, name, email, newEmail, scopes, id: userId, role, teams }
+        return await reply.status(200).send({ session: { userId, sessionId: id }, profile: privateProfile })
+      } catch (err) {
+        return await reply.status(200).send(null)
+      }
+    }
+  )
+
+  currentSessionRoutes.delete(
+    '/',
+    {
+      schema: {
+        response: {
           401: unauthorizedSchema,
           404: notFoundSchema
-        }
-      },
-      onRequest: [userAuthHook as any]
+        },
+        onRequest: [userAuthHook as any]
+      }
     },
     async (request, reply) => {
       const { token } = requestSessionToken(request)
-      const { userId, id } = await fetchSessionByToken({ sessionToken: token })
-      return await reply.status(200).send({ userId, sessionId: id })
+      await deleteSessionByToken({ sessionToken: token })
+      await reply.status(204).clearCookie('session_token').send()
     }
   )
-}
-
-export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {
-  await app.register((routes: FastifyTypeBox, options, done) => {
-    routes.delete(
-      '/',
-      {
-        schema: {
-          response: {
-            401: unauthorizedSchema,
-            404: notFoundSchema
-          },
-          onRequest: [userAuthHook as any]
-        }
-      },
-      async (request, reply) => {
-        const { token } = requestSessionToken(request)
-        await deleteSessionByToken({ sessionToken: token })
-        await reply.status(204).clearCookie('session_token').send()
-      }
-    )
-  })
 }
