@@ -25,7 +25,7 @@
           :options="menuOptions" />
       </NLayoutSider>
       <NLayout class="flex h-min-screen flex-col">
-        <NLayoutHeader bordered class="px-6 py-3 flex">
+        <NLayoutHeader bordered class="px-6 py-3 flex h-[60px]">
           <NBreadcrumb class="grow mt-1">
             <NBreadcrumbItem>Home</NBreadcrumbItem>
             <NBreadcrumbItem>Account</NBreadcrumbItem>
@@ -33,7 +33,7 @@
           </NBreadcrumb>
           <div v-if="!profile">
             <NuxtLink to="/auth/login" class="mr-2">
-              <NButton class="ml-auto"
+              <NButton
                 >Sign in
                 <template #icon>
                   <NIcon>
@@ -43,7 +43,7 @@
               </NButton>
             </NuxtLink>
             <NuxtLink to="/auth/register">
-              <NButton class="ml-auto" type="primary"
+              <NButton type="primary"
                 >Sign up
                 <template #icon>
                   <NIcon>
@@ -56,7 +56,6 @@
           <div v-else>
             <NDropdown
               :options="options"
-              placement="bottom-start"
               trigger="click"
               @select="handleSelect">
               <NAvatar
@@ -152,14 +151,14 @@ function useTheme() {
 
 function useStores() {
   const { $pinia } = useNuxtApp()
-  const { profile } = storeToRefs(useUserStore($pinia))
-  const { gravatar, detach } = useUserStore($pinia)
+  const { profile, gravatar } = storeToRefs(useUserStore($pinia))
+  const { destroy, attach } = useUserStore($pinia)
 
-  return { profile, gravatar, detach }
+  return { profile, gravatar, destroy, attach, fetch }
 }
 
 function useAvatar() {
-  const { profile, detach } = useStores()
+  const { profile, destroy } = useStores()
 
   function renderCustomHeader() {
     return h(
@@ -197,7 +196,7 @@ function useAvatar() {
   ]
   function handleSelect(key: string | number) {
     if (key === 'logout') {
-      detach()
+      destroy()
     }
   }
 
@@ -210,6 +209,8 @@ export default {
     LoginIcon
   },
   setup() {
+    const { attach } = useStores()
+    attach()
     return {
       ...useMenu(),
       ...useTheme(),

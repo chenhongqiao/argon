@@ -11,28 +11,25 @@ export const useUserStore = defineStore('user', () => {
   const session: Ref<SessionStoreState | null> = ref(null)
   const profile: Ref<PrivateUserProfile | null> = ref(null)
 
-  async function attach(userId: string, sessionId: string) {
-    session.value = { userId, sessionId }
-    const { data } = await useAPI<PrivateUserProfile>(
-      `/users/${userId}/profiles/private`,
-      { cache: 'no-store', immediate: true, watch: false }
-    )
-    profile.value = data.value
-  }
-
-  const sessionUser = useCookie('session_user')
-  const sessionId = useCookie('session_id')
-  watchEffect(async () => {
-    if (sessionUser.value != null && sessionId.value != null) {
-      await attach(sessionUser.value, sessionId.value)
+  async function attach() {
+    const { data } = await useAPI<{
+      session: SessionStoreState
+      profile: PrivateUserProfile
+    }>('/current-session', {
+      cache: 'no-store',
+      immediate: true,
+      watch: false
+    })
+    if (data.value != null) {
+      session.value = data.value?.session
+      profile.value = data.value?.profile
     }
-  })
-
-  function destroy() {
+  }
+  async function destroy() {
     session.value = null
     profile.value = null
-    sessionUser.value = null
-    sessionId.value = null
+    const { $api } = useNuxtApp()
+    await $api('/current-session', { method: 'delete' })
   }
 
   const name = computed(() => {
@@ -46,5 +43,5 @@ export const useUserStore = defineStore('user', () => {
     }
   })
 
-  return { session, profile, attach, detach, name, gravatar }
+  return { session, profile, attach, destroy, name, gravatar }
 })

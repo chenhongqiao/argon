@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import { UserLogin, UserLoginSchema } from '@argoncs/types'
 import VueForm from '@lljj/vue3-form-naive'
+import { useUserStore } from '~/stores/user'
 
 const formData: Ref<UserLogin> = ref({} as UserLogin)
 const form = ref()
@@ -46,17 +47,15 @@ const form = ref()
 const loginFailed = ref(false)
 const loginLoading = ref(false)
 
-const sessionIdCookie = useCookie('session_id', { watch: true })
-const sessionUserCookie = useCookie('session_user', { watch: true })
 async function submit() {
   const { $api } = useNuxtApp()
   try {
     loginLoading.value = true
     await form.value.$$uiFormRef.validate()
-    const { sessionId, userId } = (await $api<{
+    await $api<{
       sessionId: string
       userId: string
-    }>('/session', { method: 'post', body: formData.value }).catch((err) => {
+    }>('/sessions', { method: 'post', body: formData.value }).catch((err) => {
       if (err.data.statusCode === 401) {
         loginFailed.value = true
         formData.value.password = ''
@@ -66,12 +65,9 @@ async function submit() {
           message: err.data.message
         })
       }
-    })) as {
-      sessionId: string
-      userId: string
-    }
-    sessionIdCookie.value = sessionId
-    sessionUserCookie.value = userId
+    })
+    const { attach } = useUserStore()
+    attach()
   } finally {
     loginLoading.value = false
   }
