@@ -1,6 +1,6 @@
-import { type User, type NewUser, UserRole, type UserSession, type AuthenticationProfile } from '@argoncs/types'
+import { type User, type NewUser, UserRole } from '@argoncs/types'
 import { NotFoundError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { emailVerificationCollection, MongoServerError, sessionCollection, userCollection } from '@argoncs/common'
+import { emailVerificationCollection, MongoServerError, userCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -8,8 +8,6 @@ import { promisify } from 'node:util'
 import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
 
 import { emailClient } from '../connections/email.connections.js'
-import { fetchCache, setCache } from './cache.services.js'
-
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -123,62 +121,4 @@ export async function completeVerification ({ verificationId }: { verificationId
   }
 
   return { modified: modifiedCount > 0 }
-}
-
-export async function authenticateUser ({ usernameOrEmail, password, loginIP, userAgent }: { usernameOrEmail: string, password: string, loginIP: string, userAgent: string }): Promise<{ userId: string, sessionId: string, token: string }> {
-  const user = await userCollection.findOne({ $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }] })
-  if (user == null) {
-    throw new UnauthorizedError('Authentication failed')
-  }
-  const { id: userId } = user
-
-  const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
-  if (hash === user.credential.hash) {
-    const sessionId = await nanoid()
-    const token = await nanoid()
-    await sessionCollection.insertOne({ id: sessionId, token, userId, userAgent, loginIP })
-    return { userId, sessionId, token }
-  } else {
-    throw new UnauthorizedError('Authentication failed')
-  }
-}
-
-export async function fetchSession ({ sessionToken }: { sessionToken: string }): Promise<UserSession> {
-  const cache = await fetchCache<UserSession>({ key: `session:${sessionToken}` })
-  if (cache != null) {
-    return cache
-  }
-
-  const session = await sessionCollection.findOne({ token: sessionToken })
-  if (session == null) {
-    throw new NotFoundError('Session not found')
-  }
-
-  await setCache({ key: `session:${sessionToken}`, data: session })
-
-  return session
-}
-
-export async function fetchAuthenticationProfile ({ userId }: { userId: string }): Promise<AuthenticationProfile> {
-  const cache = await fetchCache<AuthenticationProfile>({ key: `auth-profile:${userId}` })
-  if (cache != null) {
-    return cache
-  }
-
-  const user = await userCollection.findOne({ id: userId })
-  if (user == null) {
-    throw new NotFoundError('User not found')
-  }
-
-  const authProfile: AuthenticationProfile = {
-    role: user.role,
-    scopes: user.scopes,
-    id: user.id,
-    teams: user.teams,
-    email: user.email
-  }
-
-  await setCache({ key: `auth-profile:${userId}`, data: authProfile })
-
-  return authProfile
 }

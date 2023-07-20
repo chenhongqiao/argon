@@ -24,3 +24,15 @@ export function requestAuthProfile (request: FastifyRequest): AuthenticationProf
 
   return request.auth
 }
+
+export function requestSessionToken (request: FastifyRequest): { token: string } {
+  const cookie = request.cookies.session_token
+  if (cookie == null) {
+    throw new UnauthorizedError('User not logged in')
+  }
+  const sessionToken = request.unsignCookie(cookie)
+  if (!sessionToken.valid || sessionToken.value == null) {
+    throw new UnauthorizedError('Session token is invalid')
+  }
+  return { token: sessionToken.value }
+}

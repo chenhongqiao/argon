@@ -6,8 +6,8 @@ import { SubmissionLang, LanguageConfigSchema } from '@argoncs/types'
 import { type FastifyTypeBox } from '../../types.js'
 
 export async function judgerRoutes (app: FastifyTypeBox): Promise<void> {
-  await app.register((publicRoutes: FastifyTypeBox, options, done) => {
-    publicRoutes.get(
+  await app.register((routes: FastifyTypeBox, options, done) => {
+    routes.get(
       '/language-config',
       {
         schema: {
