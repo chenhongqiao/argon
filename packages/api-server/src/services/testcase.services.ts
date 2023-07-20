@@ -2,9 +2,9 @@ import { NotFoundError } from 'http-errors-enhanced'
 import { fetchDomainProblem, minio, testcaseUploadCollection } from '@argoncs/common'
 
 import path = require('node:path')
-import { longNanoId } from '../utils/nanoid.utils.js'
+import { longNanoid } from '../utils/nanoid.utils.js'
 
-export async function testcaseExists (problemId: string, domainId: string, filename: string, versionId: string): Promise<void> {
+export async function testcaseExists ({ problemId, domainId, filename, versionId }: { problemId: string, domainId: string, filename: string, versionId: string }): Promise<void> {
   const objectName = path.join(domainId, problemId, filename)
   try {
     const stat = await minio.statObject('testcases', objectName, { versionId })
@@ -17,9 +17,9 @@ export async function testcaseExists (problemId: string, domainId: string, filen
   }
 }
 
-export async function createUploadSession (problemId: string, domainId: string): Promise<{ uploadId: string }> {
-  const id = await longNanoId()
-  await fetchDomainProblem(problemId, domainId) // Could throw not found
+export async function createUploadSession ({ problemId, domainId }: { problemId: string, domainId: string }): Promise<{ uploadId: string }> {
+  const id = await longNanoid()
+  await fetchDomainProblem({ problemId, domainId }) // Could throw not found
   await testcaseUploadCollection.insertOne({ id, problemId, domainId, createdAt: (new Date()).getTime() })
   return { uploadId: id }
 }

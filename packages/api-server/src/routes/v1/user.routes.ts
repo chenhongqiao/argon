@@ -29,7 +29,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     },
     async (request, reply) => {
       const { userId } = request.params
-      const { username, name, id } = await fetchUser(userId)
+      const { username, name, id } = await fetchUser({ userId })
       const publicProfile: PublicUserProfile = { username, name, id }
       await reply.status(200).send(publicProfile)
     }
@@ -54,7 +54,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     },
     async (request, reply) => {
       const { userId } = request.params
-      const { username, name, email, newEmail, scopes, role, teams } = await fetchUser(userId)
+      const { username, name, email, newEmail, scopes, role, teams } = await fetchUser({ userId })
       const privateProfile: PrivateUserProfile = { username, name, email, newEmail, scopes, id: userId, role, teams }
       await reply.status(200).send(privateProfile)
     }
@@ -79,7 +79,7 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
     },
     async (request, reply) => {
       const { userId } = request.params
-      await initiateVerification(userId)
+      await initiateVerification({ userId })
       return await reply.status(204).send()
     }
   )
@@ -101,7 +101,7 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
     },
     async (request, reply) => {
       const { verificationId } = request.params
-      const { modified } = await completeVerification(verificationId)
+      const { modified } = await completeVerification({ verificationId })
       return await reply.status(200).send({ modified })
     }
   )
@@ -126,7 +126,7 @@ export async function userContestRoutes (contestRoutes: FastifyTypeBox): Promise
     },
     async (request, reply) => {
       const { invitationId, userId } = request.params
-      await completeTeamInvitation(invitationId, userId)
+      await completeTeamInvitation({ invitationId, userId })
 
       return await reply.status(204).send()
     }
@@ -153,7 +153,7 @@ async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<
     },
     async (request, reply) => {
       const { userId } = request.params
-      const submissions = await fetchUser(userId)
+      const submissions = await fetchUser({ userId })
       return await reply.status(200).send(submissions)
     }
   )
@@ -179,7 +179,7 @@ async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<
     },
     async (request, reply) => {
       const { submissionId } = request.params
-      const submission = await fetchSubmission(submissionId)
+      const submission = await fetchSubmission({ submissionId })
 
       return await reply.status(200).send(submission)
     })
@@ -200,13 +200,13 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const user = request.body
-      const registered = await registerUser(user)
+      const registered = await registerUser({ newUser: user })
       return await reply.status(201).send(registered)
     }
   )
 
-  await routes.register(userProfileRoutes, { prefix: '/:userId/profile' })
-  await routes.register(userVerificationRoutes, { prefix: '/:userId/email-verification' })
+  await routes.register(userProfileRoutes, { prefix: '/:userId/profiles' })
+  await routes.register(userVerificationRoutes, { prefix: '/:userId/email-verifications' })
   await routes.register(userContestRoutes, { prefix: '/:userId/contests' })
   await routes.register(userSubmissionRoutes, { prefix: '/:userId/submissions' })
 }

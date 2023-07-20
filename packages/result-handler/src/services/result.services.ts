@@ -4,15 +4,17 @@ import { NotFoundError } from 'http-errors-enhanced'
 import path from 'path'
 
 export async function handleCompileResult (compileResult: CompilingResult, submissionId: string): Promise<void> {
-  const submission = await fetchSubmission(submissionId)
+  const submission = await fetchSubmission({ submissionId })
 
   if (submission.status === SubmissionStatus.Compiling) {
     if (compileResult.status === CompilingStatus.Succeeded) {
       let problem: Problem
       if (submission.contestId == null) {
-        problem = await fetchDomainProblem(submission.problemId, submission.domainId)
+        const { problemId, domainId } = submission
+        problem = await fetchDomainProblem({ problemId, domainId })
       } else {
-        problem = await fetchContestProblem(submission.problemId, submission.contestId)
+        const { problemId, contestId } = submission
+        problem = await fetchContestProblem({ problemId, contestId })
       }
       const submissionTestcases: Array<{ points: number, input: { name: string, versionId: string }, output: { name: string, versionId: string } }> = []
       if (problem.testcases == null) {
@@ -60,7 +62,7 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
 }
 
 export async function completeGrading (submissionId: string, log?: string): Promise<void> {
-  const submission = await fetchSubmission(submissionId)
+  const submission = await fetchSubmission({ submissionId })
 
   if (submission.status === SubmissionStatus.Compiling) {
     await submissionCollection.updateOne({ id: submissionId }, { $set: { status: SubmissionStatus.Terminated, log } })
@@ -89,7 +91,8 @@ export async function completeGrading (submissionId: string, log?: string): Prom
           await teamScoreCollection.updateOne({ contestId: submission.contestId, id: submission.teamId }, {
             $max: { [`time.${submission.problemId}`]: submission.createdAt }
           })
-          await recalculateTeamTotalScore(submission.contestId, submission.teamId)
+          const { contestId, teamId } = submission
+          await recalculateTeamTotalScore({ contestId, teamId })
           await ranklistRedis.set(`${submission.contestId}-obsolete`, 1)
         }
       }
@@ -98,7 +101,7 @@ export async function completeGrading (submissionId: string, log?: string): Prom
 }
 
 export async function handleGradingResult (gradingResult: GradingResult, submissionId: string, testcaseIndex: number): Promise<void> {
-  const submission = await fetchSubmission(submissionId)
+  const submission = await fetchSubmission({ submissionId })
 
   if (submission.status === SubmissionStatus.Grading) {
     if (submission.testcases[testcaseIndex] == null) {
@@ -117,7 +120,7 @@ export async function handleGradingResult (gradingResult: GradingResult, submiss
       }
     })
 
-    const updatedSubmission = await fetchSubmission(submissionId)
+    const updatedSubmission = await fetchSubmission({ submissionId })
     if (updatedSubmission.status === SubmissionStatus.Grading) {
       if (updatedSubmission.gradedCases === updatedSubmission.testcases.length) {
         await completeGrading(submissionId)

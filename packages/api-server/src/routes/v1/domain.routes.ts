@@ -37,7 +37,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
     async (request, reply) => {
       const { domainId } = request.params
       const { userId, scopes } = request.body
-      await addOrUpdateDomainMember(domainId, userId, scopes)
+      await addOrUpdateDomainMember({ domainId, userId, scopes })
       return await reply.status(204).send()
     }
   )
@@ -56,7 +56,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
     },
     async (request, reply) => {
       const { domainId } = request.params
-      const members = await fetchDomainMembers(domainId)
+      const members = await fetchDomainMembers({ domainId })
       return members
     }
   )
@@ -80,7 +80,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
     },
     async (request, reply) => {
       const { domainId, userId } = request.params
-      await removeDomainMember(domainId, userId)
+      await removeDomainMember({ domainId, userId })
       return await reply.status(204).send()
     }
   )
@@ -109,7 +109,7 @@ async function domainMemberRoutes (memberRoutes: FastifyTypeBox): Promise<void> 
     async (request, reply) => {
       const { domainId, userId } = request.params
       const { scopes } = request.body
-      const { modified } = await addOrUpdateDomainMember(domainId, userId, scopes)
+      const { modified } = await addOrUpdateDomainMember({ domainId, userId, scopes })
       return await reply.status(200).send({ modified })
     }
   )
@@ -136,7 +136,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
     async (request, reply) => {
       const problem = request.body
       const { domainId } = request.params
-      const created = await createDomainProblem(problem, domainId)
+      const created = await createDomainProblem({ newProblem: problem, domainId })
       return await reply.status(201).send(created)
     }
   )
@@ -159,7 +159,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
     },
     async (request, reply) => {
       const { domainId } = request.params
-      const problems = await fetchDomainProblems(domainId)
+      const problems = await fetchDomainProblems({ domainId })
       return await reply.status(200).send(problems)
     }
   )
@@ -186,7 +186,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
     async (request, reply) => {
       const { problemId, domainId } = request.params
       const problem = request.body
-      const { modified } = await updateDomainProblem(problemId, domainId, problem)
+      const { modified } = await updateDomainProblem({ problemId, domainId, problem })
       return await reply.status(200).send({ modified })
     }
   )
@@ -209,7 +209,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      await deleteDomainProblem(problemId, domainId)
+      await deleteDomainProblem({ problemId, domainId })
       return await reply.status(204).send()
     }
   )
@@ -233,7 +233,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
     },
     async (request, reply) => {
       const { problemId, domainId } = request.params
-      const problem = await fetchDomainProblem(problemId, domainId)
+      const problem = await fetchDomainProblem({ problemId, domainId })
       return await reply.status(200).send(problem)
     }
   )
@@ -264,7 +264,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
 
       const submission = request.body
       const { domainId, problemId } = request.params
-      const created = await createTestingSubmission(submission, problemId, request.auth.id, domainId)
+      const created = await createTestingSubmission({ submission, problemId, userId: request.auth.id, domainId })
       return await reply.status(202).send(created)
     }
   )
@@ -288,7 +288,7 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
     },
     async (request, reply) => {
       const { domainId, problemId } = request.params
-      const { uploadId } = await createUploadSession(problemId, domainId)
+      const { uploadId } = await createUploadSession({ problemId, domainId })
       await reply.status(200).send({ uploadId })
     }
   )
@@ -315,7 +315,7 @@ async function domainContestRoutes (contestRoutes: FastifyTypeBox): Promise<void
     async (request, reply) => {
       const newContest = request.body
       const { domainId } = request.params
-      const result = await createContest(newContest, domainId)
+      const result = await createContest({ newContest, domainId })
       return await reply.status(201).send(result)
     }
   )
@@ -338,7 +338,7 @@ async function domainContestRoutes (contestRoutes: FastifyTypeBox): Promise<void
     },
     async (request, reply) => {
       const { domainId } = request.params
-      const contests = await fetchDomainContests(domainId)
+      const contests = await fetchDomainContests({ domainId })
       return await reply.status(200).send(contests)
     }
   )
@@ -363,7 +363,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const newDomain = request.body
-      const { domainId } = await createDomain(newDomain)
+      const { domainId } = await createDomain({ newDomain })
       return await reply.status(201).send({ domainId })
     }
   )
@@ -382,7 +382,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { domainId } = request.params
-      const domain = await fetchDomain(domainId)
+      const domain = await fetchDomain({ domainId })
       return domain
     })
 
@@ -407,7 +407,7 @@ export async function domainRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { domainId } = request.params
-      const { modified } = await updateDomain(domainId, request.body)
+      const { modified } = await updateDomain({ domainId, domain: request.body })
       return await reply.status(200).send({ modified })
     }
   )

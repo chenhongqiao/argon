@@ -16,7 +16,7 @@ export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {
         schema: {
           body: UserLoginSchema,
           response: {
-            200: Type.Object({ userId: Type.String() }),
+            200: Type.Object({ userId: Type.String(), sessionId: Type.String() }),
             400: badRequestSchema,
             401: unauthorizedSchema
           }
@@ -24,11 +24,10 @@ export async function sessionRoutes (app: FastifyTypeBox): Promise<void> {
       },
       async (request, reply) => {
         const { usernameOrEmail, password } = request.body
-        const { userId, sessionId } = await authenticateUser(usernameOrEmail, password, request.headers['user-agent'] ?? 'Unknown', request.ip)
+        const { sessionId, token, userId } = await authenticateUser({ usernameOrEmail, password, loginIP: request.ip, userAgent: request.headers['user-agent'] ?? 'Unknown' })
         await delay(randomInt(300, 600))
-        return await reply.status(200).setCookie('session_token', sessionId, { path: '/', httpOnly: true, signed: true }).send({ userId })
+        return await reply.status(200).setCookie('session_token', token, { path: '/', httpOnly: true, signed: true }).send({ sessionId, userId })
       }
     )
-    done()
   })
 }

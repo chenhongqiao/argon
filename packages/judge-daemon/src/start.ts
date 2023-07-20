@@ -28,7 +28,7 @@ export async function startJudger (): Promise<void> {
   assert(process.env.MINIO_URL != null)
   await connectMinIO(process.env.MINIO_URL)
 
-  await prepareStorage('/argon-cache')
+  await prepareStorage({ dir: '/argon-cache' })
 
   const cores = os.cpus().length
 
@@ -36,7 +36,7 @@ export async function startJudger (): Promise<void> {
 
   const destroyQueue: Array<Promise<{ boxId: number }>> = []
   for (let id = 1; id <= cores; id += 1) {
-    destroyQueue.push(destroySandbox(id))
+    destroyQueue.push(destroySandbox({ boxId: id }))
     availableBoxes.add(id)
   }
   await Promise.all(destroyQueue)
@@ -58,21 +58,21 @@ export async function startJudger (): Promise<void> {
 
         logger.info(task, 'Processing a new task')
         availableBoxes.delete(boxId)
-        await initSandbox(boxId)
+        await initSandbox({ boxId })
 
         let result: CompilingResultMessage | GradingResultMessage
 
         if (task.type === JudgerTaskType.Grading) {
           result = {
             type: JudgerResultType.Grading,
-            result: (await gradeSubmission(task, boxId)),
+            result: (await gradeSubmission({ task, boxId })),
             submissionId: task.submissionId,
             testcaseIndex: task.testcaseIndex
           }
         } else if (task.type === JudgerTaskType.Compiling) {
           result = {
             type: JudgerResultType.Compiling,
-            result: (await compileSubmission(task, boxId)),
+            result: (await compileSubmission({ task, boxId })),
             submissionId: task.submissionId
           }
         } else {
@@ -81,14 +81,14 @@ export async function startJudger (): Promise<void> {
 
         rabbitMQ.publish(judgerExchange, judgerResultsKey, Buffer.from(JSON.stringify(result)))
 
-        await destroySandbox(boxId)
+        await destroySandbox({ boxId })
         availableBoxes.add(boxId)
 
         rabbitMQ.ack(message)
       } catch (err) {
         sentry.captureException(err)
 
-        await destroySandbox(boxId)
+        await destroySandbox({ boxId })
         availableBoxes.add(boxId)
 
         rabbitMQ.reject(message, false)

@@ -3,7 +3,7 @@ import { type NewTeam, type Team, type TeamMembers } from '@argoncs/types'
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 
-export async function createTeam (newTeam: NewTeam, contestId: string, userId: string): Promise<{ teamId: string }> {
+export async function createTeam ({ newTeam, contestId, userId }: { newTeam: NewTeam, contestId: string, userId: string }): Promise<{ teamId: string }> {
   const id = await nanoid()
   const team: Team = {
     ...newTeam,
@@ -36,7 +36,7 @@ export async function createTeam (newTeam: NewTeam, contestId: string, userId: s
   }
 }
 
-export async function fetchTeam (teamId: string, contestId: string): Promise<Team> {
+export async function fetchTeam ({ teamId, contestId }: { teamId: string, contestId: string }): Promise<Team> {
   const team = await teamCollection.findOne({ id: teamId, contestId })
   if (team == null) {
     throw new NotFoundError('Team not found')
@@ -44,7 +44,7 @@ export async function fetchTeam (teamId: string, contestId: string): Promise<Tea
   return team
 }
 
-export async function fetchTeamMembers (teamId: string, contestId: string): Promise<TeamMembers> {
+export async function fetchTeamMembers ({ teamId, contestId }: { teamId: string, contestId: string }): Promise<TeamMembers> {
   const team = (await teamCollection.aggregate([
     { $match: { id: teamId, contestId } },
     {
@@ -66,7 +66,7 @@ export async function fetchTeamMembers (teamId: string, contestId: string): Prom
   return team.members
 }
 
-export async function createTeamInvitation (teamId: string, contestId: string, userId: string): Promise<{ invitationId: string }> {
+export async function createTeamInvitation ({ teamId, contestId, userId }: { teamId: string, contestId: string, userId: string }): Promise<{ invitationId: string }> {
   const id = await nanoid()
   const user = await userCollection.findOne({ id: userId })
   if (user == null) {
@@ -80,14 +80,14 @@ export async function createTeamInvitation (teamId: string, contestId: string, u
   return { invitationId: id }
 }
 
-export async function deleteTeamInvitation (teamId: string, contestId: string, invitationId: string): Promise<void> {
+export async function deleteTeamInvitation ({ teamId, contestId, invitationId }: { teamId: string, contestId: string, invitationId: string }): Promise<void> {
   const { deletedCount } = await teamInvitationCollection.deleteOne({ teamId, contestId, invitationId })
   if (deletedCount === 0) {
     throw new NotFoundError('User not found')
   }
 }
 
-export async function completeTeamInvitation (invitationId: string, userId: string): Promise<{ modified: boolean }> {
+export async function completeTeamInvitation ({ invitationId, userId }: { invitationId: string, userId: string }): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
   try {
     let modifiedCount = 0
@@ -121,7 +121,7 @@ export async function completeTeamInvitation (invitationId: string, userId: stri
   }
 }
 
-export async function makeTeamCaptain (teamId: string, contestId: string, userId: string): Promise<{ modified: boolean }> {
+export async function makeTeamCaptain ({ teamId, contestId, userId }: { teamId: string, contestId: string, userId: string }): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
   try {
     let modifiedCount = 0
@@ -142,7 +142,7 @@ export async function makeTeamCaptain (teamId: string, contestId: string, userId
   }
 }
 
-export async function removeTeamMember (teamId: string, contestId: string, userId: string, rootSession?: ClientSession): Promise<{ modified: boolean }> {
+export async function removeTeamMember ({ teamId, contestId, userId, rootSession = undefined }: { teamId: string, contestId: string, userId: string, rootSession?: ClientSession }): Promise<{ modified: boolean }> {
   const session = rootSession ?? mongoClient.startSession()
   let modifiedCount = 0
   try {
@@ -173,7 +173,7 @@ export async function removeTeamMember (teamId: string, contestId: string, userI
   }
 }
 
-export async function deleteTeam (teamId: string, contestId: string): Promise<void> {
+export async function deleteTeam ({ teamId, contestId }: { teamId: string, contestId: string }): Promise<void> {
   const session = mongoClient.startSession()
   try {
     await session.withTransaction(async () => {
@@ -185,7 +185,7 @@ export async function deleteTeam (teamId: string, contestId: string): Promise<vo
         throw new MethodNotAllowedError('Cannot disband a team when there are more than one member')
       }
 
-      await removeTeamMember(teamId, contestId, team.members[0], session)
+      await removeTeamMember({ teamId, contestId, userId: team.members[0], rootSession: session })
 
       await teamInvitationCollection.deleteMany({ teamId, contestId }, { session })
       await teamScoreCollection.deleteOne({ teamId, contestId }, { session })

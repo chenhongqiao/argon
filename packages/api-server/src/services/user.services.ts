@@ -5,7 +5,7 @@ import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
 
-import { longNanoId, nanoid } from '../utils/nanoid.utils.js'
+import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
 
 import { emailClient } from '../connections/email.connections.js'
 import { fetchCache, setCache } from './cache.services.js'
@@ -13,7 +13,7 @@ import { fetchCache, setCache } from './cache.services.js'
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
-export async function registerUser (newUser: NewUser): Promise<{ userId: string, email: string }> {
+export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<{ userId: string, email: string }> {
   const salt = (await randomBytesAsync(32)).toString('base64')
   const hash = (await pbkdf2Async(newUser.password, salt, 100000, 512, 'sha512')).toString('base64')
   const userId = await nanoid()
@@ -50,7 +50,7 @@ export async function registerUser (newUser: NewUser): Promise<{ userId: string,
   }
 }
 
-export async function fetchUser (userId: string): Promise<User> {
+export async function fetchUser ({ userId }: { userId: string }): Promise<User> {
   const user = await userCollection.findOne({ id: userId })
   if (user == null) {
     throw new NotFoundError('User not found')
@@ -59,11 +59,11 @@ export async function fetchUser (userId: string): Promise<User> {
   return user
 }
 
-export async function userIdExists (userId: string): Promise<boolean> {
+export async function userIdExists ({ userId }: { userId: string }): Promise<boolean> {
   return Boolean(userCollection.countDocuments({ id: userId }))
 }
 
-export async function updateUser (userId: string, user: Partial<NewUser>): Promise<{ modified: boolean }> {
+export async function updateUser ({ userId, user }: { userId: string, user: Partial<NewUser> }): Promise<{ modified: boolean }> {
   const { matchedCount, modifiedCount } = await userCollection.updateOne({ id: userId }, { $set: user })
   if (matchedCount === 0) {
     throw new NotFoundError('User not found')
@@ -72,7 +72,7 @@ export async function updateUser (userId: string, user: Partial<NewUser>): Promi
   return { modified: modifiedCount > 0 }
 }
 
-export async function initiateVerification (userId: string): Promise<void> {
+export async function initiateVerification ({ userId }: { userId: string }): Promise<void> {
   const user = await userCollection.findOne({ id: userId })
   if (user == null) {
     throw new NotFoundError('User not found')
@@ -83,7 +83,7 @@ export async function initiateVerification (userId: string): Promise<void> {
     throw new NotFoundError('User does not have an email pending verification')
   }
 
-  const id = await longNanoId()
+  const id = await longNanoid()
   await emailVerificationCollection.insertOne({
     id,
     userId,
@@ -101,7 +101,7 @@ export async function initiateVerification (userId: string): Promise<void> {
   await emailClient.send(verificationEmail)
 }
 
-export async function completeVerification (verificationId: string): Promise<{ modified: boolean }> {
+export async function completeVerification ({ verificationId }: { verificationId: string }): Promise<{ modified: boolean }> {
   const verification = await emailVerificationCollection.findOneAndDelete({ id: verificationId })
   if (verification.value == null) {
     throw new UnauthorizedError('Invalid verification token')
@@ -125,8 +125,7 @@ export async function completeVerification (verificationId: string): Promise<{ m
   return { modified: modifiedCount > 0 }
 }
 
-export async function authenticateUser (usernameOrEmail: string, password: string, loginIP: string, userAgent: string): Promise<{ userId: string, sessionId: string }> {
-  console.log(userCollection)
+export async function authenticateUser ({ usernameOrEmail, password, loginIP, userAgent }: { usernameOrEmail: string, password: string, loginIP: string, userAgent: string }): Promise<{ userId: string, sessionId: string, token: string }> {
   const user = await userCollection.findOne({ $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }] })
   if (user == null) {
     throw new UnauthorizedError('Authentication failed')
@@ -136,31 +135,32 @@ export async function authenticateUser (usernameOrEmail: string, password: strin
   const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.credential.hash) {
     const sessionId = await nanoid()
-    await sessionCollection.insertOne({ id: sessionId, userId, userAgent, loginIP })
-    return { userId, sessionId }
+    const token = await nanoid()
+    await sessionCollection.insertOne({ id: sessionId, token, userId, userAgent, loginIP })
+    return { userId, sessionId, token }
   } else {
     throw new UnauthorizedError('Authentication failed')
   }
 }
 
-export async function fetchSession (sessionId: string): Promise<UserSession> {
-  const cache = await fetchCache<UserSession>(`session:${sessionId}`)
+export async function fetchSession ({ sessionToken }: { sessionToken: string }): Promise<UserSession> {
+  const cache = await fetchCache<UserSession>({ key: `session:${sessionToken}` })
   if (cache != null) {
     return cache
   }
 
-  const session = await sessionCollection.findOne({ id: sessionId })
+  const session = await sessionCollection.findOne({ token: sessionToken })
   if (session == null) {
     throw new NotFoundError('Session not found')
   }
 
-  await setCache(`session:${sessionId}`, session)
+  await setCache({ key: `session:${sessionToken}`, data: session })
 
   return session
 }
 
-export async function fetchAuthenticationProfile (userId: string): Promise<AuthenticationProfile> {
-  const cache = await fetchCache<AuthenticationProfile>(`auth-profile:${userId}`)
+export async function fetchAuthenticationProfile ({ userId }: { userId: string }): Promise<AuthenticationProfile> {
+  const cache = await fetchCache<AuthenticationProfile>({ key: `auth-profile:${userId}` })
   if (cache != null) {
     return cache
   }
@@ -178,7 +178,7 @@ export async function fetchAuthenticationProfile (userId: string): Promise<Authe
     email: user.email
   }
 
-  await setCache(`auth-profile:${userId}`, authProfile)
+  await setCache({ key: `auth-profile:${userId}`, data: authProfile })
 
   return authProfile
 }

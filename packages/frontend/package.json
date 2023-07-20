@@ -11,18 +11,34 @@
   "devDependencies": {
     "@bg-dev/nuxt-naiveui": "^1.2.1",
     "@nuxt/devtools": "latest",
+    "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@nuxtjs/google-fonts": "^3.0.1",
     "@nuxtjs/tailwindcss": "^6.8.0",
     "@types/node": "^18",
+    "@typescript-eslint/parser": "^6.1.0",
     "@vicons/antd": "^0.12.0",
     "@vicons/fluent": "^0.12.0",
     "@vicons/ionicons5": "^0.12.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-prettier-standard": "^4.0.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-standard": "^5.0.0",
     "naive-ui": "^2.34.4",
-    "nuxt": "^3.6.3"
+    "nuxt": "^3.6.3",
+    "prettier": "^3.0.0",
+    "prettier-config-standard": "^5.0.0",
+    "prettier-standard": "^16.4.1",
+    "typescript": "^5.1.6"
   },
   "dependencies": {
     "@argoncs/types": "workspace:*",
     "@lljj/vue-json-schema-form": "^1.17.1",
-    "ajv-i18n": "^4.2.0"
+    "@pinia/nuxt": "^0.4.11",
+    "ajv-i18n": "^4.2.0",
+    "gravatar-url": "^4.0.1"
   }
 }

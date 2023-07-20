@@ -1,7 +1,12 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ['@bg-dev/nuxt-naiveui', '@nuxtjs/google-fonts', '@nuxtjs/tailwindcss'],
+  modules: [
+    '@bg-dev/nuxt-naiveui',
+    '@nuxtjs/google-fonts',
+    '@nuxtjs/tailwindcss',
+    '@pinia/nuxt'
+  ],
   runtimeConfig: {
     public: {
       APIBase: 'http://localhost:8000/v1'

@@ -19,7 +19,7 @@ export async function isTeamCaptain (request: FastifyRequest, reply: FastifyRepl
   const contestId = requestParameter(request, 'contestId')
   const teamId = requestParameter(request, 'teamId')
 
-  const team = await fetchTeam(teamId, contestId)
+  const team = await fetchTeam({ teamId, contestId })
   if (team.captain !== auth.id) {
     throw new ForbiddenError('User needs to be the captain to perform this action')
   }

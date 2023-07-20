@@ -12,15 +12,13 @@ import {
 import { fetchBinary, fetchTestcase } from './storage.services.js'
 
 export async function gradeSubmission (
-  task: GradingTask,
-  boxId: number
-): Promise<GradingResult> {
+  { task, boxId }: { task: GradingTask, boxId: number }): Promise<GradingResult> {
   const workDir = `/var/local/lib/isolate/${boxId}/box`
   const config = languageConfigs[task.language]
 
-  await fetchBinary(task.submissionId, path.join(workDir, config.binaryFile))
+  await fetchBinary({ objectName: task.submissionId, destPath: path.join(workDir, config.binaryFile) })
 
-  await fetchTestcase(task.testcase.input.objectName, task.testcase.input.versionId, path.join(workDir, 'in.txt'))
+  await fetchTestcase({ objectName: task.testcase.input.objectName, versionId: task.testcase.input.versionId, destPath: path.join(workDir, 'in.txt') })
 
   await makeExecutable(path.join(workDir, config.binaryFile))
 
@@ -28,16 +26,17 @@ export async function gradeSubmission (
   command = command.replaceAll('{binary_path}', config.binaryFile)
   const sandboxResult = await runInSandbox(
     {
-      command,
-      constraints: task.constraints,
-      inputPath: 'in.txt',
-      outputPath: 'out.txt'
-    },
-    boxId
-  )
+      task: {
+        command,
+        constraints: task.constraints,
+        inputPath: 'in.txt',
+        outputPath: 'out.txt'
+      },
+      boxId
+    })
   if (sandboxResult.status === SandboxStatus.Succeeded) {
     const answerPath = `/var/local/lib/isolate/${boxId}/ans.txt`
-    await fetchTestcase(task.testcase.output.objectName, task.testcase.output.versionId, answerPath)
+    await fetchTestcase({ objectName: task.testcase.output.objectName, versionId: task.testcase.output.versionId, destPath: answerPath })
     const { time, wallTime, memory } = sandboxResult
     try {
       await exec(`diff -Z -B ${answerPath} ${path.join(workDir, 'out.txt')}`)

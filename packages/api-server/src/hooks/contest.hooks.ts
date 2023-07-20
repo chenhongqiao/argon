@@ -7,7 +7,7 @@ export async function contestInfoHook (request: FastifyRequest, reply: FastifyRe
     requestParameter(request, 'domainId')
   } catch {
     const contestId = requestParameter(request, 'contestId')
-    const contest = await fetchContest(contestId)
+    const contest = await fetchContest({ contestId })
     // @ts-expect-error property will be checked later
     request.params.domainId = contest.domainId
   }

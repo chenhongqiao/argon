@@ -11,14 +11,14 @@ export async function userAuthHook (request: FastifyRequest, reply: FastifyReply
     if (cookie == null) {
       throw new UnauthorizedError('User not logged in')
     }
-    const sessionId = request.unsignCookie(cookie)
-    if (!sessionId.valid || sessionId.value == null) {
+    const sessionToken = request.unsignCookie(cookie)
+    if (!sessionToken.valid || sessionToken.value == null) {
       throw new UnauthorizedError('Session ID is invalid')
     }
 
     try {
-      const { userId } = await fetchSession(sessionId.value)
-      const authProfile = await fetchAuthenticationProfile(userId)
+      const { userId } = await fetchSession({ sessionToken: sessionToken.value })
+      const authProfile = await fetchAuthenticationProfile({ userId })
       request.auth = authProfile
     } catch (err) {
       if (err instanceof NotFoundError) {

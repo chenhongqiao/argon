@@ -5,14 +5,14 @@ import { NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 import { refreshCache } from './cache.services.js'
 
-export async function createDomain (newDomain: NewDomain): Promise<{ domainId: string }> {
+export async function createDomain ({ newDomain }: { newDomain: NewDomain }): Promise<{ domainId: string }> {
   const domainId = await nanoid()
   const domain: Domain = { ...newDomain, id: domainId, members: [] }
   await domainCollection.insertOne(domain)
   return { domainId }
 }
 
-export async function updateDomain (domainId: string, domain: Partial<NewDomain>): Promise<{ modified: boolean }> {
+export async function updateDomain ({ domainId, domain }: { domainId: string, domain: Partial<NewDomain> }): Promise<{ modified: boolean }> {
   const { matchedCount, modifiedCount } = await domainCollection.updateOne({ id: domainId }, { $set: domain })
   if (matchedCount === 0) {
     throw new NotFoundError('Domain not found')
@@ -21,7 +21,7 @@ export async function updateDomain (domainId: string, domain: Partial<NewDomain>
   return { modified: modifiedCount > 0 }
 }
 
-export async function addOrUpdateDomainMember (domainId: string, userId: string, scopes: string[]): Promise<{ modified: boolean }> {
+export async function addOrUpdateDomainMember ({ domainId, userId, scopes }: { domainId: string, userId: string, scopes: string[] }): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
   try {
     let modifiedCount = 0
@@ -40,7 +40,7 @@ export async function addOrUpdateDomainMember (domainId: string, userId: string,
       modifiedCount += Math.floor(modifiedDomain)
 
       const user = await userCollection.findOne({ id: userId }, { session })
-      await refreshCache(`auth-profile:${userId}`, user)
+      await refreshCache({ key: `auth-profile:${userId}`, data: user })
     })
     return { modified: modifiedCount > 0 }
   } finally {
@@ -48,7 +48,7 @@ export async function addOrUpdateDomainMember (domainId: string, userId: string,
   }
 }
 
-export async function removeDomainMember (domainId: string, userId: string): Promise<{ modified: boolean }> {
+export async function removeDomainMember ({ domainId, userId }: { domainId: string, userId: string }): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
   try {
     let modifiedCount = 0
@@ -67,7 +67,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
       modifiedCount += Math.floor(modifiedDomain)
 
       const user = await userCollection.findOne({ id: userId }, { session })
-      await refreshCache(`auth-profile:${userId}`, user)
+      await refreshCache({ key: `auth-profile:${userId}`, data: user })
     })
 
     return { modified: modifiedCount > 0 }
@@ -76,7 +76,7 @@ export async function removeDomainMember (domainId: string, userId: string): Pro
   }
 }
 
-export async function fetchDomain (domainId: string): Promise<Domain> {
+export async function fetchDomain ({ domainId }: { domainId: string }): Promise<Domain> {
   const domain = await domainCollection.findOne({ id: domainId })
   if (domain == null) {
     throw new NotFoundError('Domain not found')
@@ -85,7 +85,7 @@ export async function fetchDomain (domainId: string): Promise<Domain> {
   return domain
 }
 
-export async function fetchDomainMembers (domainId: string): Promise<DomainMembers> {
+export async function fetchDomainMembers ({ domainId }: { domainId: string }): Promise<DomainMembers> {
   const domain = (await domainCollection.aggregate([
     { $match: { id: domainId } },
     {

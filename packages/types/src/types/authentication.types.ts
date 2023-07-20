@@ -3,6 +3,7 @@ import { type User } from './user.types.js'
 
 export const UserSessionSchema = Type.Object({
   id: Type.String(),
+  token: Type.String(),
   userId: Type.String(),
   userAgent: Type.String(),
   loginIP: Type.String()

@@ -46,8 +46,7 @@ function parseMeta (metaStr: string): SandboxMeta {
 }
 
 export async function initSandbox (
-  boxId: number
-): Promise<{ workDir: string, boxId: number }> {
+  { boxId }: { boxId: number }): Promise<{ workDir: string, boxId: number }> {
   let workDir = ''
   try {
     workDir = (await exec(`isolate --box-id=${boxId} --cg --init`)).stdout
@@ -61,7 +60,7 @@ export async function initSandbox (
   return { workDir, boxId }
 }
 
-export async function destroySandbox (boxId: number): Promise<{ boxId: number }> {
+export async function destroySandbox ({ boxId }: { boxId: number }): Promise<{ boxId: number }> {
   await exec(`isolate --box-id=${boxId} --cleanup`)
   return { boxId }
 }
@@ -84,9 +83,7 @@ interface SandboxSucceeded {
 }
 
 export async function runInSandbox (
-  task: SandboxTask,
-  boxId: number
-): Promise<
+  { task, boxId }: { task: SandboxTask, boxId: number }): Promise<
   SandboxSucceeded | SandboxMemoryExceeded | SandboxSystemError | SandboxTimeExceeded | SandboxRuntimeError
   > {
   let command = `isolate --run --cg --box-id=${boxId} --meta=/var/local/lib/isolate/${boxId}/meta.txt`

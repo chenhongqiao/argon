@@ -9,7 +9,7 @@ let cacheDir: string
 
 const downloading = new Map<string, Promise<void>>()
 
-export async function prepareStorage (dir: string): Promise<void> {
+export async function prepareStorage ({ dir }: { dir: string }): Promise<void> {
   cacheDir = dir
   await fs.access(dir)
   await emptyDir(dir)
@@ -23,14 +23,14 @@ export async function prepareStorage (dir: string): Promise<void> {
   })
 }
 
-async function cacheTestcase (objectName: string, versionId: string): Promise<void> {
+async function cacheTestcase ({ objectName, versionId }: { objectName: string, versionId: string }): Promise<void> {
   const key = path.join(cacheDir, 'testcases', objectName, versionId)
   const size = (await minio.statObject('testcases', objectName, { versionId })).size
   await minio.fGetObject('testcases', objectName, key, { versionId })
   cache.set(key, key, { size })
 }
 
-export async function fetchTestcase (objectName: string, versionId: string, destPath: string): Promise<void> {
+export async function fetchTestcase ({ objectName, versionId, destPath }: { objectName: string, versionId: string, destPath: string }): Promise<void> {
   const key = path.join(cacheDir, 'testcases', objectName, versionId)
   if (cache.get(key) != null) {
     await fs.copyFile(key, destPath); return
@@ -41,21 +41,21 @@ export async function fetchTestcase (objectName: string, versionId: string, dest
       await fs.copyFile(key, destPath)
     }
   } else {
-    downloading.set(key, cacheTestcase(objectName, versionId))
+    downloading.set(key, cacheTestcase({ objectName, versionId }))
     await downloading.get(key)
     downloading.delete(key)
     await fs.copyFile(key, destPath)
   }
 }
 
-async function cacheBinary (objectName: string): Promise<void> {
+async function cacheBinary ({ objectName }: { objectName: string }): Promise<void> {
   const key = path.join(cacheDir, 'binaries', objectName)
   const size = (await minio.statObject('binaries', objectName)).size
   await minio.fGetObject('binaries', objectName, key)
   cache.set(key, key, { size })
 }
 
-export async function fetchBinary (objectName: string, destPath: string): Promise<void> {
+export async function fetchBinary ({ objectName, destPath }: { objectName: string, destPath: string }): Promise<void> {
   const key = path.join(cacheDir, 'binaries', objectName)
   if (cache.get(key) != null) {
     await fs.copyFile(key, destPath); return
@@ -66,7 +66,7 @@ export async function fetchBinary (objectName: string, destPath: string): Promis
       await fs.copyFile(key, destPath)
     }
   } else {
-    downloading.set(key, cacheBinary(objectName))
+    downloading.set(key, cacheBinary({ objectName }))
     await downloading.get(key)
     downloading.delete(key)
     await fs.copyFile(key, destPath)

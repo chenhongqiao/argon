@@ -7,7 +7,7 @@ import { requestAuthProfile, requestParameter } from '../utils/auth.utils.js'
 export async function contestPublished (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
-  const contest = await fetchContest(contestId)
+  const contest = await fetchContest({ contestId })
   if (!Boolean(contest.published)) {
     throw new NotFoundError('Contest not found')
   }
@@ -26,7 +26,7 @@ export async function registeredForContest (request: FastifyRequest, reply: Fast
 export async function contestBegan (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
-  const contest = await fetchContest(contestId)
+  const contest = await fetchContest({ contestId })
   const now = new Date()
   if ((new Date(contest.startTime)).getTime() > now.getTime()) {
     throw new ForbiddenError('Contest has not started')
@@ -36,7 +36,7 @@ export async function contestBegan (request: FastifyRequest, reply: FastifyReply
 export async function contestNotBegan (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
-  const contest = await fetchContest(contestId)
+  const contest = await fetchContest({ contestId })
   const now = new Date()
   if ((new Date(contest.startTime)).getTime() <= now.getTime()) {
     throw new ForbiddenError('Contest has began')
@@ -46,7 +46,7 @@ export async function contestNotBegan (request: FastifyRequest, reply: FastifyRe
 export async function contestRunning (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
 
-  const contest = await fetchContest(contestId)
+  const contest = await fetchContest({ contestId })
   const now = new Date()
   if ((new Date(contest.startTime)).getTime() > now.getTime() || now.getTime() > (new Date(contest.endTime)).getTime()) {
     throw new ForbiddenError('Contest is not running')

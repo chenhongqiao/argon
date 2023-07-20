@@ -1,6 +1,6 @@
 import { cacheRedis } from '@argoncs/common'
 
-export async function fetchCache<T> (key: string): Promise<T | null> {
+export async function fetchCache<T> ({ key }: { key: string }): Promise<T | null> {
   try {
     const cache = await cacheRedis.get(key)
     if (cache == null) {
@@ -15,7 +15,7 @@ export async function fetchCache<T> (key: string): Promise<T | null> {
   }
 }
 
-export async function setCache (key: string, data: any): Promise<boolean> {
+export async function setCache ({ key, data }: { key: string, data: any }): Promise<boolean> {
   try {
     const status = await cacheRedis.setnx(key, JSON.stringify(data))
     await cacheRedis.expire(key, 3600, 'NX')
@@ -25,6 +25,6 @@ export async function setCache (key: string, data: any): Promise<boolean> {
   }
 }
 
-export async function refreshCache (key: string, data: any): Promise<void> {
+export async function refreshCache ({ key, data }: { key: string, data: any }): Promise<void> {
   await cacheRedis.set(key, JSON.stringify(data), 'KEEPTTL')
 }

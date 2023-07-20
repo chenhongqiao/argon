@@ -7,7 +7,7 @@ import { type CompilingTask, SandboxStatus, type CompileSucceeded, type CompileF
 import { minio } from '@argoncs/common'
 import { languageConfigs } from '../../configs/language.configs.js'
 
-export async function compileSubmission (task: CompilingTask, boxId: number): Promise<CompileSucceeded | CompileFailed> {
+export async function compileSubmission ({ task, boxId }: { task: CompilingTask, boxId: number }): Promise<CompileSucceeded | CompileFailed> {
   const workDir = `/var/local/lib/isolate/${boxId}/box`
   const config = languageConfigs[task.language]
   const srcPath = path.join(workDir, config.srcFile)
@@ -19,13 +19,14 @@ export async function compileSubmission (task: CompilingTask, boxId: number): Pr
   command = command.replaceAll('{binary_path}', config.binaryFile)
   const result = await runInSandbox(
     {
-      constraints: task.constraints,
-      command,
-      stderrPath: 'log.txt',
-      env: 'PATH=/bin:/usr/local/bin:/usr/bin'
-    },
-    boxId
-  )
+      task: {
+        constraints: task.constraints,
+        command,
+        stderrPath: 'log.txt',
+        env: 'PATH=/bin:/usr/local/bin:/usr/bin'
+      },
+      boxId
+    })
   if (result.status === SandboxStatus.Succeeded) {
     await minio.fPutObject('binaries', task.submissionId, binaryPath)
     return {

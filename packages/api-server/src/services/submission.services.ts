@@ -12,13 +12,13 @@ import { languageConfigs } from '../../configs/language.configs.js'
 import { nanoid } from '../utils/nanoid.utils.js'
 import { MethodNotAllowedError } from 'http-errors-enhanced'
 
-async function createSubmission (submission: NewSubmission, userId: string, target: { problemId: string, domainId: string } | { problemId: string, contestId: string, teamId?: string }): Promise<{ submissionId: string }> {
+async function createSubmission ({ submission, userId, target }: { submission: NewSubmission, userId: string, target: { problemId: string, domainId: string } | { problemId: string, contestId: string, teamId?: string } }): Promise<{ submissionId: string }> {
   let problem: Problem
   const { problemId } = target
   if ('contestId' in target) {
-    problem = await fetchContestProblem(problemId, target.contestId)
+    problem = await fetchContestProblem({ problemId, contestId: target.contestId })
   } else {
-    problem = await fetchDomainProblem(problemId, target.domainId)
+    problem = await fetchDomainProblem({ problemId, domainId: target.domainId })
   }
 
   if (problem.testcases == null) {
@@ -55,15 +55,15 @@ async function createSubmission (submission: NewSubmission, userId: string, targ
   return { submissionId }
 }
 
-export async function createTestingSubmission (submission: NewSubmission, problemId: string, userId: string, domainId: string): Promise<{ submissionId: string }> {
-  return await createSubmission(submission, userId, { problemId, domainId })
+export async function createTestingSubmission ({ submission, problemId, userId, domainId }: { submission: NewSubmission, problemId: string, userId: string, domainId: string }): Promise<{ submissionId: string }> {
+  return await createSubmission({ submission, userId, target: { problemId, domainId } })
 }
 
-export async function createContestSubmission (submission: NewSubmission, problemId: string, userId: string, contestId: string, teamId?: string): Promise<{ submissionId: string }> {
-  return await createSubmission(submission, userId, { problemId, contestId, teamId })
+export async function createContestSubmission ({ submission, problemId, userId, contestId, teamId = undefined }: { submission: NewSubmission, problemId: string, userId: string, contestId: string, teamId?: string }): Promise<{ submissionId: string }> {
+  return await createSubmission({ submission, userId, target: { problemId, contestId, teamId } })
 }
 
-export async function markSubmissionAsCompiling (submissionId: string): Promise<void> {
+export async function markSubmissionAsCompiling ({ submissionId }: { submissionId: string }): Promise<void> {
   await submissionCollection.updateOne({ id: submissionId }, {
     $set: {
       status: SubmissionStatus.Compiling
@@ -71,6 +71,6 @@ export async function markSubmissionAsCompiling (submissionId: string): Promise<
   })
 }
 
-export async function querySubmissions (query: { problemId?: string, teamId?: string, userId?: string, contestId?: string, domainId?: string }): Promise<Submission[]> {
+export async function querySubmissions ({ query }: { query: { problemId?: string, teamId?: string, userId?: string, contestId?: string, domainId?: string } }): Promise<Submission[]> {
   return await submissionCollection.find(query).sort({ createdAt: -1 }).toArray()
 }

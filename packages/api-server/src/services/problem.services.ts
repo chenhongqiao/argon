@@ -8,19 +8,19 @@ import { testcaseExists } from './testcase.services.js'
 
 import { nanoid } from '../utils/nanoid.utils.js'
 
-export async function createDomainProblem (newProblem: NewProblem, domainId: string): Promise<{ problemId: string }> {
+export async function createDomainProblem ({ newProblem, domainId }: { newProblem: NewProblem, domainId: string }): Promise<{ problemId: string }> {
   const problemId = await nanoid()
   const problem: Problem = { ...newProblem, id: problemId, domainId }
   await domainProblemCollection.insertOne(problem)
   return { problemId }
 }
 
-export async function updateDomainProblem (problemId: string, domainId: string, problem: Partial<NewProblem>): Promise<{ modified: boolean }> {
+export async function updateDomainProblem ({ problemId, domainId, problem }: { problemId: string, domainId: string, problem: Partial<NewProblem> }): Promise<{ modified: boolean }> {
   if (problem.testcases != null) {
     const testcasesVerifyQueue: Array<Promise<void>> = []
     problem.testcases.forEach((testcase) => {
-      testcasesVerifyQueue.push(testcaseExists(problemId, domainId, testcase.input.name, testcase.input.versionId))
-      testcasesVerifyQueue.push(testcaseExists(problemId, domainId, testcase.output.name, testcase.output.versionId))
+      testcasesVerifyQueue.push(testcaseExists({ problemId, domainId, filename: testcase.input.name, versionId: testcase.input.versionId }))
+      testcasesVerifyQueue.push(testcaseExists({ problemId, domainId, filename: testcase.output.name, versionId: testcase.output.versionId }))
     })
     await Promise.all(testcasesVerifyQueue)
   }
@@ -33,7 +33,7 @@ export async function updateDomainProblem (problemId: string, domainId: string, 
   return { modified: modifiedCount > 0 }
 }
 
-export async function deleteDomainProblem (problemId: string, domainId: string): Promise<void> {
+export async function deleteDomainProblem ({ problemId, domainId }: { problemId: string, domainId: string }): Promise<void> {
   const session = mongoClient.startSession()
   try {
     await session.withTransaction(async () => {
@@ -51,7 +51,7 @@ export async function deleteDomainProblem (problemId: string, domainId: string):
   }
 }
 
-export async function fetchDomainProblems (domainId: string): Promise<Problem[]> {
+export async function fetchDomainProblems ({ domainId }: { domainId: string }): Promise<Problem[]> {
   const problems = await domainProblemCollection.find({ domainId }).sort({ _id: -1 }).toArray()
 
   return problems

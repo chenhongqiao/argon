@@ -36,7 +36,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
     },
     async (request, reply) => {
       const { contestId } = request.params
-      const problemList = await fetchContestProblemList(contestId)
+      const problemList = await fetchContestProblemList({ contestId })
       return await reply.status(200).send(problemList)
     }
   )
@@ -87,7 +87,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
     },
     async (request, reply) => {
       const { contestId, problemId } = request.params
-      const result = await syncProblemToContest(contestId, problemId)
+      const result = await syncProblemToContest({ contestId, problemId })
       return await reply.status(200).send(result)
     }
   )
@@ -111,7 +111,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
     },
     async (request, reply) => {
       const { contestId, problemId } = request.params
-      await removeProblemFromContest(contestId, problemId)
+      await removeProblemFromContest({ contestId, problemId })
       return await reply.status(204).send()
     }
   )
@@ -142,7 +142,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
       }
       const submission = request.body
       const { contestId, problemId } = request.params
-      const created = await createContestSubmission(submission, problemId, (request.auth).id, contestId, request.auth.teams[contestId])
+      const created = await createContestSubmission({ submission, problemId, userId: (request.auth).id, contestId, teamId: request.auth.teams[contestId] })
       return await reply.status(202).send(created)
     }
   )
@@ -171,16 +171,16 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
 
       if (!('domainId' in request.params) || typeof request.params.domainId !== 'string' || !(request.params.domainId in auth.scopes)) {
         // User is a regular participant
-        const submissions = await querySubmissions({ contestId, problemId, teamId: auth.teams[contestId] })
+        const submissions = await querySubmissions({ query: { query: { contestId, problemId, teamId: auth.teams[contestId] } } })
         return await reply.status(200).send(submissions)
       } else {
         if (auth.scopes[request.params.domainId].includes('contest.manage') || auth.scopes[request.params.domainId].includes(`contest-${contestId}.manage`)) {
           // User is an admin with access to all users' submissions
-          const submissions = await querySubmissions({ domainId: request.params.domainId, contestId, problemId })
+          const submissions = await querySubmissions({ query: { query: { domainId: request.params.domainId, contestId, problemId } } })
           return await reply.status(200).send(submissions)
         } else {
           // User is a tester
-          const submissions = await querySubmissions({ contestId, problemId, userId: auth.id })
+          const submissions = await querySubmissions({ query: { query: { contestId, problemId, userId: auth.id } } })
           return await reply.status(200).send(submissions)
         }
       }
@@ -215,7 +215,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
 
       const newTeam = request.body
       const { contestId } = request.params
-      const result = await createTeam(newTeam, contestId, request.auth.id)
+      const result = await createTeam({ newTeam, contestId, userId: request.auth.id })
       return await reply.status(201).send(result)
     }
   )
@@ -239,7 +239,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { teamId, contestId } = request.params
-      await deleteTeam(teamId, contestId)
+      await deleteTeam({ teamId, contestId })
 
       return await reply.status(204).send()
     }
@@ -265,7 +265,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
     async (request, reply) => {
       const { userId } = request.body
       const { teamId, contestId } = request.params
-      await createTeamInvitation(teamId, contestId, userId)
+      await createTeamInvitation({ teamId, contestId, userId })
 
       return await reply.status(204).send()
     }
@@ -293,7 +293,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       }
 
       const { invitationId } = request.params
-      await completeTeamInvitation(invitationId, request.auth.id)
+      await completeTeamInvitation({ invitationId, userId: request.auth.id })
 
       return await reply.status(204).send()
     }
@@ -313,7 +313,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { contestId, teamId } = request.params
-      const members = await fetchTeamMembers(teamId, contestId)
+      const members = await fetchTeamMembers({ teamId, contestId })
       return await reply.status(200).send(members)
     }
   )
@@ -337,7 +337,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { contestId, teamId, userId } = request.params
-      await removeTeamMember(teamId, contestId, userId)
+      await removeTeamMember({ teamId, contestId, userId })
       return await reply.status(204).send()
     }
   )
@@ -363,7 +363,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
     async (request, reply) => {
       const { contestId, teamId } = request.params
       const { userId } = request.body
-      const result = await makeTeamCaptain(teamId, contestId, userId)
+      const result = await makeTeamCaptain({ teamId, contestId, userId })
       return await reply.status(200).send(result)
     }
   )
@@ -392,7 +392,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       }
 
       const { contestId, teamId } = request.params
-      const submissions = await querySubmissions({ contestId, teamId })
+      const submissions = await querySubmissions({ query: { query: { contestId, teamId } } })
       return await reply.status(200).send(submissions)
     }
   )
@@ -416,7 +416,7 @@ async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<v
 
     async (request, reply) => {
       const { contestId } = request.params
-      const ranklist = await fetchContestRanklist(contestId)
+      const ranklist = await fetchContestRanklist({ contestId })
       return await reply.status(200).send(ranklist)
     }
   )
@@ -442,7 +442,7 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { contestId } = request.params
-      const contest = fetchContest(contestId)
+      const contest = fetchContest({ contestId })
       return await reply.status(200).send(contest)
     })
 
