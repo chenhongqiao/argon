@@ -3,7 +3,7 @@ import { cacheRedis } from '@argoncs/common'
 export async function fetchCache<T> ({ key }: { key: string }): Promise<T | null> {
   try {
     const cache = await cacheRedis.get(key)
-    if (cache == null) {
+    if (cache == null || cache === '') {
       return null
     }
     // Renew TTL
@@ -26,5 +26,9 @@ export async function setCache ({ key, data }: { key: string, data: any }): Prom
 }
 
 export async function refreshCache ({ key, data }: { key: string, data: any }): Promise<void> {
-  await cacheRedis.set(key, JSON.stringify(data), 'KEEPTTL')
+  await cacheRedis.set(key, JSON.stringify(data), 'KEEPTTL', 'XX')
+}
+
+export async function deleteCache ({ key }: { key: string }): Promise<void> {
+  await cacheRedis.set(key, '', 'KEEPTTL', 'XX')
 }
