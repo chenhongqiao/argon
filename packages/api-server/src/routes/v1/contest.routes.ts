@@ -62,7 +62,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
     },
     async (request, reply) => {
       const { contestId, problemId } = request.params
-      const problem = await fetchContestProblem(problemId, contestId)
+      const problem = await fetchContestProblem({ problemId, contestId })
       return await reply.status(200).send(problem)
     }
   )
@@ -171,16 +171,16 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
 
       if (!('domainId' in request.params) || typeof request.params.domainId !== 'string' || !(request.params.domainId in auth.scopes)) {
         // User is a regular participant
-        const submissions = await querySubmissions({ query: { query: { contestId, problemId, teamId: auth.teams[contestId] } } })
+        const submissions = await querySubmissions({ query: { contestId, problemId, teamId: auth.teams[contestId] } })
         return await reply.status(200).send(submissions)
       } else {
         if (auth.scopes[request.params.domainId].includes('contest.manage') || auth.scopes[request.params.domainId].includes(`contest-${contestId}.manage`)) {
           // User is an admin with access to all users' submissions
-          const submissions = await querySubmissions({ query: { query: { domainId: request.params.domainId, contestId, problemId } } })
+          const submissions = await querySubmissions({ query: { domainId: request.params.domainId, contestId, problemId } })
           return await reply.status(200).send(submissions)
         } else {
           // User is a tester
-          const submissions = await querySubmissions({ query: { query: { contestId, problemId, userId: auth.id } } })
+          const submissions = await querySubmissions({ query: { contestId, problemId, userId: auth.id } })
           return await reply.status(200).send(submissions)
         }
       }
@@ -392,7 +392,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       }
 
       const { contestId, teamId } = request.params
-      const submissions = await querySubmissions({ query: { query: { contestId, teamId } } })
+      const submissions = await querySubmissions({ query: { contestId, teamId } })
       return await reply.status(200).send(submissions)
     }
   )

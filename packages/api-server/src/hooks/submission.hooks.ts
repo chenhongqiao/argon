@@ -10,7 +10,7 @@ export async function submissionInfoHook (request: FastifyRequest, reply: Fastif
   } catch {
     const submissionId = requestParameter(request, 'submissionId')
 
-    const submission = await fetchSubmission(submissionId)
+    const submission = await fetchSubmission({ submissionId })
     // @ts-expect-error property will be checked later
     request.params.contestId = submission.contestId
     // @ts-expect-error property will be checked later
