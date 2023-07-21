@@ -18,7 +18,6 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
   const user: User = {
     id: userId,
     name: newUser.name,
-    email: '',
     newEmail: newUser.email,
     credential: {
       salt,
@@ -36,7 +35,7 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
 
   try {
     await userCollection.insertOne(user)
-    return { userId, email: user.email }
+    return { userId, email: newUser.email }
   } catch (err) {
     if (err instanceof MongoServerError && err.code === 11000 && err.keyValue != null) {
       if (err.keyValue.email !== undefined) {
@@ -74,8 +73,11 @@ export async function userIdExists ({ userId }: { userId: string }): Promise<boo
 }
 
 export async function usernameExists ({ username }: { username: string }): Promise<boolean> {
-  console.log(username)
   return Boolean(await userCollection.countDocuments({ username }))
+}
+
+export async function emailExists ({ email }: { email: string }): Promise<boolean> {
+  return Boolean(await userCollection.countDocuments({ email }))
 }
 
 export async function updateUser ({ userId, user }: { userId: string, user: Partial<NewUser> }): Promise<{ modified: boolean }> {

@@ -33,7 +33,7 @@ const collections: CollectionIndex[] = [
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
       { keys: { username: 1 }, options: { unique: true } },
-      { keys: { email: 1 }, options: { unique: true } }
+      { keys: { email: 1, newEmail: 1 }, options: { unique: true } }
     ]
   },
   {

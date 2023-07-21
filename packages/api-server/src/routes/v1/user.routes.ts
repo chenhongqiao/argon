@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
 import { type PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, NewUserSchema, SubmissionSchema } from '@argoncs/types'
-import { completeVerification, fetchUserById, fetchUserByUsername, initiateVerification, registerUser, userIdExists, usernameExists } from '../../services/user.services.js'
+import { completeVerification, emailExists, fetchUserById, fetchUserByUsername, initiateVerification, registerUser, userIdExists, usernameExists } from '../../services/user.services.js'
 import { ownsResource } from '../../auth/ownership.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
 import { NotFoundError, badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
@@ -217,7 +217,7 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { identifier } = request.params
-      const exists = (identifier.length === 21 ? await userIdExists({ userId: identifier }) : await usernameExists({ username: identifier }))
+      const exists = identifier.includes('@') ? await emailExists({ email: identifier }) : (identifier.length === 21 ? await userIdExists({ userId: identifier }) : await usernameExists({ username: identifier }))
       if (exists) {
         await reply.status(200).send()
       } else {

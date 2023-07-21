@@ -20,7 +20,7 @@ export enum UserRole {
 
 export const UserSchema = Type.Object({
   name: Type.String(),
-  email: Type.String(),
+  email: Type.Optional(Type.String()),
   username: Type.String(),
   year: Type.Number(),
   school: Type.String(),
