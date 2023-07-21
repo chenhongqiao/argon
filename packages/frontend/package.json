@@ -36,8 +36,8 @@
   },
   "dependencies": {
     "@argoncs/types": "workspace:*",
-    "@lljj/vue-json-schema-form": "^1.17.1",
     "@pinia/nuxt": "^0.4.11",
+    "@vueuse/nuxt": "^10.2.1",
     "ajv-i18n": "^4.2.0",
     "gravatar-url": "^4.0.1"
   }

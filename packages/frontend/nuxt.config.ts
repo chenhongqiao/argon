@@ -18,7 +18,7 @@ export default defineNuxtConfig({
       Barlow: [400, 500, 600, 700, 800, 900]
     },
     download: true,
-    display: 'swap'
+    display: 'block'
   },
 
   naiveui: {

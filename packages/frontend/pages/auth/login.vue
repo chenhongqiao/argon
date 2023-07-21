@@ -13,36 +13,47 @@
           Incorrect username or password
         </NAlert>
         <div class="mt-4">
-          <VueForm
-            ref="form"
-            v-model="formData"
-            :schema="UserLoginSchema"
-            :ui-schema="uiSchema"
-            :form-props="{ labelSuffix: '' }">
-            <div class="flex">
-              <div class="my-auto grow">
-                No account?
-                <NuxtLink to="/auth/register" #="{ navigate, href }"
-                  ><n-a :href="href" @click="navigate">Sign up</n-a></NuxtLink
-                >
-              </div>
-              <NButton type="primary" :loading="loginLoading" @click="submit"
-                >Sign in</NButton
+          <NForm ref="formRef" :model="formData" :rules="rules">
+            <NFormItem label="Username/Email" path="usernameOrEmail">
+              <NInput v-model:value="formData.usernameOrEmail" placeholder="">
+              </NInput>
+            </NFormItem>
+            <NFormItem
+              label="Password"
+              path="password"
+              class="mt-0"
+              required
+              type="password">
+              <NInput
+                v-model:value="formData.password"
+                placeholder=""
+                type="password"
+                show-password-on="click">
+              </NInput>
+            </NFormItem>
+          </NForm>
+          <div class="flex">
+            <div class="my-auto grow">
+              No account?
+              <NuxtLink to="/auth/register" #="{ navigate, href }"
+                ><n-a :href="href" @click="navigate">Sign up</n-a></NuxtLink
               >
             </div>
-          </VueForm>
+            <NButton type="primary" :loading="loginLoading" @click="submit"
+              >Sign in</NButton
+            >
+          </div>
         </div>
       </NCard>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { UserLogin, UserLoginSchema } from '@argoncs/types'
-import VueForm from '@lljj/vue3-form-naive'
+import { UserLogin } from '@argoncs/types'
 import { useUserStore } from '~/stores/user'
 
 const formData: Ref<UserLogin> = ref({} as UserLogin)
-const form = ref()
+const formRef = ref()
 
 const loginFailed = ref(false)
 const loginLoading = ref(false)
@@ -51,7 +62,11 @@ async function submit() {
   const { $api } = useNuxtApp()
   try {
     loginLoading.value = true
-    await form.value.$$uiFormRef.validate()
+    try {
+      await formRef.value.validate()
+    } catch {
+      return
+    }
     await $api<{
       sessionId: string
       userId: string
@@ -72,20 +87,20 @@ async function submit() {
     loginLoading.value = false
   }
 }
-const uiSchema = {
-  usernameOrEmail: {
-    'ui:title': 'Username/Email',
-    'ui:options': {
-      placeholder: ''
+const rules = {
+  password: [
+    {
+      required: true,
+      message: 'Password is required',
+      trigger: 'blur'
     }
-  },
-  password: {
-    'ui:title': 'Password',
-    'ui:options': {
-      placeholder: '',
-      type: 'password',
-      'show-password-on': 'click'
+  ],
+  usernameOrEmail: [
+    {
+      required: true,
+      message: 'Username or Email is required',
+      trigger: 'blur'
     }
-  }
+  ]
 }
 </script>
