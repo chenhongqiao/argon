@@ -4,7 +4,11 @@ export const NewUserSchema = Type.Object({
   name: Type.String({ maxLength: 32 }),
   email: Type.String({ maxLength: 32, format: 'email' }),
   password: Type.String({ maxLength: 32, minLength: 8 }),
-  username: Type.String({ maxLength: 16, pattern: '^[A-Za-z0-9_]*$' })
+  username: Type.String({ maxLength: 32, pattern: '^[A-Za-z0-9_]*$' }),
+  year: Type.Number({ maximum: 2100, minimum: 1900 }),
+  school: Type.String({ maxLength: 48 }),
+  country: Type.String({ maxLength: 32 }),
+  region: Type.String({ maxLength: 32 })
 }, { additionalProperties: false })
 export type NewUser = Static<typeof NewUserSchema>
 
@@ -18,6 +22,10 @@ export const UserSchema = Type.Object({
   name: Type.String(),
   email: Type.String(),
   username: Type.String(),
+  year: Type.Number(),
+  school: Type.String(),
+  country: Type.String(),
+  region: Type.String(),
 
   credential: Type.Object({
     hash: Type.String(),
