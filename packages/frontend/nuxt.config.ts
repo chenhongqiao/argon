@@ -5,7 +5,8 @@ export default defineNuxtConfig({
     '@bg-dev/nuxt-naiveui',
     '@nuxtjs/google-fonts',
     '@nuxtjs/tailwindcss',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    'nuxt-icon'
   ],
   runtimeConfig: {
     public: {

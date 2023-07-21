@@ -59,10 +59,14 @@
               trigger="click"
               @select="handleSelect">
               <NAvatar
+                v-if="gravatar"
                 class="cursor-pointer"
                 round
                 size="medium"
                 :src="gravatar" />
+              <NAvatar v-else class="cursor-pointer" round size="medium">
+                <NIcon size="25"><UserIcon /></NIcon>
+              </NAvatar>
             </NDropdown>
           </div>
         </NLayoutHeader>
@@ -83,7 +87,9 @@ import {
   HomeOutlined as HomeIcon,
   UserAddOutlined as SignupIcon,
   TrophyOutlined as ContestIcon,
-  LoginOutlined as LoginIcon
+  LoginOutlined as LoginIcon,
+  UserOutlined as UserIcon,
+  CalendarOutlined as CalendarIcon
 } from '@vicons/antd'
 import { storeToRefs } from 'pinia'
 import { NuxtLink } from '#components'
@@ -113,6 +119,18 @@ function useMenu() {
         ),
       key: '/contests',
       icon: () => h(NIcon, { component: ContestIcon })
+    },
+    {
+      label: () =>
+        h(
+          NuxtLink,
+          {
+            to: '/calendar'
+          },
+          { default: () => 'Calendar' }
+        ),
+      key: '/calendar',
+      icon: () => h(NIcon, { component: CalendarIcon })
     }
   ]
 
@@ -206,7 +224,8 @@ function useAvatar() {
 export default {
   components: {
     SignupIcon,
-    LoginIcon
+    LoginIcon,
+    UserIcon
   },
   setup() {
     const { attach } = useStores()

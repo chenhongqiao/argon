@@ -2940,6 +2940,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vicons/carbon@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "@vicons/carbon@npm:0.12.0"
+  checksum: c7e410d2a0cfc4af03ff2a90fae1f4782dd0782d1fecb7e14a558a0367fed5b96c78cde50a436ae62d9135be96a4367bfc3d08582d57549da3e9c6c5cd0c3059
+  languageName: node
+  linkType: hard
+
 "@vicons/fluent@npm:^0.12.0":
   version: 0.12.0
   resolution: "@vicons/fluent@npm:0.12.0"
@@ -2951,6 +2958,13 @@ __metadata:
   version: 0.12.0
   resolution: "@vicons/ionicons5@npm:0.12.0"
   checksum: 45af3206c431ffd76d93f377014fdbc9ec160022211ef335494c84dbbefdfe36f5b8fb992a9ec034036435049470543c1c6ce7fafec0a2efad46a100ebc9bf6a
+  languageName: node
+  linkType: hard
+
+"@vicons/material@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "@vicons/material@npm:0.12.0"
+  checksum: a02da7e4ce69740d5dbe4e1e3dc5fa27b9f624509572d25795854e71608794e844bb8829b5b781824841141b824f4c5f606767a980b6251edf1b8e24ab997161
   languageName: node
   linkType: hard
 
@@ -4777,6 +4791,13 @@ __metadata:
     path-type: ^4.0.0
     yaml: ^1.10.0
   checksum: c53bf7befc1591b2651a22414a5e786cd5f2eeaa87f3678a3d49d6069835a9d8d1aef223728e98aa8fec9a95bf831120d245096db12abe019fecb51f5696c96f
+  languageName: node
+  linkType: hard
+
+"country-region-data@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "country-region-data@npm:2.7.0"
+  checksum: e87f50efca2565e8fdf27f63f58c832ced7d814af942c95a3dd9c041252c774710d6a9cd434384f32e32ec26cc3da9a692fecfccc440ed2808abc2ad86667faf
   languageName: node
   linkType: hard
 
@@ -10465,10 +10486,13 @@ __metadata:
     "@types/node": ^18
     "@typescript-eslint/parser": ^6.1.0
     "@vicons/antd": ^0.12.0
+    "@vicons/carbon": ^0.12.0
     "@vicons/fluent": ^0.12.0
     "@vicons/ionicons5": ^0.12.0
+    "@vicons/material": ^0.12.0
     "@vueuse/nuxt": ^10.2.1
     ajv-i18n: ^4.2.0
+    country-region-data: ^2.7.0
     eslint-config-prettier: ^8.8.0
     eslint-config-prettier-standard: ^4.0.1
     eslint-config-standard: ^17.1.0
@@ -10480,12 +10504,23 @@ __metadata:
     gravatar-url: ^4.0.1
     naive-ui: ^2.34.4
     nuxt: ^3.6.3
+    nuxt-icon: ^0.4.2
     prettier: ^3.0.0
     prettier-config-standard: ^5.0.0
     prettier-standard: ^16.4.1
     typescript: ^5.1.6
   languageName: unknown
   linkType: soft
+
+"nuxt-icon@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "nuxt-icon@npm:0.4.2"
+  dependencies:
+    "@iconify/vue": ^4.1.1
+    "@nuxt/kit": ^3.6.1
+  checksum: 7de3cca60e181889539f6a90801c9e7d558bd8e445d693b1157a920434c01c99fd48b272c63ec8fd78b3d94b5e01c9425acfd44fdcc13c10e85401c4b8cee6f9
+  languageName: node
+  linkType: hard
 
 "nuxt@npm:^3.6.1":
   version: 3.6.5

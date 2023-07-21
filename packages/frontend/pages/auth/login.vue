@@ -60,13 +60,14 @@ const loginLoading = ref(false)
 
 async function submit() {
   const { $api } = useNuxtApp()
+
+  try {
+    await formRef.value.validate()
+  } catch {
+    return
+  }
   try {
     loginLoading.value = true
-    try {
-      await formRef.value.validate()
-    } catch {
-      return
-    }
     await $api<{
       sessionId: string
       userId: string

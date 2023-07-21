@@ -38,8 +38,10 @@ export const useUserStore = defineStore('user', () => {
     }
   })
   const gravatar = computed(() => {
-    if (profile.value != null) {
-      return gravatarUrl(profile.value.email ?? '', { size: 200 })
+    if (profile.value != null && profile.value.email != null) {
+      return gravatarUrl(profile.value.email, { size: 200 })
+    } else {
+      return null
     }
   })
 

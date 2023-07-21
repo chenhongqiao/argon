@@ -29,6 +29,7 @@
     "eslint-plugin-standard": "^5.0.0",
     "naive-ui": "^2.34.4",
     "nuxt": "^3.6.3",
+    "nuxt-icon": "^0.4.2",
     "prettier": "^3.0.0",
     "prettier-config-standard": "^5.0.0",
     "prettier-standard": "^16.4.1",
@@ -37,8 +38,11 @@
   "dependencies": {
     "@argoncs/types": "workspace:*",
     "@pinia/nuxt": "^0.4.11",
+    "@vicons/carbon": "^0.12.0",
+    "@vicons/material": "^0.12.0",
     "@vueuse/nuxt": "^10.2.1",
     "ajv-i18n": "^4.2.0",
+    "country-region-data": "^2.7.0",
     "gravatar-url": "^4.0.1"
   }
 }
