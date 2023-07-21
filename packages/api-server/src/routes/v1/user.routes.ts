@@ -1,9 +1,9 @@
 import { Type } from '@sinclair/typebox'
-import { type PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, type PrivateUserProfile, NewUserSchema, SubmissionSchema } from '@argoncs/types'
-import { completeVerification, fetchUser, initiateVerification, registerUser } from '../../services/user.services.js'
+import { type PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, NewUserSchema, SubmissionSchema } from '@argoncs/types'
+import { completeVerification, fetchUserById, fetchUserByUsername, initiateVerification, registerUser, userIdExists, usernameExists } from '../../services/user.services.js'
 import { ownsResource } from '../../auth/ownership.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
-import { badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
+import { NotFoundError, badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { contestNotBegan, contestPublished } from '../../auth/contest.auth.js'
 import { completeTeamInvitation } from '../../services/team.services.js'
 import { hasDomainPrivilege, hasNoPrivilege } from '../../auth/scope.auth.js'
@@ -24,12 +24,12 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
           400: badRequestSchema,
           404: notFoundSchema
         },
-        params: Type.Object({ userId: Type.String() })
+        params: Type.Object({ identifier: Type.String() })
       }
     },
     async (request, reply) => {
-      const { userId } = request.params
-      const { username, name, id } = await fetchUser({ userId })
+      const { identifier } = request.params
+      const { username, name, id } = (identifier.length === 21 ? await fetchUserById({ userId: identifier }) : await fetchUserByUsername({ username: identifier }))
       const publicProfile: PublicUserProfile = { username, name, id }
       await reply.status(200).send(publicProfile)
     }
@@ -46,17 +46,16 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
           403: forbiddenSchema,
           404: notFoundSchema
         },
-        params: Type.Object({ userId: Type.String() })
+        params: Type.Object({ identifier: Type.String() })
       },
       onRequest: [userAuthHook, profileRoutes.auth([
         [ownsResource],
         [isSuperAdmin]]) as any]
     },
     async (request, reply) => {
-      const { userId } = request.params
-      const { username, name, email, newEmail, scopes, role, teams } = await fetchUser({ userId })
-      const privateProfile: PrivateUserProfile = { username, name, email, newEmail, scopes, id: userId, role, teams }
-      await reply.status(200).send(privateProfile)
+      const { identifier } = request.params
+      const { username, name, email, newEmail, scopes, role, teams, year, school, country, region, id } = (identifier.length === 21 ? await fetchUserById({ userId: identifier }) : await fetchUserByUsername({ username: identifier }))
+      return await reply.status(200).send({ id, username, name, email, newEmail, scopes, role, teams, year, school, country, region })
     }
   )
 }
@@ -153,7 +152,7 @@ async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<
     },
     async (request, reply) => {
       const { userId } = request.params
-      const submissions = await fetchUser({ userId })
+      const submissions = await fetchUserById({ userId })
       return await reply.status(200).send(submissions)
     }
   )
@@ -205,7 +204,29 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     }
   )
 
-  await routes.register(userProfileRoutes, { prefix: '/:userId/profiles' })
+  routes.head(
+    '/:identifier',
+    {
+      schema: {
+        response: {
+          400: badRequestSchema,
+          404: notFoundSchema
+        },
+        params: Type.Object({ identifier: Type.String() })
+      }
+    },
+    async (request, reply) => {
+      const { identifier } = request.params
+      const exists = (identifier.length === 21 ? await userIdExists({ userId: identifier }) : await usernameExists({ username: identifier }))
+      if (exists) {
+        await reply.status(200).send()
+      } else {
+        throw new NotFoundError('User not found')
+      }
+    }
+  )
+
+  await routes.register(userProfileRoutes, { prefix: '/:identifier/profiles' })
   await routes.register(userVerificationRoutes, { prefix: '/:userId/email-verifications' })
   await routes.register(userContestRoutes, { prefix: '/:userId/contests' })
   await routes.register(userSubmissionRoutes, { prefix: '/:userId/submissions' })

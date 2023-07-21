@@ -26,6 +26,10 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
     },
     role: UserRole.User,
     username: newUser.username,
+    school: newUser.school,
+    country: newUser.country,
+    region: newUser.region,
+    year: newUser.year,
     scopes: {},
     teams: {}
   }
@@ -48,8 +52,16 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
   }
 }
 
-export async function fetchUser ({ userId }: { userId: string }): Promise<User> {
+export async function fetchUserById ({ userId }: { userId: string }): Promise<User> {
   const user = await userCollection.findOne({ id: userId })
+  if (user == null) {
+    throw new NotFoundError('User not found')
+  }
+
+  return user
+}
+export async function fetchUserByUsername ({ username }: { username: string }): Promise<User> {
+  const user = await userCollection.findOne({ username })
   if (user == null) {
     throw new NotFoundError('User not found')
   }
@@ -58,7 +70,12 @@ export async function fetchUser ({ userId }: { userId: string }): Promise<User> 
 }
 
 export async function userIdExists ({ userId }: { userId: string }): Promise<boolean> {
-  return Boolean(userCollection.countDocuments({ id: userId }))
+  return Boolean(await userCollection.countDocuments({ id: userId }))
+}
+
+export async function usernameExists ({ username }: { username: string }): Promise<boolean> {
+  console.log(username)
+  return Boolean(await userCollection.countDocuments({ username }))
 }
 
 export async function updateUser ({ userId, user }: { userId: string, user: Partial<NewUser> }): Promise<{ modified: boolean }> {

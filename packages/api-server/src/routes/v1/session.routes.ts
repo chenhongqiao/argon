@@ -6,10 +6,10 @@ import { delay } from '@argoncs/common'
 import { randomInt } from 'node:crypto'
 import { type FastifyTypeBox } from '../../types.js'
 import { badRequestSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
-import { type PrivateUserProfile, PrivateUserProfileSchema, UserLoginSchema, UserSessionSchema } from '@argoncs/types'
+import { PrivateUserProfileSchema, UserLoginSchema, UserSessionSchema } from '@argoncs/types'
 import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { requestAuthProfile, requestSessionToken } from '../../utils/auth.utils.js'
-import { fetchUser } from '../../services/user.services.js'
+import { fetchUserById } from '../../services/user.services.js'
 
 export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Promise<void> {
   userSessionRoutes.post(
@@ -70,9 +70,11 @@ export async function currentSessionRoutes (currentSessionRoutes: FastifyTypeBox
         await userAuthHook(request, reply)
         const { token } = requestSessionToken(request)
         const { userId, id } = await fetchSessionByToken({ sessionToken: token })
-        const { username, name, email, newEmail, scopes, role, teams } = await fetchUser({ userId })
-        const privateProfile: PrivateUserProfile = { username, name, email, newEmail, scopes, id: userId, role, teams }
-        return await reply.status(200).send({ session: { userId, sessionId: id }, profile: privateProfile })
+        const { username, name, email, newEmail, scopes, role, teams, year, school, country, region } = await fetchUserById({ userId })
+        return await reply.status(200).send({
+          session: { userId, sessionId: id },
+          profile: { id: userId, username, name, email, newEmail, scopes, role, teams, year, school, country, region }
+        })
       } catch (err) {
         return await reply.status(200).send(null)
       }

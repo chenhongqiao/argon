@@ -74,7 +74,7 @@ export async function fetchAuthenticationProfile ({ userId }: { userId: string }
     return cache
   }
 
-  const user = await userCollection.findOne({ id: userId })
+  const user = await userCollection.findOne({ id: userId }, { projection: { role: 1, scopes: 1, id: 1, teams: 1, email: 1 } })
   if (user == null) {
     throw new NotFoundError('User not found')
   }
