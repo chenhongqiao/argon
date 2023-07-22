@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
 import { type PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, NewUserSchema, SubmissionSchema } from '@argoncs/types'
-import { completeVerification, emailExists, fetchUserById, fetchUserByUsername, initiateVerification, registerUser, userIdExists, usernameExists } from '../../services/user.services.js'
+import { completeVerification, emailExists, fetchUserById, fetchUserByUsername, initiateVerification, registerUser, searchUsers, userIdExists, usernameExists } from '../../services/user.services.js'
 import { ownsResource } from '../../auth/ownership.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
 import { NotFoundError, badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
@@ -229,6 +229,33 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
       } else {
         throw new NotFoundError('User not found')
       }
+    }
+  )
+
+  routes.get(
+    '/',
+    {
+      schema: {
+        response: {
+          200: Type.Array(PublicUserProfileSchema),
+          400: badRequestSchema,
+          401: unauthorizedSchema
+        },
+        querystring: Type.Object({
+          query: Type.String()
+        })
+      },
+      onRequest: [userAuthHook]
+    },
+    async (request, reply) => {
+      const { query } = request.query as { query: string }
+      const users = await searchUsers({ query })
+      const profiles: PublicUserProfile[] = users.map((user) => {
+        const { id, username, name, email } = user
+        const gravatar = email != null ? gravatarUrl(email) : undefined
+        return { id, username, name, gravatar }
+      })
+      return await reply.status(200).send(profiles)
     }
   )
 
