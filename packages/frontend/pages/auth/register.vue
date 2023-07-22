@@ -118,7 +118,7 @@
               </NFormItemGi>
             </NGrid>
           </NForm>
-          <div class="mt-4 text-right">
+          <div class="mt-4 flex justify-end">
             <NButton class="mr-2" @click="step -= 1">Back</NButton>
             <NButton
               type="primary"
@@ -131,8 +131,8 @@
         <div v-else-if="step === 3" class="mt-20">
           <NResult
             status="success"
-            title="Account Created"
-            :description="`We've sent a verification email to ${accountForm.email}. Please confirm your email address to begin taking part in contests and logging in with your email!`">
+            title="Almost set!"
+            :description="`Please check your inbox for an email address confirmation email we've just sent to ${accountForm.email}.`">
             <template #icon>
               <NIcon size="80">
                 <Icon name="twemoji:partying-face"></Icon>
@@ -302,8 +302,10 @@ async function finishContestantInfo() {
   try {
     signupLoading.value = true
     const completedForm = { ...accountForm.value, ...contestantForm.value }
-    await $api('/users', { method: 'post', body: completedForm })
-    step.value += 1
+    const { userId } = await $api<{ userId: string }>('/users', {
+      method: 'post',
+      body: completedForm
+    })
     await $api('/sessions', {
       method: 'post',
       body: {
@@ -311,7 +313,11 @@ async function finishContestantInfo() {
         password: accountForm.value.password
       }
     })
-    attach()
+    await attach()
+    await $api(`/users/${userId}/email-verifications`, {
+      method: 'post'
+    })
+    step.value += 1
   } finally {
     signupLoading.value = false
   }
