@@ -39,8 +39,8 @@ export const UserSchema = Type.Object({
 })
 export type User = Static<typeof UserSchema>
 
-export const PublicUserProfileSchema = Type.Pick(UserSchema, ['username', 'name', 'id'])
+export const PublicUserProfileSchema = Type.Intersect([Type.Pick(UserSchema, ['username', 'name', 'id']), Type.Object({ gravatar: Type.Optional(Type.String()) })])
 export type PublicUserProfile = Static<typeof PublicUserProfileSchema>
 
-export const PrivateUserProfileSchema = Type.Omit(UserSchema, ['credential'])
+export const PrivateUserProfileSchema = Type.Intersect([Type.Omit(UserSchema, ['credential']), Type.Object({ gravatar: Type.Optional(Type.String()) })])
 export type PrivateUserProfile = Static<typeof PrivateUserProfileSchema>

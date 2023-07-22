@@ -34,15 +34,14 @@ export const ContestProblemListSchema = Type.Object({
 export type ConetstProblemList = Static<typeof ContestProblemListSchema>
 
 export const NewContestSeriesSchema = Type.Object({
-  name: Type.String(),
-  contests: Type.Array(Type.String())
+  name: Type.String()
 })
 export type NewContestSeries = Static<typeof NewContestSeriesSchema>
 
 export const ContestSeriesSchema = Type.Object({
   name: Type.String(),
-  contests: Type.Array(Type.String()),
 
+  contests: Type.Array(Type.String()),
   id: Type.String(),
   domainId: Type.String()
 })
