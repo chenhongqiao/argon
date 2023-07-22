@@ -3,7 +3,7 @@ import { heartbeatRoutes } from './v1/heartbeat.routes.js'
 import { domainRoutes } from './v1/domain.routes.js'
 import { userRoutes } from './v1/user.routes.js'
 import { judgerRoutes } from './v1/judger.routes.js'
-import { contestRoutes } from './v1/contest.routes.js'
+import { contestRoutes, contestSeriesRoutes } from './v1/contest.routes.js'
 import { userSessionRoutes, currentSessionRoutes } from './v1/session.routes.js'
 
 export async function v1APIRoutes (app: FastifyTypeBox): Promise<void> {
@@ -14,4 +14,5 @@ export async function v1APIRoutes (app: FastifyTypeBox): Promise<void> {
   await app.register(domainRoutes, { prefix: '/domains' })
   await app.register(judgerRoutes, { prefix: '/judger' })
   await app.register(contestRoutes, { prefix: '/contests' })
+  await app.register(contestSeriesRoutes, { prefix: '/contest-series' })
 }

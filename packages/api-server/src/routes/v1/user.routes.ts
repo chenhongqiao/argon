@@ -13,6 +13,7 @@ import { isSuperAdmin } from '../../auth/role.auth.js'
 import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { contestInfoHook } from '../../hooks/contest.hooks.js'
 import { submissionInfoHook } from '../../hooks/submission.hooks.js'
+import gravatarUrl from 'gravatar-url'
 
 async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> {
   profileRoutes.get(
@@ -24,13 +25,14 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
           400: badRequestSchema,
           404: notFoundSchema
         },
-        params: Type.Object({ identifier: Type.String() })
+        params: Type.Object({ userId: Type.String() })
       }
     },
     async (request, reply) => {
-      const { identifier } = request.params
-      const { username, name, id } = (identifier.length === 21 ? await fetchUserById({ userId: identifier }) : await fetchUserByUsername({ username: identifier }))
-      const publicProfile: PublicUserProfile = { username, name, id }
+      const { userId } = request.params
+      const { username, name, id, email } = (userId.length === 21 ? await fetchUserById({ userId }) : await fetchUserByUsername({ username: userId }))
+      const gravatar = email != null ? gravatarUrl(email) : undefined
+      const publicProfile: PublicUserProfile = { username, name, id, gravatar }
       await reply.status(200).send(publicProfile)
     }
   )
@@ -46,16 +48,17 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
           403: forbiddenSchema,
           404: notFoundSchema
         },
-        params: Type.Object({ identifier: Type.String() })
+        params: Type.Object({ userId: Type.String() })
       },
       onRequest: [userAuthHook, profileRoutes.auth([
         [ownsResource],
         [isSuperAdmin]]) as any]
     },
     async (request, reply) => {
-      const { identifier } = request.params
-      const { username, name, email, newEmail, scopes, role, teams, year, school, country, region, id } = (identifier.length === 21 ? await fetchUserById({ userId: identifier }) : await fetchUserByUsername({ username: identifier }))
-      return await reply.status(200).send({ id, username, name, email, newEmail, scopes, role, teams, year, school, country, region })
+      const { userId } = request.params
+      const { username, name, email, newEmail, scopes, role, teams, year, school, country, region, id } = (userId.length === 21 ? await fetchUserById({ userId }) : await fetchUserByUsername({ username: userId }))
+      const gravatar = email != null ? gravatarUrl(email) : undefined
+      return await reply.status(200).send({ id, username, name, email, newEmail, scopes, role, teams, year, school, country, region, gravatar })
     }
   )
 }
@@ -104,7 +107,6 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
     async (request, reply) => {
       const { verificationId } = request.params
       const { modified } = await completeVerification({ verificationId })
-      console.log(modified)
       return await reply.status(200).send({ modified })
     }
   )
@@ -209,19 +211,19 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
   )
 
   routes.head(
-    '/:identifier',
+    '/:userId',
     {
       schema: {
         response: {
           400: badRequestSchema,
           404: notFoundSchema
         },
-        params: Type.Object({ identifier: Type.String() })
+        params: Type.Object({ userId: Type.String() })
       }
     },
     async (request, reply) => {
-      const { identifier } = request.params
-      const exists = identifier.includes('@') ? await emailExists({ email: identifier }) : (identifier.length === 21 ? await userIdExists({ userId: identifier }) : await usernameExists({ username: identifier }))
+      const { userId } = request.params
+      const exists = userId.includes('@') ? await emailExists({ email: userId }) : (userId.length === 21 ? await userIdExists({ userId }) : await usernameExists({ username: userId }))
       if (exists) {
         await reply.status(200).send()
       } else {
@@ -230,7 +232,7 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     }
   )
 
-  await routes.register(userProfileRoutes, { prefix: '/:identifier/profiles' })
+  await routes.register(userProfileRoutes, { prefix: '/:userId/profiles' })
   await routes.register(userVerificationRoutes, { prefix: '/:userId/email-verifications' })
   await routes.register(userContestRoutes, { prefix: '/:userId/contests' })
   await routes.register(userSubmissionRoutes, { prefix: '/:userId/submissions' })

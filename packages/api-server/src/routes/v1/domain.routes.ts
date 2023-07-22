@@ -352,7 +352,7 @@ async function domainContestSeriesRoutes (seriesRoutes: FastifyTypeBox): Promise
         params: Type.Object({ domainId: Type.String() }),
         body: NewContestSeriesSchema,
         response: {
-          201: Type.Object({ contestId: Type.String() }),
+          201: Type.Object({ seriesId: Type.String() }),
           400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema

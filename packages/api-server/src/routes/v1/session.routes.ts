@@ -10,6 +10,7 @@ import { PrivateUserProfileSchema, UserLoginSchema, UserSessionSchema } from '@a
 import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { requestAuthProfile, requestSessionToken } from '../../utils/auth.utils.js'
 import { fetchUserById } from '../../services/user.services.js'
+import gravatarUrl from 'gravatar-url'
 
 export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Promise<void> {
   userSessionRoutes.post(
@@ -71,9 +72,10 @@ export async function currentSessionRoutes (currentSessionRoutes: FastifyTypeBox
         const { token } = requestSessionToken(request)
         const { userId, id } = await fetchSessionByToken({ sessionToken: token })
         const { username, name, email, newEmail, scopes, role, teams, year, school, country, region } = await fetchUserById({ userId })
+        const gravatar = email != null ? gravatarUrl(email) : undefined
         return await reply.status(200).send({
           session: { userId, sessionId: id },
-          profile: { id: userId, username, name, email, newEmail, scopes, role, teams, year, school, country, region }
+          profile: { id: userId, username, name, email, newEmail, scopes, role, teams, year, school, country, region, gravatar }
         })
       } catch (err) {
         return await reply.status(200).send(null)
