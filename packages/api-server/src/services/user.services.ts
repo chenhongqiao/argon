@@ -7,7 +7,7 @@ import { promisify } from 'node:util'
 
 import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
 
-import { emailClient } from '../connections/email.connections.js'
+import { sendEmail } from './emails.services.js'
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -108,14 +108,7 @@ export async function initiateVerification ({ userId }: { userId: string }): Pro
     createdAt: (new Date()).getTime()
   })
 
-  const verificationEmail: emailClient.MailDataRequired = {
-    to: newEmail,
-    from: { name: 'Argon Contest Server', email: process.env.EMAIL_SENDER_ADDRESS ?? '' },
-    subject: '[ArgonCS] Please Verify Your Email',
-    html: `Token: ${id}`
-  }
-
-  await emailClient.send(verificationEmail)
+  await sendEmail({ to: newEmail, template: 'confirmEmail', subject: 'Confirm your email address', values: { name: user.name, verificationLink: `https://contest.teamscode.org/email-verification/${userId}-${id}` } })
 }
 
 export async function completeVerification ({ verificationId }: { verificationId: string }): Promise<{ modified: boolean }> {

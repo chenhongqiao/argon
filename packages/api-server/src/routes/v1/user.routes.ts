@@ -96,11 +96,15 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
           401: unauthorizedSchema,
           403: notFoundSchema
         }
-      }
+      },
+      onRequest: [userAuthHook, verificationRoutes.auth([
+        [ownsResource]
+      ]) as any]
     },
     async (request, reply) => {
       const { verificationId } = request.params
       const { modified } = await completeVerification({ verificationId })
+      console.log(modified)
       return await reply.status(200).send({ modified })
     }
   )
