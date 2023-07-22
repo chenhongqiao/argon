@@ -25,7 +25,7 @@ export async function createContest ({ newContest, domainId }: { newContest: New
 
 export async function createContestSeries ({ newContestSeries, domainId }: { newContestSeries: NewContestSeries, domainId: string }): Promise<{ seriesId: string }> {
   const id = await nanoid()
-  await contestSeriesCollection.insertOne({ ...newContestSeries, id, domainId })
+  await contestSeriesCollection.insertOne({ ...newContestSeries, contests: [], id, domainId })
   return { seriesId: id }
 }
 

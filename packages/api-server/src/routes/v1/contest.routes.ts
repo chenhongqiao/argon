@@ -4,7 +4,7 @@ import { Type } from '@sinclair/typebox'
 import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { contestBegan, contestNotBegan, contestPublished, registeredForContest, contestRunning } from '../../auth/contest.auth.js'
 import { hasContestPrivilege, hasDomainPrivilege, hasNoPrivilege } from '../../auth/scope.auth.js'
-import { fetchAllContestSeries, fetchContestByHandle, fetchContestById, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest, updateContest } from '../../services/contest.services.js'
+import { fetchAllContestSeries, fetchContestById, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest, updateContest } from '../../services/contest.services.js'
 import { type FastifyTypeBox } from '../../types.js'
 import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
 import { isTeamCaptain, isTeamMember } from '../../auth/team.auth.js'
@@ -15,6 +15,7 @@ import { contestInfoHook } from '../../hooks/contest.hooks.js'
 import { requestAuthProfile } from '../../utils/auth.utils.js'
 
 async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void> {
+  problemRoutes.addHook('onRequest', contestInfoHook)
   problemRoutes.get(
     '/',
     {
@@ -28,7 +29,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, problemRoutes.auth([
+      onRequest: [userAuthHook, problemRoutes.auth([
         [hasDomainPrivilege(['contest.read'])], // Domain scope
         [hasContestPrivilege(['read'])], // Contest privilege
         [registeredForContest, contestBegan] // Regular participant
@@ -54,7 +55,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, problemRoutes.auth([
+      onRequest: [userAuthHook, problemRoutes.auth([
         [hasDomainPrivilege(['contest.read'])], // Domain scope
         [hasContestPrivilege(['read'])], // Contest privilege
         [registeredForContest, contestBegan] // Regular participant
@@ -80,7 +81,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, problemRoutes.auth([
+      onRequest: [userAuthHook, problemRoutes.auth([
         [hasDomainPrivilege(['contest.manage'])],
         [hasContestPrivilege(['manage'])]
       ]) as any]
@@ -104,7 +105,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, problemRoutes.auth([
+      onRequest: [userAuthHook, problemRoutes.auth([
         [hasDomainPrivilege(['contest.manage'])],
         [hasContestPrivilege(['manage'])]
       ]) as any]
@@ -130,7 +131,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, problemRoutes.auth([
+      onRequest: [userAuthHook, problemRoutes.auth([
         [hasDomainPrivilege(['contest.test'])], // Domain testers
         [hasContestPrivilege(['test'])], // Contest tester
         [contestRunning, registeredForContest]]) as any // Users
@@ -159,7 +160,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
           403: forbiddenSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, problemRoutes.auth([
+      onRequest: [userAuthHook, problemRoutes.auth([
         [hasDomainPrivilege(['contest.test'])],
         [hasContestPrivilege(['test'])],
         [registeredForContest, contestBegan]
@@ -189,6 +190,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
 }
 
 async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
+  teamRoutes.addHook('onRequest', contestInfoHook)
   teamRoutes.post(
     '/',
     {
@@ -204,7 +206,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           409: conflictSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, teamRoutes.auth([
+      onRequest: [userAuthHook, teamRoutes.auth([
         [hasNoPrivilege, contestPublished, contestNotBegan, hasVerifiedEmail]
       ]) as any]
     },
@@ -283,7 +285,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, teamRoutes.auth([
+      onRequest: [userAuthHook, teamRoutes.auth([
         [hasNoPrivilege, contestPublished, contestNotBegan, hasVerifiedEmail]
       ]) as any]
     },
@@ -380,7 +382,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           403: forbiddenSchema
         }
       },
-      onRequest: [userAuthHook, contestInfoHook, teamRoutes.auth([
+      onRequest: [userAuthHook, teamRoutes.auth([
         [hasDomainPrivilege(['contest.manage'])],
         [hasContestPrivilege(['manage'])],
         [isTeamMember, contestBegan]
@@ -399,6 +401,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
 }
 
 async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<void> {
+  ranklistRoutes.addHook('onRequest', contestInfoHook)
   ranklistRoutes.get(
     '/',
     {
@@ -424,10 +427,10 @@ async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<v
 
 export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
   routes.get(
-    '/:identifier',
+    '/:contestId',
     {
       schema: {
-        params: Type.Object({ identifier: Type.String() }),
+        params: Type.Object({ contestId: Type.String() }),
         response: {
           200: ContestSchema,
           400: badRequestSchema,
@@ -436,15 +439,15 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
           404: notFoundSchema
         }
       },
-      onRequest: [routes.auth([
+      onRequest: [contestInfoHook, routes.auth([
         [userAuthHook, hasDomainPrivilege(['contest.read'])],
         [userAuthHook, hasContestPrivilege(['read'])],
         [contestPublished]
       ]) as any]
     },
     async (request, reply) => {
-      const { identifier } = request.params
-      const contest = identifier.length === 21 ? await fetchContestById({ contestId: identifier }) : await fetchContestByHandle({ handle: identifier })
+      const { contestId } = request.params
+      const contest = await fetchContestById({ contestId })
       return await reply.status(200).send(contest)
     })
 
@@ -461,7 +464,7 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
           404: notFoundSchema
         }
       },
-      onRequest: [userAuthHook, routes.auth([
+      onRequest: [contestInfoHook, userAuthHook, routes.auth([
         [hasDomainPrivilege(['contest.manage'])],
         [hasContestPrivilege(['manage'])]
       ]) as any]

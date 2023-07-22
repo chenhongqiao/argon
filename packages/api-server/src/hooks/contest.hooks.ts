@@ -1,14 +1,19 @@
 import { type FastifyRequest, type FastifyReply } from 'fastify'
-import { fetchContestById } from '../services/contest.services.js'
+import { fetchContestByHandle, fetchContestById } from '../services/contest.services.js'
 import { requestParameter } from '../utils/auth.utils.js'
 
 export async function contestInfoHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const contestId = requestParameter(request, 'contestId')
   try {
     requestParameter(request, 'domainId')
+    if (contestId.length !== 21) {
+      throw new Error('Need to fetch')
+    }
   } catch {
-    const contestId = requestParameter(request, 'contestId')
-    const contest = await fetchContestById({ contestId })
+    const contest = contestId.length === 21 ? await fetchContestById({ contestId }) : await fetchContestByHandle({ handle: contestId })
     // @ts-expect-error property will be checked later
     request.params.domainId = contest.domainId
+    // @ts-expect-error property will be checked later
+    request.params.contestId = contest.id
   }
 }
