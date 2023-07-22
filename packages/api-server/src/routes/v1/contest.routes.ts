@@ -1,10 +1,10 @@
 import { fetchContestProblem } from '@argoncs/common'
-import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema, NewSubmissionSchema, SubmissionSchema, TeamScoreSchema } from '@argoncs/types'
+import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema, NewSubmissionSchema, SubmissionSchema, TeamScoreSchema, NewContestSchema, ContestSeriesSchema } from '@argoncs/types'
 import { Type } from '@sinclair/typebox'
 import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { contestBegan, contestNotBegan, contestPublished, registeredForContest, contestRunning } from '../../auth/contest.auth.js'
 import { hasContestPrivilege, hasDomainPrivilege, hasNoPrivilege } from '../../auth/scope.auth.js'
-import { fetchContest, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest } from '../../services/contest.services.js'
+import { fetchAllContestSeries, fetchContestByHandle, fetchContestById, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest, updateContest } from '../../services/contest.services.js'
 import { type FastifyTypeBox } from '../../types.js'
 import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
 import { isTeamCaptain, isTeamMember } from '../../auth/team.auth.js'
@@ -424,13 +424,15 @@ async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<v
 
 export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
   routes.get(
-    '/:contestId',
+    '/:identifier',
     {
       schema: {
-        params: Type.Object({ contestId: Type.String() }),
+        params: Type.Object({ identifier: Type.String() }),
         response: {
           200: ContestSchema,
           400: badRequestSchema,
+          401: unauthorizedSchema,
+          403: forbiddenSchema,
           404: notFoundSchema
         }
       },
@@ -441,12 +443,52 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
       ]) as any]
     },
     async (request, reply) => {
-      const { contestId } = request.params
-      const contest = fetchContest({ contestId })
+      const { identifier } = request.params
+      const contest = identifier.length === 21 ? await fetchContestById({ contestId: identifier }) : await fetchContestByHandle({ handle: identifier })
       return await reply.status(200).send(contest)
+    })
+
+  routes.put(
+    '/:contestId',
+    {
+      schema: {
+        params: Type.Object({ contestId: Type.String() }),
+        body: Type.Omit(NewContestSchema, ['seriesId']),
+        response: {
+          400: badRequestSchema,
+          401: unauthorizedSchema,
+          403: forbiddenSchema,
+          404: notFoundSchema
+        }
+      },
+      onRequest: [userAuthHook, routes.auth([
+        [hasDomainPrivilege(['contest.manage'])],
+        [hasContestPrivilege(['manage'])]
+      ]) as any]
+    },
+    async (request, reply) => {
+      const { contestId } = request.params
+      const newContest = request.body
+      await updateContest({ contestId, contest: newContest })
+      return await reply.status(204).send()
     })
 
   await routes.register(contestProblemRoutes, { prefix: '/:contestId/problems' })
   await routes.register(contestTeamRoutes, { prefix: '/:contestId/teams' })
   await routes.register(contestRanklistRoutes, { prefix: '/:contestId/ranklist' })
+}
+
+export async function contestSeriesRoutes (routes: FastifyTypeBox): Promise<void> {
+  routes.get('/',
+    {
+      schema: {
+        response: {
+          200: Type.Array(ContestSeriesSchema)
+        }
+      }
+    },
+    async (request, reply) => {
+      const contestSeries = await fetchAllContestSeries()
+      return await reply.status(200).send(contestSeries)
+    })
 }
