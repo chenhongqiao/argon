@@ -34,11 +34,13 @@ export function hasContestPrivilege (scopes: string[]) {
   }
 }
 
-export function hasNoPrivilege (request: FastifyRequest, reply: FastifyReply): void {
+export function hasNoPrivilege (request: FastifyRequest, reply: FastifyReply, done): void {
   const auth = requestAuthProfile(request)
 
   const domainId = requestParameter(request, 'domainId')
   if (domainId in auth.scopes) {
     throw new ForbiddenError('User must not be a privileged member of this domain')
   }
+
+  done()
 }
