@@ -1,4 +1,4 @@
-import { type ClientSession, mongoClient, submissionCollection, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
+import { mongoClient, submissionCollection, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
 import { type NewTeam, type Team, type TeamMembers } from '@argoncs/types'
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
@@ -142,8 +142,8 @@ export async function makeTeamCaptain ({ teamId, contestId, userId }: { teamId: 
   }
 }
 
-export async function removeTeamMember ({ teamId, contestId, userId, rootSession = undefined }: { teamId: string, contestId: string, userId: string, rootSession?: ClientSession }): Promise<{ modified: boolean }> {
-  const session = rootSession ?? mongoClient.startSession()
+export async function removeTeamMember ({ teamId, contestId, userId }: { teamId: string, contestId: string, userId: string }): Promise<{ modified: boolean }> {
+  const session = mongoClient.startSession()
   let modifiedCount = 0
   try {
     await session.withTransaction(async () => {
@@ -151,17 +151,15 @@ export async function removeTeamMember ({ teamId, contestId, userId, rootSession
       if (team == null) {
         throw new NotFoundError('Team not found')
       }
-      if (rootSession == null) {
-        if (team.captain === userId) {
-          throw new MethodNotAllowedError('Team captain cannot be removed')
-        }
+      if (team.captain === userId) {
+        throw new MethodNotAllowedError('Team captain cannot be removed')
       }
 
       const { modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $pull: { members: userId } }, { session })
       modifiedCount += Math.floor(modifiedTeam)
 
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId }, { $unset: { [`members.${team.contestId}`]: '' } }, { session })
+      const { matchedCount: matchedUser, modifiedCount: modifiedUser } = await userCollection.updateOne({ id: userId }, { $unset: { [`teams.${team.contestId}`]: '' } }, { session })
       if (matchedUser === 0) {
         throw new NotFoundError('User not found')
       }
@@ -185,13 +183,13 @@ export async function deleteTeam ({ teamId, contestId }: { teamId: string, conte
         throw new MethodNotAllowedError('Cannot disband a team when there are more than one member')
       }
 
-      await removeTeamMember({ teamId, contestId, userId: team.members[0], rootSession: session })
+      await userCollection.updateOne({ id: team.members[0] }, { $unset: { [`teams.${team.contestId}`]: '' } }, { session })
 
       await teamInvitationCollection.deleteMany({ teamId, contestId }, { session })
       await teamScoreCollection.deleteOne({ teamId, contestId }, { session })
       await submissionCollection.deleteMany({ teamId, contestId }, { session })
 
-      await teamCollection.deleteOne({ teamId, contestId }, { session })
+      await teamCollection.deleteOne({ id: teamId, contestId }, { session })
     })
   } finally {
     await session.endSession()
