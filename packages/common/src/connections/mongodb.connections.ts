@@ -33,14 +33,14 @@ const collections: CollectionIndex[] = [
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
       { keys: { username: 1 }, options: { unique: true } },
-      { keys: { email: 1, newEmail: 1 }, options: { unique: true } }
+      { keys: { email: 1 }, options: { unique: true, sparse: true } }
     ]
   },
   {
     name: 'emailVerifications',
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
-      { keys: { createdAt: 1 }, options: { expireAfterSeconds: 900 } }
+      { keys: { createdAt: 1 }, options: { expireAfterSeconds: 172800 } }
     ]
   },
   {
@@ -103,7 +103,7 @@ const collections: CollectionIndex[] = [
     indexes: [
       { keys: { userId: 1, id: 1 }, options: { unique: true } },
       { keys: { contestId: 1, teamId: 1, id: 1 }, options: { unique: true } },
-      { keys: { createdAt: 1 }, options: { expireAfterSeconds: 604800 } }
+      { keys: { createdAt: 1 }, options: { expireAfterSeconds: 1296000 } }
     ]
   }
 ]
