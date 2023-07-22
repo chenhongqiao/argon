@@ -554,7 +554,7 @@ const emailVerificationTemplate = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 
                                         font-size: 18px;
                                       "
                                     >
-                                    Thank you for signing up with TeamsCode! You're just one step away from getting your account contest-ready.<br /><br />Please click the button below to confirm your email address. This will also allow you to login with your email.
+                                    Thank you for registering on the TeamsCode Contest Platform! You're just one step away from getting your account contest-ready.<br /><br />Please click the button below to confirm your email address. This will also allow you to login with your email.
                                     </p>
                                   </td>
                                 </tr>
