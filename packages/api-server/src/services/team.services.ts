@@ -1,5 +1,5 @@
 import { mongoClient, submissionCollection, teamCollection, teamInvitationCollection, teamScoreCollection, userCollection } from '@argoncs/common'
-import { type NewTeam, type Team, type TeamMembers } from '@argoncs/types'
+import { type TeamInvitation, type NewTeam, type Team, type TeamMembers } from '@argoncs/types'
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
 import gravatarUrl from 'gravatar-url'
@@ -83,10 +83,15 @@ export async function createTeamInvitation ({ teamId, contestId, userId }: { tea
   return { invitationId: id }
 }
 
+export async function fetchTeamInvitations ({ teamId, contestId }: { teamId: string, contestId: string }): Promise<TeamInvitation[]> {
+  const invitations = await teamInvitationCollection.find({ teamId, contestId }).toArray()
+  return invitations
+}
+
 export async function deleteTeamInvitation ({ teamId, contestId, invitationId }: { teamId: string, contestId: string, invitationId: string }): Promise<void> {
-  const { deletedCount } = await teamInvitationCollection.deleteOne({ teamId, contestId, invitationId })
+  const { deletedCount } = await teamInvitationCollection.deleteOne({ teamId, contestId, id: invitationId })
   if (deletedCount === 0) {
-    throw new NotFoundError('User not found')
+    throw new NotFoundError('Invitation not found')
   }
 }
 
