@@ -1,12 +1,12 @@
 import { fetchContestProblem } from '@argoncs/common'
-import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema, NewSubmissionSchema, SubmissionSchema, TeamScoreSchema, NewContestSchema, ContestSeriesSchema } from '@argoncs/types'
+import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema, NewSubmissionSchema, SubmissionSchema, TeamScoreSchema, NewContestSchema, ContestSeriesSchema, TeamSchema } from '@argoncs/types'
 import { Type } from '@sinclair/typebox'
 import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { contestBegan, contestNotBegan, contestPublished, registeredForContest, contestRunning } from '../../auth/contest.auth.js'
 import { hasContestPrivilege, hasDomainPrivilege, hasNoPrivilege } from '../../auth/scope.auth.js'
 import { fetchAllContestSeries, fetchContestById, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest, updateContest } from '../../services/contest.services.js'
 import { type FastifyTypeBox } from '../../types.js'
-import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
+import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, fetchTeam, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
 import { isTeamCaptain, isTeamMember } from '../../auth/team.auth.js'
 import { createContestSubmission, querySubmissions } from '../../services/submission.services.js'
 import { hasVerifiedEmail } from '../../auth/email.auth.js'
@@ -219,6 +219,25 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       const { contestId } = request.params
       const result = await createTeam({ newTeam, contestId, userId: request.auth.id })
       return await reply.status(201).send(result)
+    }
+  )
+
+  teamRoutes.get(
+    '/:teamId',
+    {
+      schema: {
+        params: Type.Object({ contestId: Type.String(), teamId: Type.String() }),
+        response: {
+          200: TeamSchema,
+          400: badRequestSchema,
+          404: notFoundSchema
+        }
+      }
+    },
+    async (request, reply) => {
+      const { contestId, teamId } = request.params
+      const team = await fetchTeam({ teamId, contestId })
+      return await reply.status(200).send(team)
     }
   )
 

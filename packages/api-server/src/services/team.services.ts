@@ -2,6 +2,7 @@ import { mongoClient, submissionCollection, teamCollection, teamInvitationCollec
 import { type NewTeam, type Team, type TeamMembers } from '@argoncs/types'
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
+import gravatarUrl from 'gravatar-url'
 
 export async function createTeam ({ newTeam, contestId, userId }: { newTeam: NewTeam, contestId: string, userId: string }): Promise<{ teamId: string }> {
   const id = await nanoid()
@@ -54,7 +55,7 @@ export async function fetchTeamMembers ({ teamId, contestId }: { teamId: string,
         foreignField: 'id',
         as: 'members',
         pipeline: [
-          { $project: { username: 1, name: 1, id: 1 } }
+          { $project: { username: 1, name: 1, id: 1, email: 1 } }
         ]
       }
     }
@@ -63,7 +64,9 @@ export async function fetchTeamMembers ({ teamId, contestId }: { teamId: string,
     throw new NotFoundError('Team not found')
   }
 
-  return team.members
+  return team.members.map((member) => {
+    return { ...member, gravatar: gravatarUrl(member.email), email: undefined }
+  })
 }
 
 export async function createTeamInvitation ({ teamId, contestId, userId }: { teamId: string, contestId: string, userId: string }): Promise<{ invitationId: string }> {

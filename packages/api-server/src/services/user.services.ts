@@ -136,6 +136,6 @@ export async function completeVerification ({ verificationId }: { verificationId
 }
 
 export async function searchUsers ({ query }: { query: string }): Promise<User[]> {
-  const users = await userCollection.find({ $text: { $search: query } }).limit(10).toArray()
+  const users = await userCollection.find({ $text: { $search: query } }).limit(25).toArray()
   return users
 }

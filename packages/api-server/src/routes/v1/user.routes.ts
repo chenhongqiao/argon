@@ -242,20 +242,24 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
           401: unauthorizedSchema
         },
         querystring: Type.Object({
-          query: Type.String()
+          query: Type.String(),
+          noteam: Type.Optional(Type.String())
         })
       },
       onRequest: [userAuthHook]
     },
     async (request, reply) => {
-      const { query } = request.query as { query: string }
-      const users = await searchUsers({ query })
+      const { query, noteam } = request.query as { query: string, noteam: undefined | string }
+      let users = await searchUsers({ query })
+      if (noteam != null) {
+        users = users.filter((user) => user.teams[noteam] == null)
+      }
       const profiles: PublicUserProfile[] = users.map((user) => {
         const { id, username, name, email } = user
         const gravatar = email != null ? gravatarUrl(email) : undefined
         return { id, username, name, gravatar }
       })
-      return await reply.status(200).send(profiles)
+      return await reply.status(200).send(profiles.slice(0, 10))
     }
   )
 
