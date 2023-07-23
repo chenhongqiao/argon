@@ -28,7 +28,6 @@ export async function testcaseRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { uploadId } = request.params
-      console.log(uploadId)
       const { domainId, problemId } = await consumeUploadSession(uploadId)
       try {
         const testcases = request.files()

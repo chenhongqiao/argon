@@ -72,6 +72,7 @@ __metadata:
     "@sendgrid/mail": ^7.7.0
     "@sinclair/typebox": ^0.29.4
     fastify: ^4.19.2
+    gravatar-url: ^4.0.1
     http-errors-enhanced: ^1.0.13
     nanoid: ^4.0.2
     typescript: ^5.1.6
