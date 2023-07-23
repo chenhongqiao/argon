@@ -44,7 +44,7 @@
             </NuxtLink>
             <NuxtLink to="/auth/register">
               <NButton type="primary"
-                >Sign up
+                >Register
                 <template #icon>
                   <NIcon>
                     <SignupIcon />

@@ -124,7 +124,7 @@
               type="primary"
               :loading="signupLoading"
               @click="finishContestantInfo()"
-              >Sign up</NButton
+              >Register</NButton
             >
           </div>
         </div>
@@ -215,7 +215,7 @@ watchDebounced(
   async () => {
     await validateUsername()
   },
-  { debounce: 500 }
+  { debounce: 300 }
 )
 watch(
   () => accountForm.value.username,
@@ -231,7 +231,7 @@ watchDebounced(
   async () => {
     await validateEmail()
   },
-  { debounce: 500 }
+  { debounce: 300 }
 )
 watch(
   () => accountForm.value.email,

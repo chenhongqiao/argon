@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { type PrivateUserProfile } from '@argoncs/types'
-import gravatarUrl from 'gravatar-url'
 
 interface SessionStoreState {
   userId: string
@@ -37,13 +36,14 @@ export const useUserStore = defineStore('user', () => {
       return profile.value.name
     }
   })
-  const gravatar = computed(() => {
-    if (profile.value != null && profile.value.email != null) {
-      return gravatarUrl(profile.value.email, { size: 200 })
-    } else {
-      return null
-    }
+
+  const loggedIn = computed(() => {
+    return session.value != null && profile.value != null
   })
 
-  return { session, profile, attach, destroy, name, gravatar }
+  const gravatar = computed(() => {
+    return profile.value?.gravatar
+  })
+
+  return { session, profile, attach, destroy, name, gravatar, loggedIn }
 })

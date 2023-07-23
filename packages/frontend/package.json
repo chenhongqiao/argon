@@ -42,7 +42,6 @@
     "@vicons/material": "^0.12.0",
     "@vueuse/nuxt": "^10.2.1",
     "ajv-i18n": "^4.2.0",
-    "country-region-data": "^2.7.0",
-    "gravatar-url": "^4.0.1"
+    "country-region-data": "^2.7.0"
   }
 }

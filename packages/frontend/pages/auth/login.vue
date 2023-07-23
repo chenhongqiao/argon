@@ -36,7 +36,7 @@
             <div class="my-auto grow">
               No account?
               <NuxtLink to="/auth/register" #="{ navigate, href }"
-                ><n-a :href="href" @click="navigate">Sign up</n-a></NuxtLink
+                ><n-a :href="href" @click="navigate">Register</n-a></NuxtLink
               >
             </div>
             <NButton type="primary" :loading="loginLoading" @click="submit"
@@ -57,6 +57,8 @@ const formRef = ref()
 
 const loginFailed = ref(false)
 const loginLoading = ref(false)
+
+const { $router } = useNuxtApp()
 
 async function submit() {
   const { $api } = useNuxtApp()
@@ -83,7 +85,8 @@ async function submit() {
       }
     })
     const { attach } = useUserStore()
-    attach()
+    await attach()
+    navigateTo(($router.options.history.state.back as string) ?? '/')
   } finally {
     loginLoading.value = false
   }
