@@ -13,6 +13,10 @@ import { fetchUserById } from '../../services/user.services.js'
 import gravatarUrl from 'gravatar-url'
 
 export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Promise<void> {
+
+  /* 
+   * POST: Given user login information, Sets `session_token`.
+   */
   userSessionRoutes.post(
     '/',
     {
@@ -27,9 +31,18 @@ export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Pro
     },
     async (request, reply) => {
       const { usernameOrEmail, password } = request.body
-      const { sessionId, token, userId } = await authenticateUser({ usernameOrEmail, password, loginIP: request.ip, userAgent: request.headers['user-agent'] ?? 'Unknown' })
+      const { sessionId, token, userId } = await authenticateUser({
+        usernameOrEmail,
+        password,
+        loginIP: request.ip,
+        userAgent: request.headers['user-agent'] ?? 'Unknown' 
+      })
+
       await delay(randomInt(300, 600))
-      return await reply.status(200).setCookie('session_token', token, { path: '/', httpOnly: true, signed: true }).send({ sessionId, userId })
+      return await reply
+        .status(200)
+        .setCookie('session_token', token, { path: '/', httpOnly: true, signed: true })
+        .send({ sessionId, userId })
     }
   )
 
