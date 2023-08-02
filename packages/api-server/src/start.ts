@@ -1,5 +1,15 @@
-import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, connectRanklistRedis, sentry } from '@argoncs/common'
-import { v1APIRoutes } from './routes/v1.routes.js'
+import { 
+  closeCacheRedis,
+  closeMongoDB,
+  closeRabbitMQ,
+  closeRanklistRedis,
+  connectCacheRedis,
+  connectMinIO,
+  connectMongoDB,
+  connectRabbitMQ,
+  connectRanklistRedis,
+  sentry 
+} from '@argoncs/common'
 
 import assert           from 'assert'
 import { fastify }      from 'fastify'
@@ -11,6 +21,8 @@ import fastifySensible  from '@fastify/sensible'
 import fastifyHttpErrorsEnhanced    from '@chenhongqiao/fastify-http-errors-enhanced'
 import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { type FastifyTypeBox }      from './types.js'
+import { v1APIRoutes } from './routes/v1.routes.js'
+
 
 
 sentry.init({
@@ -54,27 +66,34 @@ export async function loadFastify (): Promise<FastifyTypeBox> {
 
   await app.register(v1APIRoutes, { prefix: '/v1' })
 
+
+  assert(process.env.MINIO_URL != null)
+  assert(process.env.MONGO_URL != null)
+  assert(process.env.RABBITMQ_URL != null)
+  assert(process.env.CACHEREDIS_URL != null)
+  assert(process.env.RANKLISTREDIS_URL != null)
+  
+  await connectMinIO(process.env.MINIO_URL)
+  await connectMongoDB(process.env.MONGO_URL)
+  await connectRabbitMQ(process.env.RABBITMQ_URL)
+  await connectCacheRedis(process.env.CACHEREDIS_URL)
+  await connectRanklistRedis(process.env.RANKLISTREDIS_URL)
+  
+
+  // Set hook to disconnect from servers on close
+  app.addHook('onClose', async (_) => {
+    closeMongoDB()
+    closeRabbitMQ()
+    closeCacheRedis()
+    closeRanklistRedis()
+  })
+
+
   return app
 }
 
+
 export async function startAPIServer (): Promise<void> {
-
-  assert(process.env.MONGO_URL != null)
-  await connectMongoDB(process.env.MONGO_URL)
-  
-  assert(process.env.RABBITMQ_URL != null)
-  await connectRabbitMQ(process.env.RABBITMQ_URL)
-
-  assert(process.env.CACHEREDIS_URL != null)
-  await connectCacheRedis(process.env.CACHEREDIS_URL)
-
-  assert(process.env.MINIO_URL != null)
-  await connectMinIO(process.env.MINIO_URL)
-
-  assert(process.env.RANKLISTREDIS_URL != null)
-  await connectRanklistRedis(process.env.RANKLISTREDIS_URL)
-
-
   const app = await loadFastify()
   try 
   {

@@ -11,11 +11,20 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "tap": {
+    "coverage": false
+  },
   "scripts": {
+    "runDev": "bash -c 'source ../../set-env.sh && node dist/src/dev.js'",
+    "runTest": "bash -c 'source tests/use-test-env.sh && c8 tap --after=dist/tests/dropTestDb.js dist/tests/**/*.test.js'",
     "prepack": "tsc --build .",
-    "dev": "tsc --build . && node dist/src/dev.js"
+    "dev": "yarn prepack && yarn runDev",
+    "test": "yarn prepack && yarn runTest"
   },
   "devDependencies": {
+    "@types/tap": "^15.0.8",
+    "c8": "^8.0.1",
+    "tap": "^16.3.8",
     "typescript": "^5.1.6"
   },
   "dependencies": {

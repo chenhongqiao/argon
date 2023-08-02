@@ -1,5 +1,6 @@
-import amqplib, { type Channel } from 'amqplib'
+import amqplib, { type Channel, Connection} from 'amqplib'
 
+let connection: Connection
 let rabbitMQ: Channel
 
 export const judgerExchange = 'judger'
@@ -13,7 +14,7 @@ export const deadTasksQueue = 'dead-tasks'
 export const deadResultsQueue = 'dead-results'
 
 export async function connectRabbitMQ (url: string): Promise<void> {
-  const connection = await amqplib.connect(url)
+  connection = await amqplib.connect(url)
   rabbitMQ = await connection.createChannel()
 
   await rabbitMQ.assertExchange(judgerExchange, 'direct')
@@ -28,6 +29,11 @@ export async function connectRabbitMQ (url: string): Promise<void> {
   await rabbitMQ.assertQueue(judgerResultsQueue, { deadLetterExchange })
   await rabbitMQ.bindQueue(judgerTasksQueue, judgerExchange, judgerTasksKey)
   await rabbitMQ.bindQueue(judgerResultsQueue, judgerExchange, judgerResultsKey)
+}
+
+export function closeRabbitMQ () {
+  rabbitMQ.close()
+  connection.close()
 }
 
 export { rabbitMQ }
