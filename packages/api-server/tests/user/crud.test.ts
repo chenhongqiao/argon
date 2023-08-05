@@ -1,7 +1,8 @@
 import {PublicUserProfile} from '@argoncs/types'
+
+import { loadTestingApp, type FastifyTypeBox } from "../util/app.js"
+
 import tap from 'tap'
-import { FastifyTypeBox } from "../../src/types.js"
-import { loadTestingApp } from "../util/app.js"
 
 
 
@@ -9,10 +10,11 @@ tap.before(async () => {
   tap.context.app = await loadTestingApp()
 })
 
+
 tap.teardown(async () => {
-  console.log("hi")
   await tap.context.app.close()
 })
+
 
 /* Heartbeat Test
  */
@@ -32,9 +34,6 @@ tap.test('Heartbeat', async t => {
  */
 tap.test(
   'User Creation',
-  {
-  //  autoend: true,
-  },
   async t => {
     const app: FastifyTypeBox = tap.context.app
     

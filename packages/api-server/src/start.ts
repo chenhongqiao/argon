@@ -32,12 +32,11 @@ sentry.init({
 })
 
 
-export async function loadFastify (): Promise<FastifyTypeBox> {
+export async function loadFastify (testing = false): Promise<FastifyTypeBox> {
 
   const app = fastify({
-    logger: {
-      enabled: true
-    }
+    logger: !testing, 
+    disableRequestLogging: testing // To make testing logs cleaner. 
   }).withTypeProvider<TypeBoxTypeProvider>()
 
 

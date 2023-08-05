@@ -16,7 +16,7 @@
   },
   "scripts": {
     "runDev": "bash -c 'source ../../set-env.sh && node dist/src/dev.js'",
-    "runTest": "bash -c 'source tests/use-test-env.sh && c8 tap --after=dist/tests/dropTestDb.js dist/tests/**/*.test.js'",
+    "runTest": "bash -c 'source tests/use-test-env.sh && tap --after=dist/tests/dropTestDb.js dist/tests/**/*.test.js'",
     "prepack": "tsc --build .",
     "dev": "yarn prepack && yarn runDev",
     "test": "yarn prepack && yarn runTest"

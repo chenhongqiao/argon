@@ -65,6 +65,8 @@ import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { contestInfoHook } from '../../hooks/contest.hooks.js'
 import { requestAuthProfile } from '../../utils/auth.utils.js'
 
+
+
 async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void> {
   problemRoutes.addHook('onRequest', contestInfoHook)
   problemRoutes.get(
@@ -242,6 +244,10 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
 
 async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
   teamRoutes.addHook('onRequest', contestInfoHook)
+  
+  /* Create new team 
+   * - Sets current user as captain
+   */ 
   teamRoutes.post(
     '/',
     {
@@ -527,7 +533,8 @@ async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<v
         params: Type.Object({ contestId: Type.String() }),
         response: {
           200: Type.Array(TeamScoreSchema),
-          400: badRequestSchema
+          400: badRequestSchema,
+          403: forbiddenSchema 
         }
       },
       onRequest: [ranklistRoutes.auth([
@@ -601,6 +608,7 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
         params: Type.Object({ contestId: Type.String() }),
         response: {
           401: unauthorizedSchema,
+          403: forbiddenSchema,
           404: notFoundSchema
         }
       },
