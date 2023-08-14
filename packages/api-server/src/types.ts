@@ -15,9 +15,9 @@ declare module 'fastify' {
 }
 
 export type FastifyTypeBox = FastifyInstance<
-  RawServerDefault,
-  RawRequestDefaultExpression<RawServerDefault>,
-  RawReplyDefaultExpression<RawServerDefault>,
-  FastifyBaseLogger,
-  TypeBoxTypeProvider
+RawServerDefault,
+RawRequestDefaultExpression<RawServerDefault>,
+RawReplyDefaultExpression<RawServerDefault>,
+FastifyBaseLogger,
+TypeBoxTypeProvider
 >

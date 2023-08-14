@@ -39,13 +39,12 @@ export async function fetchDomainContestSeries ({ domainId }: { domainId: string
   return contestSeries
 }
 
-
 export async function fetchContestById ({ contestId }: { contestId: string }): Promise<Contest> {
   const cache = await fetchCache<Contest>({ key: `contest:${contestId}` })
   if (cache != null) {
     return cache
   }
-  
+
   const contest = await contestCollection.findOne({ id: contestId })
   if (contest == null) {
     throw new NotFoundError('Contest not found')
@@ -55,7 +54,6 @@ export async function fetchContestById ({ contestId }: { contestId: string }): P
 
   return contest
 }
-
 
 export async function fetchContestByHandle ({ handle }: { handle: string }): Promise<Contest> {
   const cache = await fetchCache<Contest>({ key: `contest:${handle}` })
@@ -90,9 +88,8 @@ export async function updateContest ({ contestId, newContest }: { contestId: str
   }
 
   await refreshCache({ key: `contest:${contest.id}`, data: contest })
-  await refreshCache({ key: `contest:${contest.handle as string}`, data: contest })
+  await refreshCache({ key: `contest:${contest.handle}`, data: contest })
 }
-
 
 export async function publishContest ({ contestId, published }: { contestId: string, published: boolean }): Promise<void> {
   const { value: contest } = await contestCollection.findOneAndUpdate(
@@ -106,9 +103,8 @@ export async function publishContest ({ contestId, published }: { contestId: str
   }
 
   await refreshCache({ key: `contest:${contest.id}`, data: contest })
-  await refreshCache({ key: `contest:${contest.handle as string}`, data: contest })
+  await refreshCache({ key: `contest:${contest.handle}`, data: contest })
 }
-
 
 export async function fetchContestProblemList ({ contestId }: { contestId: string }): Promise<ConetstProblemList> {
   const cache = await fetchCache<ConetstProblemList>({ key: `problem-list:${contestId}` })
@@ -191,14 +187,13 @@ export async function removeProblemFromContest ({ contestId, problemId }: { cont
   }
 }
 
-
 /* Fetches the ranklist of a given contest.
  * - Guarentees a 1s gap between every re-aggregation by checking the TTL of the key to the original value.
  * - The '${contestId}-obsolete' serves as a lock for re-aggregation
  *   - This Key is set on score update.
  *   - If a server will re-aggregate, it will delete the 'obsolete' key and effectively 'claim' a lock on re-aggregation.
  *   - During this time, other servers will use the obsolete ranklist.
- * - By setting TTL to 1 year, ensures persistence of the data while giving us a way to measure the record's lifetime 
+ * - By setting TTL to 1 year, ensures persistence of the data while giving us a way to measure the record's lifetime
  */
 export async function fetchContestRanklist ({ contestId }: { contestId: string }): Promise<TeamScore[]> {
   const cache = await ranklistRedis.get(contestId)

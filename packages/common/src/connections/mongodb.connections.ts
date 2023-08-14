@@ -168,8 +168,8 @@ export async function connectMongoDB (url: string): Promise<void> {
   teamScoreCollection = mongoDB.collection('teamScores')
 }
 
-export function closeMongoDB () {
-  mongoClient.close()
+export async function closeMongoDB (): Promise<void> {
+  await mongoClient.close()
 }
 
 export { MongoServerError, ClientSession } from 'mongodb'

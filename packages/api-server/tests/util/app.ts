@@ -1,20 +1,17 @@
 import { loadFastify } from '../../src/start.js'
-import { FastifyTypeBox } from '../../src/types.js';
+import { type FastifyTypeBox } from '../../src/types.js'
 
 import { MongoClient } from 'mongodb'
 import assert from 'assert'
 
-
-
-export async function dropTestingDb () {
-
+export async function dropTestingDb (): Promise<void> {
   // Drop Database
   const mongoUrl = process.env.MONGO_URL
-  assert(mongoUrl != undefined)
-  
+  assert(mongoUrl !== undefined)
+
   // Try to make sure it is the testing db
   assert(
-    mongoUrl.indexOf("test") != -1, 
+    mongoUrl.includes('test'),
     'could not find \'test\' in MongoDB URL. Aborting to prevent dropping non-testing database. Check environment variables'
   )
 
@@ -33,4 +30,4 @@ export async function loadTestingApp (): Promise<FastifyTypeBox> {
   return await loadFastify(true)
 }
 
-export { FastifyTypeBox }
+export type { FastifyTypeBox }

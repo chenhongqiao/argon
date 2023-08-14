@@ -1,4 +1,4 @@
-import amqplib, { type Channel, Connection} from 'amqplib'
+import amqplib, { type Channel, type Connection } from 'amqplib'
 
 let connection: Connection
 let rabbitMQ: Channel
@@ -31,9 +31,9 @@ export async function connectRabbitMQ (url: string): Promise<void> {
   await rabbitMQ.bindQueue(judgerResultsQueue, judgerExchange, judgerResultsKey)
 }
 
-export function closeRabbitMQ () {
-  rabbitMQ.close()
-  connection.close()
+export async function closeRabbitMQ (): Promise<void> {
+  await rabbitMQ.close()
+  await connection.close()
 }
 
 export { rabbitMQ }

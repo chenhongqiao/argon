@@ -13,8 +13,7 @@ import { fetchUserById } from '../../services/user.services.js'
 import gravatarUrl from 'gravatar-url'
 
 export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Promise<void> {
-
-  /* 
+  /*
    * POST: Given user login information, Sets `session_token`.
    */
   userSessionRoutes.post(
@@ -35,7 +34,7 @@ export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Pro
         usernameOrEmail,
         password,
         loginIP: request.ip,
-        userAgent: request.headers['user-agent'] ?? 'Unknown' 
+        userAgent: request.headers['user-agent'] ?? 'Unknown'
       })
 
       await delay(randomInt(300, 600))

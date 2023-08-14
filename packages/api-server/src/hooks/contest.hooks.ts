@@ -2,7 +2,6 @@ import { type FastifyRequest, type FastifyReply } from 'fastify'
 import { fetchContestByHandle, fetchContestById } from '../services/contest.services.js'
 import { requestParameter } from '../utils/auth.utils.js'
 
-
 /*
  * Injects `domainId` and `contestId` into request parameters.
  * - Request.params must have either contest ID or handle.

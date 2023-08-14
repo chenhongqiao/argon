@@ -1,22 +1,22 @@
 import { Type } from '@sinclair/typebox'
-import { 
-  ContestSchema, 
-  NewContestSchema, 
-  NewDomainSchema, 
+import {
+  ContestSchema,
+  NewContestSchema,
+  NewDomainSchema,
   NewProblemSchema,
-  NewSubmissionSchema, 
-  ProblemSchema, 
-  DomainMembersSchema, 
-  DomainSchema, 
-  NewContestSeriesSchema 
+  NewSubmissionSchema,
+  ProblemSchema,
+  DomainMembersSchema,
+  DomainSchema,
+  NewContestSeriesSchema
 } from '@argoncs/types'
-import { 
-  addOrUpdateDomainMember, 
+import {
+  addOrUpdateDomainMember,
   createDomain,
   fetchDomain,
   fetchDomainMembers,
-  removeDomainMember, 
-  updateDomain 
+  removeDomainMember,
+  updateDomain
 } from '../../services/domain.services.js'
 import { isSuperAdmin } from '../../auth/role.auth.js'
 import { hasDomainPrivilege } from '../../auth/scope.auth.js'

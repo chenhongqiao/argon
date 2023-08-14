@@ -1,3 +1,3 @@
 import { dropTestingDb } from './util/app.js'
 
-dropTestingDb()
+await dropTestingDb()
