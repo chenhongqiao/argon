@@ -74,8 +74,8 @@ export async function loadFastify (testing = false): Promise<FastifyTypeBox> {
 
   // Set hook to disconnect from servers on close
   app.addHook('onClose', async (_) => {
-    closeMongoDB()
-    closeRabbitMQ()
+    await closeMongoDB()
+    await closeRabbitMQ()
     closeCacheRedis()
     closeRanklistRedis()
   })

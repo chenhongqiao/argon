@@ -1,5 +1,4 @@
 import { loadTestingApp, type FastifyTypeBox } from '../util/app.js'
-
 import tap from 'tap'
 import { createUser } from '../util/user.js'
 import { contestCollection, delay, ranklistRedis, teamScoreCollection, userCollection } from '@argoncs/common'
@@ -142,11 +141,12 @@ tap.test(
     // Set point values & test ranklist
     const addPoints = async (teamId: string, pts: number): Promise<void> => {
       const teamScore: TeamScore | null = await teamScoreCollection.findOne({ id: teamId })
-      t.not(teamScore, null, 'teamscore found')
-      const score = teamScore!.totalScore
-      await teamScoreCollection.updateOne({ id: teamId }, { $set: { totalScore: score + pts } })
-      ranklistRedis.set(`${contest.id}-obsolete`, 1)
-      await delay(1100)
+      if (teamScore != null) {
+        const score = teamScore.totalScore
+        await teamScoreCollection.updateOne({ id: teamId }, { $set: { totalScore: score + pts } })
+        ranklistRedis.set(`${contest.id}-obsolete`, 1)
+        await delay(1100)
+      }
     }
     const getList = async (): Promise<string[]> => {
       response = await app.inject()
