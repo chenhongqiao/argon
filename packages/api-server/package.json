@@ -15,11 +15,15 @@
     "coverage": false
   },
   "scripts": {
-    "runDev": "bash -c 'source ../../set-env.sh && node dist/src/dev.js'",
-    "runTest": "bash -c 'source tests/use-test-env.sh && tap --after=dist/tests/dropTestDb.js dist/tests/**/*.test.js'",
     "prepack": "tsc --build .",
+    "dev-noenv": "node dist/src/dev.js",
+    "test-noenv": "tap --after=dist/tests/dropTestDb.js dist/tests/**/*.ts",
+    "runDev": "bash -c 'source ../../set-env.sh && node dist/src/dev.js'",
+    "runTest": "bash -c 'source ../../set-env.sh && source tests/use-test-env.sh && tap --after=dist/tests/dropTestDb.js dist/tests/**/*.test.js'",
+    "runTest-nodrop": "bash -c 'source ../../set-env.sh && source tests/use-test-env.sh && tap dist/tests/**/*.test.js'",
     "dev": "yarn prepack && yarn runDev",
-    "test": "yarn prepack && yarn runTest"
+    "test": "yarn prepack && yarn runTest",
+    "test-nodrop": "yarn prepack && yarn runTest-nodrop"
   },
   "devDependencies": {
     "@types/tap": "^15.0.8",

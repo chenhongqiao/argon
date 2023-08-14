@@ -532,7 +532,8 @@ async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<v
         response: {
           200: Type.Array(TeamScoreSchema),
           400: badRequestSchema,
-          403: forbiddenSchema
+          403: forbiddenSchema,
+          404: notFoundSchema
         }
       },
       onRequest: [ranklistRoutes.auth([
