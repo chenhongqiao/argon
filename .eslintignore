@@ -1,1 +1,4 @@
+**/dist
+deploy
+packages/frontend
 .eslintrc.js

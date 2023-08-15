@@ -17,5 +17,9 @@
   "packageManager": "yarn@3.3.0",
   "dependencies": {
     "@lljj/vue3-form-naive": "^1.17.1"
+  },
+  "scripts": {
+    "lint": "eslint --ext .ts,.js .",
+    "lint-fix": "eslint --fix --ext .ts,.js ."
   }
 }

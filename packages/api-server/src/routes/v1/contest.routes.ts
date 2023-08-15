@@ -1,12 +1,63 @@
-import { fetchContestProblem } from '@argoncs/common'
-import { ContestProblemListSchema, ContestSchema, ContestProblemSchema, NewTeamSchema, TeamMembersSchema, NewSubmissionSchema, SubmissionSchema, TeamScoreSchema, NewContestSchema, ContestSeriesSchema, TeamSchema, TeamInvitationSchema } from '@argoncs/types'
 import { Type } from '@sinclair/typebox'
-import { UnauthorizedError, badRequestSchema, conflictSchema, forbiddenSchema, methodNotAllowedSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
-import { contestBegan, contestNotBegan, contestPublished, registeredForContest, contestRunning } from '../../auth/contest.auth.js'
-import { hasContestPrivilege, hasDomainPrivilege, hasNoPrivilege } from '../../auth/scope.auth.js'
-import { fetchAllContestSeries, fetchContestById, fetchContestProblemList, fetchContestRanklist, removeProblemFromContest, syncProblemToContest, updateContest } from '../../services/contest.services.js'
 import { type FastifyTypeBox } from '../../types.js'
-import { completeTeamInvitation, createTeam, createTeamInvitation, deleteTeam, deleteTeamInvitation, fetchTeam, fetchTeamInvitations, fetchTeamMembers, makeTeamCaptain, removeTeamMember } from '../../services/team.services.js'
+import {
+  ContestProblemListSchema,
+  ContestSchema,
+  ContestProblemSchema,
+  NewTeamSchema,
+  TeamMembersSchema,
+  NewSubmissionSchema,
+  SubmissionSchema,
+  TeamScoreSchema,
+  NewContestSchema,
+  ContestSeriesSchema,
+  TeamSchema,
+  TeamInvitationSchema
+} from '@argoncs/types'
+import { fetchContestProblem } from '@argoncs/common'
+import {
+  UnauthorizedError,
+  badRequestSchema,
+  conflictSchema,
+  forbiddenSchema,
+  methodNotAllowedSchema,
+  notFoundSchema,
+  unauthorizedSchema
+} from 'http-errors-enhanced'
+import {
+  contestBegan,
+  contestNotBegan,
+  contestPublished,
+  registeredForContest,
+  contestRunning
+} from '../../auth/contest.auth.js'
+import {
+  hasContestPrivilege,
+  hasDomainPrivilege,
+  hasNoPrivilege
+} from '../../auth/scope.auth.js'
+import {
+  fetchAllContestSeries,
+  fetchContestById,
+  fetchContestProblemList,
+  fetchContestRanklist,
+  removeProblemFromContest,
+  syncProblemToContest,
+  updateContest,
+  publishContest
+} from '../../services/contest.services.js'
+import {
+  completeTeamInvitation,
+  createTeam,
+  createTeamInvitation,
+  deleteTeam,
+  deleteTeamInvitation,
+  fetchTeam,
+  fetchTeamInvitations,
+  fetchTeamMembers,
+  makeTeamCaptain,
+  removeTeamMember
+} from '../../services/team.services.js'
 import { isTeamCaptain, isTeamMember } from '../../auth/team.auth.js'
 import { createContestSubmission, querySubmissions } from '../../services/submission.services.js'
 import { hasVerifiedEmail } from '../../auth/email.auth.js'
@@ -191,6 +242,10 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
 
 async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
   teamRoutes.addHook('onRequest', contestInfoHook)
+
+  /* Create new team
+   * - Sets current user as captain
+   */
   teamRoutes.post(
     '/',
     {
@@ -476,7 +531,9 @@ async function contestRanklistRoutes (ranklistRoutes: FastifyTypeBox): Promise<v
         params: Type.Object({ contestId: Type.String() }),
         response: {
           200: Type.Array(TeamScoreSchema),
-          400: badRequestSchema
+          400: badRequestSchema,
+          403: forbiddenSchema,
+          404: notFoundSchema
         }
       },
       onRequest: [ranklistRoutes.auth([
@@ -539,7 +596,29 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
     async (request, reply) => {
       const { contestId } = request.params
       const newContest = request.body
-      await updateContest({ contestId, contest: newContest })
+      await updateContest({ contestId, newContest })
+      return await reply.status(204).send()
+    })
+
+  routes.post(
+    '/:contestId/publish',
+    {
+      schema: {
+        params: Type.Object({ contestId: Type.String() }),
+        response: {
+          401: unauthorizedSchema,
+          403: forbiddenSchema,
+          404: notFoundSchema
+        }
+      },
+      onRequest: [contestInfoHook, userAuthHook, routes.auth([
+        [hasDomainPrivilege(['contest.manage'])],
+        [hasContestPrivilege(['manage'])]
+      ]) as any]
+    },
+    async (request, reply) => {
+      const { contestId } = request.params
+      await publishContest({ contestId, published: true })
       return await reply.status(204).send()
     })
 

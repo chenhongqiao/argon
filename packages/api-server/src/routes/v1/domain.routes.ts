@@ -1,6 +1,23 @@
 import { Type } from '@sinclair/typebox'
-import { ContestSchema, NewContestSchema, NewDomainSchema, NewProblemSchema, NewSubmissionSchema, ProblemSchema, DomainMembersSchema, DomainSchema, NewContestSeriesSchema } from '@argoncs/types'
-import { addOrUpdateDomainMember, createDomain, fetchDomain, fetchDomainMembers, removeDomainMember, updateDomain } from '../../services/domain.services.js'
+import {
+  ContestSchema,
+  NewContestSchema,
+  NewDomainSchema,
+  NewProblemSchema,
+  NewSubmissionSchema,
+  ProblemSchema,
+  DomainMembersSchema,
+  DomainSchema,
+  NewContestSeriesSchema
+} from '@argoncs/types'
+import {
+  addOrUpdateDomainMember,
+  createDomain,
+  fetchDomain,
+  fetchDomainMembers,
+  removeDomainMember,
+  updateDomain
+} from '../../services/domain.services.js'
 import { isSuperAdmin } from '../../auth/role.auth.js'
 import { hasDomainPrivilege } from '../../auth/scope.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
@@ -305,7 +322,8 @@ async function domainContestRoutes (contestRoutes: FastifyTypeBox): Promise<void
           201: Type.Object({ contestId: Type.String() }),
           400: badRequestSchema,
           401: unauthorizedSchema,
-          403: forbiddenSchema
+          403: forbiddenSchema,
+          404: notFoundSchema
         }
       },
       onRequest: [userAuthHook, contestRoutes.auth([
