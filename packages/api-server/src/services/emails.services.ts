@@ -1,6 +1,4 @@
-/* eslint-disable */
-
-// import { emailClient } from '../connections/email.connections.js'
+import { emailClient } from '../connections/email.connections.js'
 import emailVerificationTemplate from '../templates/confirmEmail.js'
 
 type EmailTemplates = Record<'confirmEmail', string>
@@ -15,8 +13,6 @@ export async function sendEmail ({ to, subject, template, values }:
   template: 'confirmEmail'
   values: Record<string, string>
 }): Promise<void> {
-  // TODO: SendGrid API Key
-  /*
   let content = templates[template]
   for (const [key, value] of Object.entries(values)) {
     content = content.replaceAll(`{{${key}}}`, value)
@@ -30,5 +26,4 @@ export async function sendEmail ({ to, subject, template, values }:
   }
 
   await emailClient.send(email)
-  */
 }
