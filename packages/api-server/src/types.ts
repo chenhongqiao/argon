@@ -1,4 +1,4 @@
-import { type AuthenticationProfile } from '@argoncs/types'
+import { type UserPrivateProfile } from '@argoncs/types'
 import {
   type FastifyInstance,
   type FastifyBaseLogger,
@@ -10,7 +10,7 @@ import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 declare module 'fastify' {
   interface FastifyRequest {
-    auth: AuthenticationProfile | null
+    user: UserPrivateProfile | null
   }
 }
 

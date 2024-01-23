@@ -6,11 +6,9 @@ import { delay } from '@argoncs/common'
 import { randomInt } from 'node:crypto'
 import { type FastifyTypeBox } from '../../types.js'
 import { badRequestSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
-import { PrivateUserProfileSchema, UserLoginSchema, UserSessionSchema } from '@argoncs/types'
+import { UserLoginSchema, UserPrivateSessionSchema, UserPublicSessionSchema } from '@argoncs/types'
 import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { requestAuthProfile, requestSessionToken } from '../../utils/auth.utils.js'
-import { fetchUserById } from '../../services/user.services.js'
-import gravatarUrl from 'gravatar-url'
 
 export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Promise<void> {
   /*
@@ -50,7 +48,7 @@ export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Pro
     {
       schema: {
         response: {
-          200: Type.Array(Type.Omit(UserSessionSchema, ['token'])),
+          200: Type.Array(Type.Omit(UserPrivateSessionSchema, ['token'])),
           400: badRequestSchema,
           401: unauthorizedSchema,
           404: notFoundSchema
@@ -71,10 +69,7 @@ export async function currentSessionRoutes (currentSessionRoutes: FastifyTypeBox
     {
       schema: {
         response: {
-          200: Type.Union([Type.Object({
-            session: Type.Object({ userId: Type.String(), sessionId: Type.String() }),
-            profile: PrivateUserProfileSchema
-          }), Type.Null()])
+          200: Type.Union([UserPublicSessionSchema, Type.Null()])
         }
       }
     },
@@ -82,13 +77,8 @@ export async function currentSessionRoutes (currentSessionRoutes: FastifyTypeBox
       try {
         await userAuthHook(request, reply)
         const { token } = requestSessionToken(request)
-        const { userId, id } = await fetchSessionByToken({ sessionToken: token })
-        const { username, name, email, newEmail, scopes, role, teams, year, school, country, region } = await fetchUserById({ userId })
-        const gravatar = email != null ? gravatarUrl(email) : undefined
-        return await reply.status(200).send({
-          session: { userId, sessionId: id },
-          profile: { id: userId, username, name, email, newEmail, scopes, role, teams, year, school, country, region, gravatar }
-        })
+        const session = await fetchSessionByToken({ sessionToken: token })
+        return await reply.status(200).send(session)
       } catch (err) {
         return await reply.status(200).send(null)
       }

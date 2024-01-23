@@ -18,11 +18,11 @@ export function requestParameter (request: FastifyRequest, key: string): string 
 }
 
 export function requestAuthProfile (request: FastifyRequest): AuthenticationProfile {
-  if (request.auth == null) {
+  if (request.user == null) {
     throw new UnauthorizedError('User not logged in')
   }
 
-  return request.auth
+  return request.user
 }
 
 export function requestSessionToken (request: FastifyRequest): { token: string } {

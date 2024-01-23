@@ -189,12 +189,12 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
       ]
     },
     async (request, reply) => {
-      if (request.auth == null) {
+      if (request.user == null) {
         throw new UnauthorizedError('User not logged in')
       }
       const submission = request.body
       const { contestId, problemId } = request.params
-      const created = await createContestSubmission({ submission, problemId, userId: (request.auth).id, contestId, teamId: request.auth.teams[contestId] })
+      const created = await createContestSubmission({ submission, problemId, userId: (request.user).id, contestId, teamId: request.user.teams[contestId] })
       return await reply.status(202).send(created)
     }
   )
@@ -266,13 +266,13 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       ]) as any]
     },
     async (request, reply) => {
-      if (request.auth == null) {
+      if (request.user == null) {
         throw new UnauthorizedError('User not logged in')
       }
 
       const newTeam = request.body
       const { contestId } = request.params
-      const result = await createTeam({ newTeam, contestId, userId: request.auth.id })
+      const result = await createTeam({ newTeam, contestId, userId: request.user.id })
       return await reply.status(201).send(result)
     }
   )
@@ -412,12 +412,12 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       ]) as any]
     },
     async (request, reply) => {
-      if (request.auth == null) {
+      if (request.user == null) {
         throw new UnauthorizedError('User not logged in')
       }
 
       const { invitationId } = request.params
-      await completeTeamInvitation({ invitationId, userId: request.auth.id })
+      await completeTeamInvitation({ invitationId, userId: request.user.id })
 
       return await reply.status(204).send()
     }
@@ -511,7 +511,7 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
       ]) as any]
     },
     async (request, reply) => {
-      if (request.auth == null) {
+      if (request.user == null) {
         throw new UnauthorizedError('User not logged in')
       }
 

@@ -275,13 +275,13 @@ async function domainProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void
       ]) as any]
     },
     async (request, reply) => {
-      if (request.auth == null) {
+      if (request.user == null) {
         throw new UnauthorizedError('User not logged in')
       }
 
       const submission = request.body
       const { domainId, problemId } = request.params
-      const created = await createTestingSubmission({ submission, problemId, userId: request.auth.id, domainId })
+      const created = await createTestingSubmission({ submission, problemId, userId: request.user.id, domainId })
       return await reply.status(202).send(created)
     }
   )

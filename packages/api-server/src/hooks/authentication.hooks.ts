@@ -1,6 +1,7 @@
 import { type FastifyRequest, type FastifyReply } from 'fastify'
 import { NotFoundError, UnauthorizedError } from 'http-errors-enhanced'
-import { fetchAuthenticationProfile, fetchSessionByToken } from '../services/session.services.js'
+import { fetchSessionByToken } from '../services/session.services.js'
+import { fetchUser } from '../services/user.services.js'
 import { requestAuthProfile, requestSessionToken } from '../utils/auth.utils.js'
 
 export async function userAuthHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -11,8 +12,8 @@ export async function userAuthHook (request: FastifyRequest, reply: FastifyReply
 
     try {
       const { userId } = await fetchSessionByToken({ sessionToken: token })
-      const authProfile = await fetchAuthenticationProfile({ userId })
-      request.auth = authProfile
+      const user = await fetchUser({ userId })
+      request.user = user
     } catch (err) {
       if (err instanceof NotFoundError) {
         throw new UnauthorizedError('Session or user described by the token is invalid')

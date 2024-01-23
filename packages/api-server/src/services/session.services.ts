@@ -1,4 +1,4 @@
-import { type UserSession, type AuthenticationProfile } from '@argoncs/types'
+import { type UserPublicSession } from '@argoncs/types'
 import { NotFoundError, UnauthorizedError } from 'http-errors-enhanced'
 import { sessionCollection, userCollection } from '@argoncs/common'
 import { pbkdf2 } from 'node:crypto'
@@ -29,13 +29,13 @@ export async function authenticateUser ({ usernameOrEmail, password, loginIP, us
   }
 }
 
-export async function fetchSessionByToken ({ sessionToken }: { sessionToken: string }): Promise<UserSession> {
-  const cache = await fetchCache<UserSession>({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
+export async function fetchSessionByToken ({ sessionToken }: { sessionToken: string }): Promise<UserPublicSession> {
+  const cache = await fetchCache<UserPublicSession>({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
   if (cache != null) {
     return cache
   }
 
-  const session = await sessionCollection.findOne({ token: sessionToken })
+  const session = await sessionCollection.findOne({ token: sessionToken }, { projection: { token: 0 } })
   if (session == null) {
     throw new NotFoundError('Session not found')
   }
@@ -55,39 +55,15 @@ export async function deleteSessionByToken ({ sessionToken }: { sessionToken: st
   await deleteCache({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
 }
 
-export async function fetchSessionById ({ sessionId }: { sessionId: string }): Promise<UserSession> {
-  const session = await sessionCollection.findOne({ id: sessionId })
+export async function fetchSessionById ({ sessionId }: { sessionId: string }): Promise<UserPublicSession> {
+  const session = await sessionCollection.findOne({ id: sessionId }, { projection: { token: 0 } })
   if (session == null) {
     throw new NotFoundError('Session not found')
   }
   return session
 }
 
-export async function fetchUserSessions ({ userId }: { userId: string }): Promise<UserSession[]> {
-  const sessions = await sessionCollection.find({ userId }).toArray()
+export async function fetchUserSessions ({ userId }: { userId: string }): Promise<UserPublicSession[]> {
+  const sessions = await sessionCollection.find({ userId }, { projection: { token: 0 } }).toArray()
   return sessions
-}
-
-export async function fetchAuthenticationProfile ({ userId }: { userId: string }): Promise<AuthenticationProfile> {
-  const cache = await fetchCache<AuthenticationProfile>({ key: `auth-profile:${userId}` })
-  if (cache != null) {
-    return cache
-  }
-
-  const user = await userCollection.findOne({ id: userId }, { projection: { role: 1, scopes: 1, id: 1, teams: 1, email: 1 } })
-  if (user == null) {
-    throw new NotFoundError('User not found')
-  }
-
-  const authProfile: AuthenticationProfile = {
-    role: user.role,
-    scopes: user.scopes,
-    id: user.id,
-    teams: user.teams,
-    email: user.email
-  }
-
-  await setCache({ key: `auth-profile:${userId}`, data: authProfile })
-
-  return authProfile
 }

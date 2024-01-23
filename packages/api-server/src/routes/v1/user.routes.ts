@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { type PublicUserProfile, PublicUserProfileSchema, PrivateUserProfileSchema, NewUserSchema, SubmissionSchema } from '@argoncs/types'
+import { type UserPublicProfile, UserPublicProfileSchema, PrivateUserProfileSchema, NewUserSchema, SubmissionSchema } from '@argoncs/types'
 import { completeVerification, emailExists, fetchUserById, fetchUserByUsername, initiateVerification, registerUser, searchUsers, userIdExists, usernameExists } from '../../services/user.services.js'
 import { ownsResource } from '../../auth/ownership.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
@@ -21,7 +21,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     {
       schema: {
         response: {
-          200: PublicUserProfileSchema,
+          200: UserPublicProfileSchema,
           400: badRequestSchema,
           404: notFoundSchema
         },
@@ -32,7 +32,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
       const { userId } = request.params
       const { username, name, id, email } = (userId.length === 21 ? await fetchUserById({ userId }) : await fetchUserByUsername({ username: userId }))
       const gravatar = email != null ? gravatarUrl(email) : undefined
-      const publicProfile: PublicUserProfile = { username, name, id, gravatar }
+      const publicProfile: UserPublicProfile = { username, name, id, gravatar }
       await reply.status(200).send(publicProfile)
     }
   )
@@ -237,7 +237,7 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     {
       schema: {
         response: {
-          200: Type.Array(PublicUserProfileSchema),
+          200: Type.Array(UserPublicProfileSchema),
           400: badRequestSchema,
           401: unauthorizedSchema
         },
@@ -254,7 +254,7 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
       if (noteam != null) {
         users = users.filter((user) => user.teams[noteam] == null)
       }
-      const profiles: PublicUserProfile[] = users.map((user) => {
+      const profiles: UserPublicProfile[] = users.map((user) => {
         const { id, username, name, email } = user
         const gravatar = email != null ? gravatarUrl(email) : undefined
         return { id, username, name, gravatar }

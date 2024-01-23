@@ -1,4 +1,4 @@
-import { type PublicUserProfile } from '@argoncs/types'
+import { type UserPublicProfile } from '@argoncs/types'
 
 import { loadTestingApp, type FastifyTypeBox } from '../util/app.js'
 
@@ -56,7 +56,7 @@ tap.test(
 
     t.equal(response.statusCode, 200, 'returns code 200')
     {
-      const profile: PublicUserProfile = response.json()
+      const profile: UserPublicProfile = response.json()
       t.equal(profile.username, user.username, 'profile username matches')
       t.equal(profile.name, user.name, 'profile name matches')
       t.equal(profile.id, userId, 'profile id matches')

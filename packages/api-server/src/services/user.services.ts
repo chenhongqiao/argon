@@ -1,4 +1,4 @@
-import { type User, type NewUser, UserRole, type PrivateUserProfile } from '@argoncs/types'
+import { type User, type NewUser, UserRole, type UserPrivateProfile } from '@argoncs/types'
 import { NotFoundError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
 import { emailVerificationCollection, MongoServerError, userCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
@@ -52,8 +52,8 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
   }
 }
 
-export async function fetchUser ({ userId }: { userId: string }): Promise<PrivateUserProfile> {
-  const cache = await fetchCache<PrivateUserProfile>({ key: `${USER_CACHE_KEY}:${userId}` })
+export async function fetchUser ({ userId }: { userId: string }): Promise<UserPrivateProfile> {
+  const cache = await fetchCache<UserPrivateProfile>({ key: `${USER_CACHE_KEY}:${userId}` })
   if (cache != null) {
     return cache
   }
