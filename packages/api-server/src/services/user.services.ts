@@ -1,4 +1,4 @@
-import { type User, type NewUser, UserRole } from '@argoncs/types'
+import { type User, type NewUser, UserRole, type PrivateUserProfile } from '@argoncs/types'
 import { NotFoundError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
 import { emailVerificationCollection, MongoServerError, userCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
@@ -8,6 +8,7 @@ import { promisify } from 'node:util'
 import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
 
 import { sendEmail } from './emails.services.js'
+import { USER_CACHE_KEY, deleteCache, fetchCache, setCache } from './cache.services.js'
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -51,11 +52,18 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
   }
 }
 
-export async function fetchUser ({ userId }: { userId: string }): Promise<User> {
-  const user = await userCollection.findOne({ id: userId })
+export async function fetchUser ({ userId }: { userId: string }): Promise<PrivateUserProfile> {
+  const cache = await fetchCache<PrivateUserProfile>({ key: `${USER_CACHE_KEY}:${userId}` })
+  if (cache != null) {
+    return cache
+  }
+
+  const user = await userCollection.findOne({ id: userId }, { projection: { credential: 0 } })
   if (user == null) {
     throw new NotFoundError('User not found')
   }
+
+  await setCache({ key: `${USER_CACHE_KEY}:${userId}`, data: user })
 
   return user
 }
@@ -72,13 +80,16 @@ export async function emailExists ({ email }: { email: string }): Promise<boolea
   return Boolean(await userCollection.countDocuments({ email }))
 }
 
-export async function updateUser ({ userId, user }: { userId: string, user: Partial<NewUser> }): Promise<{ modified: boolean }> {
-  const { matchedCount, modifiedCount } = await userCollection.updateOne({ id: userId }, { $set: user })
-  if (matchedCount === 0) {
+export async function updateUser ({ userId, newUser }: { userId: string, newUser: Partial<NewUser> }): Promise<void> {
+  const { value: user } = await userCollection.findOneAndUpdate(
+    { id: userId },
+    { $set: newUser },
+    { returnDocument: 'after', projection: { credential: 0 } })
+  if (user === null) {
     throw new NotFoundError('User not found')
   }
 
-  return { modified: modifiedCount > 0 }
+  await deleteCache({ key: `${USER_CACHE_KEY}:${user.id}` })
 }
 
 export async function initiateVerification ({ userId }: { userId: string }): Promise<void> {

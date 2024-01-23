@@ -25,10 +25,13 @@ export async function setCache ({ key, data }: { key: string, data: any }): Prom
   }
 }
 
-export async function refreshCache ({ key, data }: { key: string, data: any }): Promise<void> {
-  await cacheRedis.set(key, JSON.stringify(data), 'KEEPTTL', 'XX')
-}
-
 export async function deleteCache ({ key }: { key: string }): Promise<void> {
   await cacheRedis.set(key, '', 'KEEPTTL', 'XX')
 }
+
+export const USER_CACHE_KEY = 'user'
+export const USER_PATH_CACHE_KEY = 'user-path'
+export const CONTEST_CACHE_KEY = 'contest'
+export const CONTEST_PATH_CACHE_KEY = 'contest-path'
+export const PROBLEMLIST_CACHE_KEY = 'problem-list'
+export const SESSION_CACHE_KEY = 'session'

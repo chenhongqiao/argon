@@ -7,7 +7,7 @@ import { promisify } from 'node:util'
 
 import { nanoid } from '../utils/nanoid.utils.js'
 
-import { deleteCache, fetchCache, setCache } from './cache.services.js'
+import { SESSION_CACHE_KEY, deleteCache, fetchCache, setCache } from './cache.services.js'
 
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -30,7 +30,7 @@ export async function authenticateUser ({ usernameOrEmail, password, loginIP, us
 }
 
 export async function fetchSessionByToken ({ sessionToken }: { sessionToken: string }): Promise<UserSession> {
-  const cache = await fetchCache<UserSession>({ key: `session:${sessionToken}` })
+  const cache = await fetchCache<UserSession>({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
   if (cache != null) {
     return cache
   }
@@ -40,7 +40,7 @@ export async function fetchSessionByToken ({ sessionToken }: { sessionToken: str
     throw new NotFoundError('Session not found')
   }
 
-  await setCache({ key: `session:${sessionToken}`, data: session })
+  await setCache({ key: `${SESSION_CACHE_KEY}:${sessionToken}`, data: session })
 
   return session
 }
@@ -52,7 +52,7 @@ export async function deleteSessionByToken ({ sessionToken }: { sessionToken: st
     throw new NotFoundError('Session not found')
   }
 
-  await deleteCache({ key: `session:${sessionToken}` })
+  await deleteCache({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
 }
 
 export async function fetchSessionById ({ sessionId }: { sessionId: string }): Promise<UserSession> {
