@@ -8,7 +8,7 @@ import { type FastifyTypeBox } from '../../types.js'
 import { badRequestSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
 import { UserLoginSchema, UserPrivateSessionSchema, UserPublicSessionSchema } from '@argoncs/types'
 import { userAuthHook } from '../../hooks/authentication.hooks.js'
-import { requestAuthProfile, requestSessionToken } from '../../utils/auth.utils.js'
+import { requestUserProfile, requestSessionToken } from '../../utils/auth.utils.js'
 
 export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Promise<void> {
   /*
@@ -57,7 +57,7 @@ export async function userSessionRoutes (userSessionRoutes: FastifyTypeBox): Pro
       onRequest: [userAuthHook as any]
     },
     async (request, reply) => {
-      const userId = requestAuthProfile(request).id
+      const userId = requestUserProfile(request).id
       await reply.status(200).send([fetchUserSessions({ userId })])
     }
   )

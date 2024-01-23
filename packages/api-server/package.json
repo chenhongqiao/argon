@@ -26,24 +26,24 @@
     "test-nodrop": "yarn prepack && yarn runTest-nodrop"
   },
   "devDependencies": {
-    "@types/tap": "^15.0.8",
+    "@types/tap": "^15.0.11",
     "c8": "^8.0.1",
-    "tap": "^16.3.8",
-    "typescript": "^5.1.6"
+    "tap": "^16.3.10",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@argoncs/common": "workspace:*",
     "@argoncs/types": "workspace:*",
     "@chenhongqiao/fastify-http-errors-enhanced": "^4.1.0",
-    "@fastify/auth": "^4.3.0",
-    "@fastify/cookie": "^8.3.0",
-    "@fastify/cors": "^8.3.0",
-    "@fastify/sensible": "^5.2.0",
-    "@fastify/swagger": "^8.8.0",
-    "@fastify/type-provider-typebox": "^3.3.0",
-    "@sendgrid/mail": "^7.7.0",
-    "@sinclair/typebox": "^0.29.4",
-    "fastify": "^4.19.2",
+    "@fastify/auth": "^4.4.0",
+    "@fastify/cookie": "^9.3.1",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/sensible": "^5.5.0",
+    "@fastify/swagger": "^8.14.0",
+    "@fastify/type-provider-typebox": "^4.0.0",
+    "@sendgrid/mail": "^8.1.0",
+    "@sinclair/typebox": "^0.32.12",
+    "fastify": "^4.25.2",
     "gravatar-url": "^4.0.1",
     "http-errors-enhanced": "^1.0.13",
     "nanoid": "^4.0.2"

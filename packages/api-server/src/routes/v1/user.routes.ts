@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
-import { type UserPublicProfile, UserPublicProfileSchema, PrivateUserProfileSchema, NewUserSchema, SubmissionSchema } from '@argoncs/types'
-import { completeVerification, emailExists, fetchUserById, fetchUserByUsername, initiateVerification, registerUser, searchUsers, userIdExists, usernameExists } from '../../services/user.services.js'
+import { type UserPublicProfile, UserPublicProfileSchema, NewUserSchema, UserPrivateProfileSchema, SubmissionSchema } from '@argoncs/types'
+import { completeVerification, emailExists, fetchUser, initiateVerification, registerUser, queryUsers, userIdExists, usernameExists } from '../../services/user.services.js'
 import { ownsResource } from '../../auth/ownership.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
 import { NotFoundError, badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
@@ -14,6 +14,7 @@ import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { contestInfoHook } from '../../hooks/contest.hooks.js'
 import { submissionInfoHook } from '../../hooks/submission.hooks.js'
 import gravatarUrl from 'gravatar-url'
+import { querySubmissions } from '../../services/submission.services.js'
 
 async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> {
   profileRoutes.get(
@@ -30,7 +31,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     },
     async (request, reply) => {
       const { userId } = request.params
-      const { username, name, id, email } = (userId.length === 21 ? await fetchUserById({ userId }) : await fetchUserByUsername({ username: userId }))
+      const { username, name, id, email } = await fetchUser({ userId })
       const gravatar = email != null ? gravatarUrl(email) : undefined
       const publicProfile: UserPublicProfile = { username, name, id, gravatar }
       await reply.status(200).send(publicProfile)
@@ -42,7 +43,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     {
       schema: {
         response: {
-          200: PrivateUserProfileSchema,
+          200: UserPrivateProfileSchema,
           400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
@@ -56,7 +57,7 @@ async function userProfileRoutes (profileRoutes: FastifyTypeBox): Promise<void> 
     },
     async (request, reply) => {
       const { userId } = request.params
-      const { username, name, email, newEmail, scopes, role, teams, year, school, country, region, id } = (userId.length === 21 ? await fetchUserById({ userId }) : await fetchUserByUsername({ username: userId }))
+      const { username, name, email, newEmail, scopes, role, teams, year, school, country, region, id } = await fetchUser({ userId })
       const gravatar = email != null ? gravatarUrl(email) : undefined
       return await reply.status(200).send({ id, username, name, email, newEmail, scopes, role, teams, year, school, country, region, gravatar })
     }
@@ -158,7 +159,7 @@ async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<
     },
     async (request, reply) => {
       const { userId } = request.params
-      const submissions = await fetchUserById({ userId })
+      const submissions = await querySubmissions({ query: { userId } })
       return await reply.status(200).send(submissions)
     }
   )
@@ -250,7 +251,7 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { query, noteam } = request.query as { query: string, noteam: undefined | string }
-      let users = await searchUsers({ query })
+      let users = await queryUsers({ query })
       if (noteam != null) {
         users = users.filter((user) => user.teams[noteam] == null)
       }

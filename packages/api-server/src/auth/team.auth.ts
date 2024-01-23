@@ -2,10 +2,10 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify'
 import { ForbiddenError } from 'http-errors-enhanced'
 import { fetchTeam } from '../services/team.services.js'
-import { requestAuthProfile, requestParameter } from '../utils/auth.utils.js'
+import { requestUserProfile, requestParameter } from '../utils/auth.utils.js'
 
 export async function isTeamMember (request: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const auth = requestAuthProfile(request)
+  const auth = requestUserProfile(request)
   const contestId = requestParameter(request, 'contestId')
   const teamId = requestParameter(request, 'teamId')
 
@@ -15,7 +15,7 @@ export async function isTeamMember (request: FastifyRequest, reply: FastifyReply
 }
 
 export async function isTeamCaptain (request: FastifyRequest, reply: FastifyReply) {
-  const auth = requestAuthProfile(request)
+  const auth = requestUserProfile(request)
   const contestId = requestParameter(request, 'contestId')
   const teamId = requestParameter(request, 'teamId')
 

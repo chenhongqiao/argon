@@ -2,11 +2,11 @@ import { type FastifyRequest, type FastifyReply } from 'fastify'
 import { NotFoundError, UnauthorizedError } from 'http-errors-enhanced'
 import { fetchSessionByToken } from '../services/session.services.js'
 import { fetchUser } from '../services/user.services.js'
-import { requestAuthProfile, requestSessionToken } from '../utils/auth.utils.js'
+import { requestUserProfile, requestSessionToken } from '../utils/auth.utils.js'
 
 export async function userAuthHook (request: FastifyRequest, reply: FastifyReply): Promise<void> {
   try {
-    requestAuthProfile(request)
+    requestUserProfile(request)
   } catch {
     const { token } = requestSessionToken(request)
 

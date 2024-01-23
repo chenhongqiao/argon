@@ -1,10 +1,10 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify'
 import { ForbiddenError } from 'http-errors-enhanced'
-import { requestAuthProfile, requestParameter } from '../utils/auth.utils.js'
+import { requestUserProfile, requestParameter } from '../utils/auth.utils.js'
 
 export function hasDomainPrivilege (scopes: string[]) {
   return async function handler (request: FastifyRequest, reply: FastifyReply) {
-    const auth = requestAuthProfile(request)
+    const auth = requestUserProfile(request)
 
     const domainId = requestParameter(request, 'domainId')
     const userScopes = auth.scopes
@@ -19,7 +19,7 @@ export function hasDomainPrivilege (scopes: string[]) {
 
 export function hasContestPrivilege (scopes: string[]) {
   return async function handler (request: FastifyRequest, reply: FastifyReply) {
-    const auth = requestAuthProfile(request)
+    const auth = requestUserProfile(request)
 
     const domainId = requestParameter(request, 'domainId')
     const contestId = requestParameter(request, 'contestId')
@@ -35,7 +35,7 @@ export function hasContestPrivilege (scopes: string[]) {
 }
 
 export function hasNoPrivilege (request: FastifyRequest, reply: FastifyReply, done): void {
-  const auth = requestAuthProfile(request)
+  const auth = requestUserProfile(request)
 
   const domainId = requestParameter(request, 'domainId')
   if (domainId in auth.scopes) {

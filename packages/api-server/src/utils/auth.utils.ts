@@ -1,4 +1,4 @@
-import { type AuthenticationProfile } from '@argoncs/types'
+import { type UserPrivateProfile } from '@argoncs/types'
 import { type FastifyRequest } from 'fastify'
 import { InternalServerError, UnauthorizedError } from 'http-errors-enhanced'
 
@@ -17,7 +17,7 @@ export function requestParameter (request: FastifyRequest, key: string): string 
   return value
 }
 
-export function requestAuthProfile (request: FastifyRequest): AuthenticationProfile {
+export function requestUserProfile (request: FastifyRequest): UserPrivateProfile {
   if (request.user == null) {
     throw new UnauthorizedError('User not logged in')
   }

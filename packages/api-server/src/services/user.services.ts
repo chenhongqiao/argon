@@ -8,7 +8,7 @@ import { promisify } from 'node:util'
 import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
 
 import { sendEmail } from './emails.services.js'
-import { USER_CACHE_KEY, deleteCache, fetchCache, setCache } from './cache.services.js'
+import { USER_CACHE_KEY, USER_PATH_CACHE_KEY, deleteCache, fetchCache, setCache } from './cache.services.js'
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -80,16 +80,22 @@ export async function emailExists ({ email }: { email: string }): Promise<boolea
   return Boolean(await userCollection.countDocuments({ email }))
 }
 
-export async function updateUser ({ userId, newUser }: { userId: string, newUser: Partial<NewUser> }): Promise<void> {
+export async function updateUser ({ userId, newUser }: { userId: string, newUser: Partial<NewUser> }): Promise<{ modified: boolean }> {
   const { value: user } = await userCollection.findOneAndUpdate(
     { id: userId },
     { $set: newUser },
-    { returnDocument: 'after', projection: { credential: 0 } })
+    { returnDocument: 'before', projection: { credential: 0 } })
   if (user === null) {
     throw new NotFoundError('User not found')
   }
 
   await deleteCache({ key: `${USER_CACHE_KEY}:${user.id}` })
+  if (user.username !== newUser.username) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    await deleteCache({ key: `${USER_PATH_CACHE_KEY}:${user.username}` })
+  }
+
+  return { modified: true }
 }
 
 export async function initiateVerification ({ userId }: { userId: string }): Promise<void> {
@@ -138,7 +144,7 @@ export async function completeVerification ({ verificationId }: { verificationId
   return { modified: modifiedCount > 0 }
 }
 
-export async function searchUsers ({ query }: { query: string }): Promise<User[]> {
+export async function queryUsers ({ query }: { query: string }): Promise<User[]> {
   const users = await userCollection.find({ $text: { $search: query } }).limit(25).toArray()
   return users
 }

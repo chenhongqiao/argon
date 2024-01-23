@@ -2,7 +2,7 @@
 import { type FastifyRequest, type FastifyReply } from 'fastify'
 import { ForbiddenError, NotFoundError } from 'http-errors-enhanced'
 import { fetchContest } from '../services/contest.services.js'
-import { requestAuthProfile, requestParameter } from '../utils/auth.utils.js'
+import { requestUserProfile, requestParameter } from '../utils/auth.utils.js'
 
 export async function contestPublished (request: FastifyRequest, reply: FastifyReply) {
   const contestId = requestParameter(request, 'contestId')
@@ -14,7 +14,7 @@ export async function contestPublished (request: FastifyRequest, reply: FastifyR
 }
 
 export async function registeredForContest (request: FastifyRequest, reply: FastifyReply) {
-  const auth = requestAuthProfile(request)
+  const auth = requestUserProfile(request)
 
   const contestId = requestParameter(request, 'contestId')
 

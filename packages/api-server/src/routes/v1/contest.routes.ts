@@ -63,7 +63,7 @@ import { createContestSubmission, querySubmissions } from '../../services/submis
 import { hasVerifiedEmail } from '../../auth/email.auth.js'
 import { userAuthHook } from '../../hooks/authentication.hooks.js'
 import { contestInfoHook } from '../../hooks/contest.hooks.js'
-import { requestAuthProfile } from '../../utils/auth.utils.js'
+import { requestUserProfile } from '../../utils/auth.utils.js'
 
 async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<void> {
   problemRoutes.addHook('onRequest', contestInfoHook)
@@ -218,7 +218,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
       ]) as any]
     },
     async (request, reply) => {
-      const auth = requestAuthProfile(request)
+      const auth = requestUserProfile(request)
       const { contestId, problemId } = request.params
 
       if (!('domainId' in request.params) || typeof request.params.domainId !== 'string' || !(request.params.domainId in auth.scopes)) {
@@ -582,6 +582,7 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
         params: Type.Object({ contestId: Type.String() }),
         body: Type.Omit(NewContestSchema, ['seriesId']),
         response: {
+          200: Type.Object({ modified: Type.Boolean() }),
           400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
@@ -596,8 +597,8 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
     async (request, reply) => {
       const { contestId } = request.params
       const newContest = request.body
-      await updateContest({ contestId, newContest })
-      return await reply.status(204).send()
+      const status = await updateContest({ contestId, newContest })
+      return await reply.status(200).send(status)
     })
 
   routes.post(
