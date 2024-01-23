@@ -1,16 +1,16 @@
 import { type Static, Type } from '@sinclair/typebox'
-import { type User } from './user.types.js'
 
-export const UserSessionSchema = Type.Object({
+export const UserPrivateSessionSchema = Type.Object({
   id: Type.String(),
   token: Type.String(),
   userId: Type.String(),
   userAgent: Type.String(),
   loginIP: Type.String()
 })
-export type UserSession = Static<typeof UserSessionSchema>
+export type UserPrivateSession = Static<typeof UserPrivateSessionSchema>
 
-export type AuthenticationProfile = Pick<User, 'scopes' | 'role' | 'id' | 'teams' | 'email'>
+export const UserPublicSessionSchema = Type.Omit(UserPrivateSessionSchema, ['token'])
+export type UserPublicSession = Static<typeof UserPublicSessionSchema>
 
 export interface EmailVerification {
   id: string

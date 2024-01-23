@@ -1,5 +1,5 @@
 import { type Static, Type } from '@sinclair/typebox'
-import { PublicUserProfileSchema } from './user.types.js'
+import { UserPublicProfileSchema } from './user.types.js'
 
 export const NewDomainSchema = Type.Object({
   name: Type.String(),
@@ -18,5 +18,5 @@ export const DomainSchema = Type.Object({
 })
 export type Domain = Static<typeof DomainSchema>
 
-export const DomainMembersSchema = Type.Array(PublicUserProfileSchema)
+export const DomainMembersSchema = Type.Array(UserPublicProfileSchema)
 export type DomainMembers = Static<typeof DomainMembersSchema>

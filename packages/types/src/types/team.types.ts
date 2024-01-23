@@ -1,5 +1,5 @@
 import { type Static, Type } from '@sinclair/typebox'
-import { PublicUserProfileSchema } from './user.types.js'
+import { UserPublicProfileSchema } from './user.types.js'
 
 export const NewTeamSchema = Type.Object({
   name: Type.String()
@@ -25,7 +25,7 @@ export const TeamInvitationSchema = Type.Object({
 })
 export type TeamInvitation = Static<typeof TeamInvitationSchema>
 
-export const TeamMembersSchema = Type.Array(PublicUserProfileSchema)
+export const TeamMembersSchema = Type.Array(UserPublicProfileSchema)
 export type TeamMembers = Static<typeof TeamMembersSchema>
 
 export const TeamScoreSchema = Type.Object({
