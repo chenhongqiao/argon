@@ -14,16 +14,16 @@
     "prepack": "tsc --build ."
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.1",
-    "typescript": "^5.1.6"
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@argoncs/common": "workspace:*",
     "@argoncs/types": "workspace:*",
-    "fs-extra": "^11.1.1",
+    "fs-extra": "^11.2.0",
     "http-errors-enhanced": "^1.0.13",
-    "lru-cache": "^10.0.0",
-    "pino": "^8.14.1"
+    "lru-cache": "^10.1.0",
+    "pino": "^8.17.2"
   },
   "type": "module"
 }

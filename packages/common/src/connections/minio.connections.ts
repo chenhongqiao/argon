@@ -1,26 +1,8 @@
-import { Client, type MinIOTypeHack } from 'minio'
+import { Client } from 'minio'
 
 import { ConnectionStringParser } from 'connection-string-parser'
-import { type ReadableStream } from 'stream/web'
 
-declare module 'minio' {
-  export interface BucketItemStat {
-    size: number
-    etag: string
-    versionId: string
-    lastModified: Date
-    metaData: ItemBucketMetadata
-  }
-
-  export class MinIOTypeHack {
-    statObject (bucketName: string, objectName: string, options: VersionIdentificator): Promise<BucketItemStat>
-
-    getObject (bucketName: string, objectName: string, options: VersionIdentificator): Promise<ReadableStream>
-    fGetObject (bucketName: string, objectName: string, filePath: string, options: VersionIdentificator): Promise<void>
-  }
-}
-
-let minio: Client & MinIOTypeHack
+let minio: Client
 
 export async function connectMinIO (url: string): Promise<void> {
   const minioConnectionString = new ConnectionStringParser({
@@ -44,7 +26,7 @@ export async function connectMinIO (url: string): Promise<void> {
     secretKey: minioConfig.password,
     useSSL: false,
     port: minioConfig.hosts[0].port
-  }) as Client & MinIOTypeHack
+  })
 
   if (!await minio.bucketExists('testcases')) {
     await minio.makeBucket('testcases')

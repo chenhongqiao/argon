@@ -1,4 +1,4 @@
-import { type ConetstProblemList, type Contest, type ContestProblem, type Submission, type Domain, type EmailVerification, type Problem, type Team, type TeamInvitation, type TestcaseUpload, type User, type UserSession, type TeamScore, type ContestSeries } from '@argoncs/types'
+import { type ConetstProblemList, type Contest, type ContestProblem, type Submission, type Domain, type EmailVerification, type Problem, type Team, type TeamInvitation, type TestcaseUpload, type User, type UserPrivateSession, type TeamScore, type ContestSeries } from '@argoncs/types'
 import { MongoClient, type IndexSpecification, type CreateIndexesOptions, type Db, type Collection } from 'mongodb'
 
 interface Index {
@@ -123,7 +123,7 @@ export let domainCollection: Collection<Domain>
 export let userCollection: Collection<User>
 export let domainProblemCollection: Collection<Problem>
 export let submissionCollection: Collection<Submission>
-export let sessionCollection: Collection<UserSession>
+export let sessionCollection: Collection<UserPrivateSession>
 export let emailVerificationCollection: Collection<EmailVerification>
 export let testcaseUploadCollection: Collection<TestcaseUpload>
 export let contestCollection: Collection<Contest>

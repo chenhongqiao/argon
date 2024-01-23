@@ -19,6 +19,7 @@ export const useUserStore = defineStore('user', () => {
       immediate: true,
       watch: false
     })
+    
     if (data.value != null) {
       session.value = data.value?.session
       profile.value = data.value?.profile

@@ -52,7 +52,7 @@ import {
   NIcon,
 } from "naive-ui";
 import { useDebounceFn } from "@vueuse/core";
-import { PublicUserProfile } from "@argoncs/types";
+import { UserPublicProfile } from "@argoncs/types";
 const props = defineProps<{
   contestId: string;
   teamId: string;
@@ -75,7 +75,7 @@ const handleSearch = useDebounceFn(async (query: string) => {
   } else {
     try {
       loading.value = true;
-      const match = await $api<PublicUserProfile[]>("/users", {
+      const match = await $api<UserPublicProfile[]>("/users", {
         query: { query, noteam: props.contestId },
       });
       console.log(props.existingInvitations)

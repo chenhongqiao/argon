@@ -26,6 +26,7 @@ export async function prepareStorage ({ dir }: { dir: string }): Promise<void> {
 async function cacheTestcase ({ objectName, versionId }: { objectName: string, versionId: string }): Promise<void> {
   const key = path.join(cacheDir, 'testcases', objectName, versionId)
   const size = (await minio.statObject('testcases', objectName, { versionId })).size
+  // @ts-expect-error typing bug
   await minio.fGetObject('testcases', objectName, key, { versionId })
   cache.set(key, key, { size })
 }

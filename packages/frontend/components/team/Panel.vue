@@ -117,7 +117,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { PublicUserProfile, Team, TeamInvitation } from "@argoncs/types";
+import { UserPublicProfile, Team, TeamInvitation } from "@argoncs/types";
 import {
   UserOutlined as UserIcon,
   MailOutlined as EmailIcon,
@@ -126,9 +126,9 @@ import {
 } from "@vicons/antd";
 const props = defineProps<{
   team: Team;
-  members: PublicUserProfile[];
+  members: UserPublicProfile[];
   invitations: TeamInvitation[];
-  invitationProfiles: PublicUserProfile[];
+  invitationProfiles: UserPublicProfile[];
   userId: string;
   maxSize: number;
 }>();

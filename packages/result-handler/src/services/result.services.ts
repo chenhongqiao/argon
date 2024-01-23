@@ -43,7 +43,6 @@ export async function handleCompileResult (compileResult: CompilingResult, submi
       })
 
       await submissionCollection.updateOne({ id: submissionId }, {
-        // @ts-expect-error mongodb typing bug
         $set: {
           status: SubmissionStatus.Grading,
           gradedCases: 0,
@@ -78,7 +77,6 @@ export async function completeGrading (submissionId: string, log?: string): Prom
           status: SubmissionStatus.Graded
         },
         $unset: {
-          // @ts-expect-error mongodb typing bug
           gradedCases: ''
         }
       })

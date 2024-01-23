@@ -90,7 +90,7 @@
 <script lang="ts" setup>
 import {
   Contest,
-  PublicUserProfile,
+  UserPublicProfile,
   Team,
   TeamInvitation,
 } from "@argoncs/types";
@@ -143,13 +143,13 @@ const { data: teamData, execute: fetchTeam } = await useAsyncData(
       `/contests/${contestId}/teams/${teamId}/invitations`,
       { headers },
     );
-    const members = await $api<PublicUserProfile[]>(
+    const members = await $api<UserPublicProfile[]>(
       `/contests/${contestId}/teams/${teamId}/members`,
     );
 
     const invitationProfiles = await Promise.all(
       invitations.map(async (invitation) => {
-        return await $api<PublicUserProfile>(
+        return await $api<UserPublicProfile>(
           `/users/${invitation.userId}/profiles/public`,
         );
       }),
