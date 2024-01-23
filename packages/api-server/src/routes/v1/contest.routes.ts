@@ -38,7 +38,7 @@ import {
 } from '../../auth/scope.auth.js'
 import {
   fetchAllContestSeries,
-  fetchContestById,
+  fetchContest,
   fetchContestProblemList,
   fetchContestRanklist,
   removeProblemFromContest,
@@ -571,7 +571,7 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
     },
     async (request, reply) => {
       const { contestId } = request.params
-      const contest = await fetchContestById({ contestId })
+      const contest = await fetchContest({ contestId })
       return await reply.status(200).send(contest)
     })
 

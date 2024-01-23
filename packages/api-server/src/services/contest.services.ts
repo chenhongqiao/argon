@@ -39,7 +39,7 @@ export async function fetchDomainContestSeries ({ domainId }: { domainId: string
   return contestSeries
 }
 
-export async function fetchContestById ({ contestId }: { contestId: string }): Promise<Contest> {
+export async function fetchContest ({ contestId }: { contestId: string }): Promise<Contest> {
   const cache = await fetchCache<Contest>({ key: `contest:${contestId}` })
   if (cache != null) {
     return cache

@@ -51,16 +51,8 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
   }
 }
 
-export async function fetchUserById ({ userId }: { userId: string }): Promise<User> {
+export async function fetchUser ({ userId }: { userId: string }): Promise<User> {
   const user = await userCollection.findOne({ id: userId })
-  if (user == null) {
-    throw new NotFoundError('User not found')
-  }
-
-  return user
-}
-export async function fetchUserByUsername ({ username }: { username: string }): Promise<User> {
-  const user = await userCollection.findOne({ username })
   if (user == null) {
     throw new NotFoundError('User not found')
   }
