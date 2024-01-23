@@ -7,7 +7,7 @@ export const NewContestSchema = Type.Object({
   startTime: Type.Number(),
   endTime: Type.Number(),
   teamSize: Type.Number(),
-  handle: Type.String(),
+  path: Type.String(),
   seriesId: Type.String()
 }, { additionalProperties: false })
 export type NewContest = Static<typeof NewContestSchema>
@@ -18,7 +18,7 @@ export const ContestSchema = Type.Object({
   startTime: Type.Number(),
   endTime: Type.Number(),
   teamSize: Type.Number(),
-  handle: Type.String(),
+  path: Type.String(),
   seriesId: Type.String(),
 
   domainId: Type.String(),

@@ -55,28 +55,12 @@ export async function fetchContestById ({ contestId }: { contestId: string }): P
   return contest
 }
 
-export async function fetchContestByHandle ({ handle }: { handle: string }): Promise<Contest> {
-  const cache = await fetchCache<Contest>({ key: `contest:${handle}` })
-  if (cache != null) {
-    return cache
-  }
-
-  const contest = await contestCollection.findOne({ handle })
-  if (contest == null) {
-    throw new NotFoundError('Contest not found')
-  }
-
-  await setCache({ key: `contest:${handle}`, data: contest })
-
-  return contest
-}
-
 export async function fetchDomainContests ({ domainId }: { domainId: string }): Promise<Contest[]> {
   const contests = await contestCollection.find({ domainId }).sort({ _id: -1 }).toArray()
   return contests
 }
 
-export async function updateContest ({ contestId, newContest }: { contestId: string, newContest: Partial<Omit<NewContest, 'seriesId'>> }): Promise<void> {
+export async function updateContest ({ contestId, newContest }: { contestId: string, newContest: Partial<Omit<NewContest, 'seriesId' | 'path'>> }): Promise<void> {
   const { value: contest } = await contestCollection.findOneAndUpdate(
     { id: contestId },
     { $set: newContest },
@@ -88,7 +72,6 @@ export async function updateContest ({ contestId, newContest }: { contestId: str
   }
 
   await refreshCache({ key: `contest:${contest.id}`, data: contest })
-  await refreshCache({ key: `contest:${contest.handle}`, data: contest })
 }
 
 export async function publishContest ({ contestId, published }: { contestId: string, published: boolean }): Promise<void> {
@@ -103,7 +86,6 @@ export async function publishContest ({ contestId, published }: { contestId: str
   }
 
   await refreshCache({ key: `contest:${contest.id}`, data: contest })
-  await refreshCache({ key: `contest:${contest.handle}`, data: contest })
 }
 
 export async function fetchContestProblemList ({ contestId }: { contestId: string }): Promise<ConetstProblemList> {
