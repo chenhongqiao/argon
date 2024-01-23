@@ -580,7 +580,7 @@ export async function contestRoutes (routes: FastifyTypeBox): Promise<void> {
     {
       schema: {
         params: Type.Object({ contestId: Type.String() }),
-        body: Type.Omit(NewContestSchema, ['seriesId', 'path']),
+        body: Type.Omit(NewContestSchema, ['seriesId']),
         response: {
           400: badRequestSchema,
           401: unauthorizedSchema,

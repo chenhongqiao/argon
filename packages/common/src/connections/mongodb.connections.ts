@@ -70,7 +70,7 @@ const collections: CollectionIndex[] = [
     name: 'contests',
     indexes: [
       { keys: { id: 1 }, options: { unique: true } },
-      { keys: { handle: 1 }, options: { unique: true, sparse: true } },
+      { keys: { path: 1 }, options: { unique: true, sparse: true } },
       { keys: { domainId: 1, _id: -1 }, options: { unique: true } }
     ]
   },
