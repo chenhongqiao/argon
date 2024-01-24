@@ -7,7 +7,7 @@ import { promisify } from 'node:util'
 
 import { nanoid } from '../utils/nanoid.utils.js'
 
-import { SESSION_CACHE_KEY, deleteCache, fetchCache, setCache } from './cache.services.js'
+import { SESSION_CACHE_KEY, acquireLock, deleteCache, fetchCache, releaseLock, setCache } from './cache.services.js'
 
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -35,13 +35,14 @@ export async function fetchSessionByToken ({ sessionToken }: { sessionToken: str
     return cache
   }
 
+  await acquireLock({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
   const session = await sessionCollection.findOne({ token: sessionToken }, { projection: { token: 0 } })
   if (session == null) {
     throw new NotFoundError('Session not found')
   }
 
   await setCache({ key: `${SESSION_CACHE_KEY}:${sessionToken}`, data: session })
-
+  await releaseLock({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
   return session
 }
 

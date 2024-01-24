@@ -8,7 +8,7 @@ import { promisify } from 'node:util'
 import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
 
 import { sendEmail } from './emails.services.js'
-import { USER_CACHE_KEY, USER_PATH_CACHE_KEY, deleteCache, fetchCache, setCache } from './cache.services.js'
+import { USER_CACHE_KEY, USER_PATH_CACHE_KEY, acquireLock, deleteCache, fetchCache, releaseLock, setCache } from './cache.services.js'
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -58,13 +58,14 @@ export async function fetchUser ({ userId }: { userId: string }): Promise<UserPr
     return cache
   }
 
+  await acquireLock({ key: `${USER_CACHE_KEY}:${userId}` })
   const user = await userCollection.findOne({ id: userId }, { projection: { credential: 0 } })
   if (user == null) {
     throw new NotFoundError('User not found')
   }
 
   await setCache({ key: `${USER_CACHE_KEY}:${userId}`, data: user })
-
+  await releaseLock({ key: `${USER_CACHE_KEY}:${userId}` })
   return user
 }
 

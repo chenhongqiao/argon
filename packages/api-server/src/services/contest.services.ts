@@ -2,7 +2,7 @@ import { MongoServerError, contestCollection, contestProblemCollection, contestP
 import { type NewContestSeries, type ConetstProblemList, type Contest, type ContestProblem, type NewContest, type TeamScore, type ContestSeries } from '@argoncs/types'
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from '../utils/nanoid.utils.js'
-import { CONTEST_CACHE_KEY, CONTEST_PATH_CACHE_KEY, PROBLEMLIST_CACHE_KEY, deleteCache, fetchCache, setCache } from './cache.services.js'
+import { CONTEST_CACHE_KEY, CONTEST_PATH_CACHE_KEY, PROBLEMLIST_CACHE_KEY, acquireLock, deleteCache, fetchCache, releaseLock, setCache } from './cache.services.js'
 
 export async function createContest ({ newContest, domainId }: { newContest: NewContest, domainId: string }): Promise<{ contestId: string }> {
   const id = await nanoid()
@@ -45,13 +45,14 @@ export async function fetchContest ({ contestId }: { contestId: string }): Promi
     return cache
   }
 
+  await acquireLock({ key: `${CONTEST_CACHE_KEY}:${contestId}` })
   const contest = await contestCollection.findOne({ id: contestId })
   if (contest == null) {
     throw new NotFoundError('Contest not found')
   }
 
   await setCache({ key: `${CONTEST_CACHE_KEY}:${contestId}`, data: contest })
-
+  await releaseLock({ key: `${CONTEST_CACHE_KEY}:${contestId}` })
   return contest
 }
 
@@ -109,13 +110,14 @@ export async function fetchContestProblemList ({ contestId }: { contestId: strin
     return cache
   }
 
+  await acquireLock({ key: `${PROBLEMLIST_CACHE_KEY}:${contestId}` })
   const problemList = await contestProblemListCollection.findOne({ id: contestId })
   if (problemList == null) {
     throw new NotFoundError('Contest not found')
   }
 
   await setCache({ key: `${PROBLEMLIST_CACHE_KEY}:${contestId}`, data: problemList })
-
+  await releaseLock({ key: `${PROBLEMLIST_CACHE_KEY}:${contestId}` })
   return problemList
 }
 
