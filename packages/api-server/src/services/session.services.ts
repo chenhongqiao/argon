@@ -7,7 +7,7 @@ import { promisify } from 'node:util'
 
 import { nanoid } from '../utils/nanoid.utils.js'
 
-import { SESSION_CACHE_KEY, acquireLock, deleteCache, fetchCache, releaseLock, setCache } from './cache.services.js'
+import { SESSION_CACHE_KEY, deleteCache, fetchCacheUntilLockAcquired, releaseLock, setCache } from './cache.services.js'
 
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -30,20 +30,22 @@ export async function authenticateUser ({ usernameOrEmail, password, loginIP, us
 }
 
 export async function fetchSessionByToken ({ sessionToken }: { sessionToken: string }): Promise<UserPublicSession> {
-  const cache = await fetchCache<UserPublicSession>({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
+  const cache = await fetchCacheUntilLockAcquired<UserPublicSession>({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
   if (cache != null) {
     return cache
   }
 
-  await acquireLock({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
-  const session = await sessionCollection.findOne({ token: sessionToken }, { projection: { token: 0 } })
-  if (session == null) {
-    throw new NotFoundError('Session not found')
-  }
+  try {
+    const session = await sessionCollection.findOne({ token: sessionToken }, { projection: { token: 0 } })
+    if (session == null) {
+      throw new NotFoundError('Session not found')
+    }
 
-  await setCache({ key: `${SESSION_CACHE_KEY}:${sessionToken}`, data: session })
-  await releaseLock({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
-  return session
+    await setCache({ key: `${SESSION_CACHE_KEY}:${sessionToken}`, data: session })
+    return session
+  } finally {
+    await releaseLock({ key: `${SESSION_CACHE_KEY}:${sessionToken}` })
+  }
 }
 
 export async function deleteSessionByToken ({ sessionToken }: { sessionToken: string }): Promise<void> {

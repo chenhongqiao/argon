@@ -8,7 +8,7 @@ import { promisify } from 'node:util'
 import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
 
 import { sendEmail } from './emails.services.js'
-import { USER_CACHE_KEY, USER_PATH_CACHE_KEY, acquireLock, deleteCache, fetchCache, releaseLock, setCache } from './cache.services.js'
+import { USER_CACHE_KEY, USER_PATH_CACHE_KEY, deleteCache, fetchCacheUntilLockAcquired, releaseLock, setCache } from './cache.services.js'
 const randomBytesAsync = promisify(randomBytes)
 const pbkdf2Async = promisify(pbkdf2)
 
@@ -53,20 +53,22 @@ export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<
 }
 
 export async function fetchUser ({ userId }: { userId: string }): Promise<UserPrivateProfile> {
-  const cache = await fetchCache<UserPrivateProfile>({ key: `${USER_CACHE_KEY}:${userId}` })
+  const cache = await fetchCacheUntilLockAcquired<UserPrivateProfile>({ key: `${USER_CACHE_KEY}:${userId}` })
   if (cache != null) {
     return cache
   }
 
-  await acquireLock({ key: `${USER_CACHE_KEY}:${userId}` })
-  const user = await userCollection.findOne({ id: userId }, { projection: { credential: 0 } })
-  if (user == null) {
-    throw new NotFoundError('User not found')
-  }
+  try {
+    const user = await userCollection.findOne({ id: userId }, { projection: { credential: 0 } })
+    if (user == null) {
+      throw new NotFoundError('User not found')
+    }
 
-  await setCache({ key: `${USER_CACHE_KEY}:${userId}`, data: user })
-  await releaseLock({ key: `${USER_CACHE_KEY}:${userId}` })
-  return user
+    await setCache({ key: `${USER_CACHE_KEY}:${userId}`, data: user })
+    return user
+  } finally {
+    await releaseLock({ key: `${USER_CACHE_KEY}:${userId}` })
+  }
 }
 
 export async function userIdExists ({ userId }: { userId: string }): Promise<boolean> {
@@ -82,7 +84,7 @@ export async function emailExists ({ email }: { email: string }): Promise<boolea
 }
 
 export async function updateUser ({ userId, newUser }: { userId: string, newUser: Partial<NewUser> }): Promise<{ modified: boolean }> {
-  const { value: user } = await userCollection.findOneAndUpdate(
+  const user = await userCollection.findOneAndUpdate(
     { id: userId },
     { $set: newUser },
     { returnDocument: 'before', projection: { credential: 0 } })
@@ -90,6 +92,7 @@ export async function updateUser ({ userId, newUser }: { userId: string, newUser
     throw new NotFoundError('User not found')
   }
 
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   await deleteCache({ key: `${USER_CACHE_KEY}:${user.id}` })
   if (user.username !== newUser.username) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -123,11 +126,11 @@ export async function initiateVerification ({ userId }: { userId: string }): Pro
 
 export async function completeVerification ({ verificationId }: { verificationId: string }): Promise<{ modified: boolean }> {
   const verification = await emailVerificationCollection.findOneAndDelete({ id: verificationId })
-  if (verification.value == null) {
+  if (verification == null) {
     throw new UnauthorizedError('Invalid verification token')
   }
 
-  const { userId, email } = verification.value
+  const { userId, email } = verification
 
   const { modifiedCount, matchedCount } = await userCollection.updateOne({ id: userId }, {
     $set: {

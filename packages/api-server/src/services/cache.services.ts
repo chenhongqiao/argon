@@ -3,26 +3,45 @@ import { backOff } from 'exponential-backoff'
 import { ServiceUnavailableError } from 'http-errors-enhanced'
 import { json } from 'typia'
 
-async function assertKeyUnlocked ({ key }: { key: string }): Promise<void> {
-  if (Boolean(await cacheRedis.get(`${key}:lock`))) {
-    throw new ServiceUnavailableError('Cache key locked')
+export async function fetchCacheUntilLockAcquired<T> ({ key }: { key: string }): Promise<T | null> {
+  let cache = await fetchCache<T>({ key })
+  if (cache != null) {
+    return cache
   }
+
+  let cnt = 0
+  while (!(await acquireLock({ key }))) {
+    try {
+      cache = await backOff(async () => {
+        const data = await fetchCache<T>({ key })
+        if (data === null) {
+          throw new Error('Cache not ready')
+        }
+        return data
+      }, { delayFirstAttempt: true, jitter: 'full' })
+    } catch (err) {
+      cnt += 1
+      if (cnt >= 3) {
+        throw new ServiceUnavailableError('Cache locked')
+      }
+    }
+    if (cache != null) {
+      return cache
+    }
+  }
+
+  // Lock acquired
+  return null
 }
 
 export async function fetchCache<T> ({ key }: { key: string }): Promise<T | null> {
   try {
-    // Prevent cache breakdown
-    await backOff(async () => { await assertKeyUnlocked({ key }) }, { numOfAttempts: 5, jitter: 'full' })
-
     const cache = await cacheRedis.getex(key, 'EX', 1600 + Math.floor(Math.random() * 400))
     if (cache == null || cache === '') {
       return null
     }
     return json.assertParse(cache)
   } catch (err) {
-    if (err instanceof ServiceUnavailableError) {
-      throw err
-    }
     // TODO: Alert cache failure
     return null
   }
@@ -42,12 +61,13 @@ export async function deleteCache ({ key }: { key: string }): Promise<void> {
   await cacheRedis.del(key)
 }
 
-export async function acquireLock ({ key }: { key: string }): Promise<void> {
+export async function acquireLock ({ key }: { key: string }): Promise<boolean> {
   const status = await cacheRedis.setnx(`${key}:lock`, 1)
   if (status !== 1) {
-    throw new ServiceUnavailableError('Cache key locked')
+    return false
   }
   await cacheRedis.expire(`${key}:lock`, 10, 'NX')
+  return true
 }
 
 export async function releaseLock ({ key }: { key: string }): Promise<void> {
