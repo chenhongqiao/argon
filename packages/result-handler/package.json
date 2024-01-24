@@ -19,7 +19,7 @@
   "dependencies": {
     "@argoncs/common": "workspace:*",
     "@argoncs/types": "workspace:*",
-    "http-errors-enhanced": "^1.0.13"
+    "http-errors-enhanced": "^2.0.3"
   },
   "type": "module"
 }

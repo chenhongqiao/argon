@@ -21,7 +21,7 @@
     "@argoncs/common": "workspace:*",
     "@argoncs/types": "workspace:*",
     "fs-extra": "^11.2.0",
-    "http-errors-enhanced": "^1.0.13",
+    "http-errors-enhanced": "^2.0.3",
     "lru-cache": "^10.1.0",
     "pino": "^8.17.2"
   },

@@ -25,7 +25,7 @@
     "@fastify/type-provider-typebox": "^4.0.0",
     "@sinclair/typebox": "^0.32.12",
     "fastify": "^4.25.2",
-    "http-errors-enhanced": "^1.0.13"
+    "http-errors-enhanced": "^2.0.3"
   },
   "type": "module"
 }

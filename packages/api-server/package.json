@@ -34,7 +34,6 @@
   "dependencies": {
     "@argoncs/common": "workspace:*",
     "@argoncs/types": "workspace:*",
-    "@chenhongqiao/fastify-http-errors-enhanced": "^4.1.0",
     "@fastify/auth": "^4.4.0",
     "@fastify/cookie": "^9.3.1",
     "@fastify/cors": "^8.5.0",
@@ -45,9 +44,10 @@
     "@sinclair/typebox": "^0.32.12",
     "exponential-backoff": "^3.1.1",
     "fastify": "^4.25.2",
+    "fastify-http-errors-enhanced": "^5.0.1",
     "gravatar-url": "^4.0.1",
-    "http-errors-enhanced": "^1.0.13",
-    "nanoid": "^4.0.2",
-    "typia": "^5.3.12"
+    "http-errors-enhanced": "^2.0.3",
+    "nanoid": "^5.0.4",
+    "typia": "^5.4.0"
   }
 }
