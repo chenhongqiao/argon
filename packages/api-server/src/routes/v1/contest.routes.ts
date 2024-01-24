@@ -226,7 +226,7 @@ async function contestProblemRoutes (problemRoutes: FastifyTypeBox): Promise<voi
         const submissions = await querySubmissions({ query: { contestId, problemId, teamId: auth.teams[contestId] } })
         return await reply.status(200).send(submissions)
       } else {
-        if (auth.scopes[request.params.domainId].includes('contest.manage') || auth.scopes[request.params.domainId].includes(`contest-${contestId}.manage`)) {
+        if ((Boolean(auth.scopes[request.params.domainId].includes('contest.manage'))) || (Boolean(auth.scopes[request.params.domainId].includes(`contest-${contestId}.manage`)))) {
           // User is an admin with access to all users' submissions
           const submissions = await querySubmissions({ query: { domainId: request.params.domainId, contestId, problemId } })
           return await reply.status(200).send(submissions)
