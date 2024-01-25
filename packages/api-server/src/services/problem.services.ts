@@ -6,10 +6,10 @@ import { NotFoundError } from 'http-errors-enhanced'
 import { mongoClient, domainProblemCollection, submissionCollection, testcaseUploadCollection } from '@argoncs/common'
 import { testcaseExists } from './testcase.services.js'
 
-import { nanoid } from '../utils/nanoid.utils.js'
+import { nanoid } from 'nanoid'
 
 export async function createDomainProblem ({ newProblem, domainId }: { newProblem: NewProblem, domainId: string }): Promise<{ problemId: string }> {
-  const problemId = await nanoid()
+  const problemId = nanoid()
   const problem: Problem = { ...newProblem, id: problemId, domainId }
   await domainProblemCollection.insertOne(problem)
   return { problemId }

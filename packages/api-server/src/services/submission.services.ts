@@ -9,7 +9,7 @@ import {
 import { rabbitMQ, judgerExchange, judgerTasksKey, submissionCollection, fetchDomainProblem, fetchContestProblem } from '@argoncs/common'
 import { languageConfigs } from '../../configs/language.configs.js'
 
-import { nanoid } from '../utils/nanoid.utils.js'
+import { nanoid } from 'nanoid'
 import { MethodNotAllowedError } from 'http-errors-enhanced'
 
 async function createSubmission ({ submission, userId, target }: { submission: NewSubmission, userId: string, target: { problemId: string, domainId: string } | { problemId: string, contestId: string, teamId?: string } }): Promise<{ submissionId: string }> {
@@ -25,7 +25,7 @@ async function createSubmission ({ submission, userId, target }: { submission: N
     throw new MethodNotAllowedError('Problem does not have testcases uploaded')
   }
 
-  const submissionId = await nanoid()
+  const submissionId = nanoid()
   const pendingSubmission: Submission = {
     ...submission,
     id: submissionId,

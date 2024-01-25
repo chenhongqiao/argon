@@ -1,11 +1,11 @@
 import { MongoServerError, contestCollection, contestProblemCollection, contestProblemListCollection, contestSeriesCollection, domainProblemCollection, mongoClient, ranklistRedis, recalculateTeamTotalScore, teamScoreCollection } from '@argoncs/common'
 import { type NewContestSeries, type ConetstProblemList, type Contest, type ContestProblem, type NewContest, type TeamScore, type ContestSeries } from '@argoncs/types'
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
-import { nanoid } from '../utils/nanoid.utils.js'
+import { nanoid } from 'nanoid'
 import { CONTEST_CACHE_KEY, CONTEST_PATH_CACHE_KEY, PROBLEMLIST_CACHE_KEY, deleteCache, fetchCacheUntilLockAcquired, releaseLock, setCache } from './cache.services.js'
 
 export async function createContest ({ newContest, domainId }: { newContest: NewContest, domainId: string }): Promise<{ contestId: string }> {
-  const id = await nanoid()
+  const id = nanoid()
   const contest: Contest = { ...newContest, domainId, id, published: false }
   const session = mongoClient.startSession()
   try {
@@ -24,7 +24,7 @@ export async function createContest ({ newContest, domainId }: { newContest: New
 }
 
 export async function createContestSeries ({ newContestSeries, domainId }: { newContestSeries: NewContestSeries, domainId: string }): Promise<{ seriesId: string }> {
-  const id = await nanoid()
+  const id = nanoid()
   await contestSeriesCollection.insertOne({ ...newContestSeries, contests: [], id, domainId })
   return { seriesId: id }
 }

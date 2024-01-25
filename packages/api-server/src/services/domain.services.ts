@@ -2,11 +2,11 @@ import { type NewDomain, type Domain, type DomainMembers } from '@argoncs/types'
 import { mongoClient, domainCollection, userCollection } from '@argoncs/common'
 import { NotFoundError } from 'http-errors-enhanced'
 
-import { nanoid } from '../utils/nanoid.utils.js'
+import { nanoid } from 'nanoid'
 import { USER_CACHE_KEY, deleteCache } from './cache.services.js'
 
 export async function createDomain ({ newDomain }: { newDomain: NewDomain }): Promise<{ domainId: string }> {
-  const domainId = await nanoid()
+  const domainId = nanoid()
   const domain: Domain = { ...newDomain, id: domainId, members: [] }
   await domainCollection.insertOne(domain)
   return { domainId }

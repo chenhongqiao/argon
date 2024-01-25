@@ -5,7 +5,7 @@ import { pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
 
-import { nanoid } from '../utils/nanoid.utils.js'
+import { nanoid } from 'nanoid'
 
 import { SESSION_CACHE_KEY, deleteCache, fetchCacheUntilLockAcquired, releaseLock, setCache } from './cache.services.js'
 
@@ -20,8 +20,8 @@ export async function authenticateUser ({ usernameOrEmail, password, loginIP, us
 
   const hash = (await pbkdf2Async(password, user.credential.salt, 100000, 512, 'sha512')).toString('base64')
   if (hash === user.credential.hash) {
-    const sessionId = await nanoid()
-    const token = await nanoid()
+    const sessionId = nanoid()
+    const token = nanoid(32)
     await sessionCollection.insertOne({ id: sessionId, token, userId, userAgent, loginIP })
     return { userId, sessionId, token }
   } else {

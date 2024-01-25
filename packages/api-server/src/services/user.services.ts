@@ -5,7 +5,7 @@ import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
 
-import { longNanoid, nanoid } from '../utils/nanoid.utils.js'
+import { nanoid } from 'nanoid'
 
 import { sendEmail } from './emails.services.js'
 import { USER_CACHE_KEY, USER_PATH_CACHE_KEY, deleteCache, fetchCacheUntilLockAcquired, releaseLock, setCache } from './cache.services.js'
@@ -15,7 +15,7 @@ const pbkdf2Async = promisify(pbkdf2)
 export async function registerUser ({ newUser }: { newUser: NewUser }): Promise<{ userId: string, email: string }> {
   const salt = (await randomBytesAsync(32)).toString('base64')
   const hash = (await pbkdf2Async(newUser.password, salt, 100000, 512, 'sha512')).toString('base64')
-  const userId = await nanoid()
+  const userId = nanoid()
   const user: User = {
     id: userId,
     name: newUser.name,
@@ -113,7 +113,7 @@ export async function initiateVerification ({ userId }: { userId: string }): Pro
     throw new NotFoundError('User does not have an email pending verification')
   }
 
-  const id = await longNanoid()
+  const id = nanoid(32)
   await emailVerificationCollection.insertOne({
     id,
     userId,
