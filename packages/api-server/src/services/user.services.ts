@@ -145,7 +145,12 @@ export async function completeVerification ({ verificationId }: { verificationId
     throw new NotFoundError('User not found')
   }
 
-  return { modified: modifiedCount > 0 }
+  const modified = modifiedCount > 0
+  if (modified) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    await deleteCache({ key: `${USER_CACHE_KEY}:${userId}` })
+  }
+  return { modified }
 }
 
 export async function queryUsers ({ query }: { query: string }): Promise<User[]> {

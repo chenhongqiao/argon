@@ -3,6 +3,7 @@ import { type TeamInvitation, type NewTeam, type Team, type TeamMembers } from '
 import { ConflictError, MethodNotAllowedError, NotFoundError } from 'http-errors-enhanced'
 import { nanoid } from 'nanoid'
 import gravatarUrl from 'gravatar-url'
+import { USER_CACHE_KEY, deleteCache } from './cache.services.js'
 
 export async function createTeam ({ newTeam, contestId, userId }: { newTeam: NewTeam, contestId: string, userId: string }): Promise<{ teamId: string }> {
   const id = nanoid()
@@ -31,10 +32,12 @@ export async function createTeam ({ newTeam, contestId, userId }: { newTeam: New
 
       await teamScoreCollection.insertOne({ id, contestId, scores: {}, time: {}, lastTime: 0, totalScore: 0 })
     })
-    return { teamId: id }
   } finally {
     await session.endSession()
   }
+
+  await deleteCache({ key: `${USER_CACHE_KEY}:${userId}` })
+  return { teamId: id }
 }
 
 export async function fetchTeam ({ teamId, contestId }: { teamId: string, contestId: string }): Promise<Team> {
@@ -97,8 +100,8 @@ export async function deleteTeamInvitation ({ teamId, contestId, invitationId }:
 
 export async function completeTeamInvitation ({ invitationId, userId }: { invitationId: string, userId: string }): Promise<{ modified: boolean }> {
   const session = mongoClient.startSession()
+  let modifiedCount = 0
   try {
-    let modifiedCount = 0
     await session.withTransaction(async () => {
       const invitation = await teamInvitationCollection.findOne({ id: invitationId }, { session })
       if (invitation == null) {
@@ -123,10 +126,14 @@ export async function completeTeamInvitation ({ invitationId, userId }: { invita
       const { modifiedCount: modifiedTeam } = await teamCollection.updateOne({ id: teamId, contestId }, { $addToSet: { members: userId } }, { session })
       modifiedCount += Math.floor(modifiedTeam)
     })
-    return { modified: modifiedCount > 0 }
   } finally {
     await session.endSession()
   }
+  const modified = modifiedCount > 0
+  if (modified) {
+    await deleteCache({ key: `${USER_CACHE_KEY}:${userId}` })
+  }
+  return { modified }
 }
 
 export async function makeTeamCaptain ({ teamId, contestId, userId }: { teamId: string, contestId: string, userId: string }): Promise<{ modified: boolean }> {
@@ -173,14 +180,19 @@ export async function removeTeamMember ({ teamId, contestId, userId }: { teamId:
       }
       modifiedCount += Math.floor(modifiedUser)
     })
-    return { modified: modifiedCount > 0 }
   } finally {
     await session.endSession()
   }
+  const modified = modifiedCount > 0
+  if (modified) {
+    await deleteCache({ key: `${USER_CACHE_KEY}:${userId}` })
+  }
+  return { modified }
 }
 
 export async function deleteTeam ({ teamId, contestId }: { teamId: string, contestId: string }): Promise<void> {
   const session = mongoClient.startSession()
+  let userId = ''
   try {
     await session.withTransaction(async () => {
       const team = await teamCollection.findOne({ id: teamId, contestId }, { session })
@@ -190,6 +202,7 @@ export async function deleteTeam ({ teamId, contestId }: { teamId: string, conte
       if (team.members.length > 1) {
         throw new MethodNotAllowedError('Cannot disband a team when there are more than one member')
       }
+      userId = team.members[0]
 
       await userCollection.updateOne({ id: team.members[0] }, { $unset: { [`teams.${team.contestId}`]: '' } }, { session })
 
@@ -202,4 +215,6 @@ export async function deleteTeam ({ teamId, contestId }: { teamId: string, conte
   } finally {
     await session.endSession()
   }
+
+  await deleteCache({ key: `${USER_CACHE_KEY}:${userId}` })
 }
