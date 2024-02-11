@@ -331,7 +331,8 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
           400: badRequestSchema,
           401: unauthorizedSchema,
           403: forbiddenSchema,
-          404: notFoundSchema
+          404: notFoundSchema,
+          409: conflictSchema
         }
       },
       onRequest: [userAuthHook, teamRoutes.auth([
@@ -390,34 +391,6 @@ async function contestTeamRoutes (teamRoutes: FastifyTypeBox): Promise<void> {
     async (request, reply) => {
       const { teamId, contestId, invitationId } = request.params
       await deleteTeamInvitation({ teamId, contestId, invitationId })
-
-      return await reply.status(204).send()
-    }
-  )
-
-  teamRoutes.post(
-    '/:teamId/invitations/:invitationId',
-    {
-      schema: {
-        params: Type.Object({ contestId: Type.String(), teamId: Type.String(), invitationId: Type.String() }),
-        response: {
-          400: badRequestSchema,
-          401: unauthorizedSchema,
-          403: forbiddenSchema,
-          404: notFoundSchema
-        }
-      },
-      onRequest: [userAuthHook, teamRoutes.auth([
-        [hasNoPrivilege, contestPublished, contestNotBegan, hasVerifiedEmail]
-      ]) as any]
-    },
-    async (request, reply) => {
-      if (request.user == null) {
-        throw new UnauthorizedError('User not logged in')
-      }
-
-      const { invitationId } = request.params
-      await completeTeamInvitation({ invitationId, userId: request.user.id })
 
       return await reply.status(204).send()
     }

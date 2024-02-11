@@ -1,6 +1,6 @@
-import { type User, type NewUser, UserRole, type UserPrivateProfile } from '@argoncs/types'
+import { type User, type NewUser, UserRole, type UserPrivateProfile, type TeamInvitation } from '@argoncs/types'
 import { NotFoundError, UnauthorizedError, ConflictError } from 'http-errors-enhanced'
-import { emailVerificationCollection, MongoServerError, userCollection } from '@argoncs/common'
+import { emailVerificationCollection, MongoServerError, userCollection, teamInvitationCollection } from '@argoncs/common'
 import { randomBytes, pbkdf2 } from 'node:crypto'
 
 import { promisify } from 'node:util'
@@ -156,4 +156,9 @@ export async function completeVerification ({ verificationId }: { verificationId
 export async function queryUsers ({ query }: { query: string }): Promise<User[]> {
   const users = await userCollection.find({ $text: { $search: query } }).limit(25).toArray()
   return users
+}
+
+export async function fetchUserInvitations ({ userId }: { userId: string }): Promise<TeamInvitation[]> {
+  const invitations = await teamInvitationCollection.find({ userId }).toArray()
+  return invitations
 }

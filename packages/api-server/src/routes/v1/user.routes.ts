@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
-import { type UserPublicProfile, UserPublicProfileSchema, NewUserSchema, UserPrivateProfileSchema, SubmissionSchema } from '@argoncs/types'
-import { completeVerification, emailExists, fetchUser, initiateVerification, registerUser, queryUsers, userIdExists, usernameExists } from '../../services/user.services.js'
+import { type UserPublicProfile, UserPublicProfileSchema, NewUserSchema, UserPrivateProfileSchema, SubmissionSchema, TeamInvitationSchema } from '@argoncs/types'
+import { completeVerification, emailExists, fetchUser, initiateVerification, registerUser, queryUsers, userIdExists, usernameExists, fetchUserInvitations } from '../../services/user.services.js'
 import { ownsResource } from '../../auth/ownership.auth.js'
 import { type FastifyTypeBox } from '../../types.js'
 import { NotFoundError, badRequestSchema, conflictSchema, forbiddenSchema, notFoundSchema, unauthorizedSchema } from 'http-errors-enhanced'
@@ -113,32 +113,6 @@ async function userVerificationRoutes (verificationRoutes: FastifyTypeBox): Prom
   )
 }
 
-export async function userContestRoutes (contestRoutes: FastifyTypeBox): Promise<void> {
-  contestRoutes.post(
-    '/:contestId/invitations/:invitationId',
-    {
-      schema: {
-        params: Type.Object({ contestId: Type.String(), userId: Type.String(), invitationId: Type.String() }),
-        response: {
-          400: badRequestSchema,
-          401: unauthorizedSchema,
-          403: forbiddenSchema,
-          404: notFoundSchema
-        }
-      },
-      onRequest: [userAuthHook, contestInfoHook, contestRoutes.auth([[
-        hasNoPrivilege, contestPublished, contestNotBegan, ownsResource]
-      ]) as any]
-    },
-    async (request, reply) => {
-      const { invitationId, userId } = request.params
-      await completeTeamInvitation({ invitationId, userId })
-
-      return await reply.status(204).send()
-    }
-  )
-}
-
 async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<void> {
   submissionRoutes.get(
     '/',
@@ -191,7 +165,62 @@ async function userSubmissionRoutes (submissionRoutes: FastifyTypeBox): Promise<
     })
 }
 
+
+async function userInviteRoutes (inviteRoutes: FastifyTypeBox): Promise<void> {
+
+  /* Returns all pending invites to user
+   */
+  inviteRoutes.get(
+    '/',
+    {
+      schema: {
+        params: Type.Object({ userId: Type.String() }),
+        response: {
+          200: Type.Array(TeamInvitationSchema),
+          400: badRequestSchema,
+          401: unauthorizedSchema
+        },
+        onRequest: [userAuthHook]
+      }
+    },
+    async (request, reply) => {
+      const { userId } = request.params;
+      const invites = await fetchUserInvitations({ userId });
+      return await reply.status(200).send(invites.slice(0,10))
+    }
+  )
+
+  /* Accept Invite
+   */
+  inviteRoutes.post(
+    '/:invitationId',
+    {
+      schema: {
+        params: Type.Object({ userId: Type.String(), invitationId: Type.String() }),
+        response: {
+          400: badRequestSchema,
+          401: unauthorizedSchema,
+          403: forbiddenSchema,
+          404: notFoundSchema,
+          409: conflictSchema
+        }
+      },
+      onRequest: [userAuthHook, inviteRoutes.auth([[ownsResource]]) as any]
+    },
+    async (request, reply) => {
+
+      const { invitationId, userId } = request.params
+      await completeTeamInvitation({ invitationId, userId })
+
+      return await reply.status(204).send()
+    }
+  )
+
+}
+
 export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
+  /* Create user
+   */
   routes.post(
     '/',
     {
@@ -233,6 +262,8 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     }
   )
 
+  /* Search for user 
+   */
   routes.get(
     '/',
     {
@@ -264,8 +295,9 @@ export async function userRoutes (routes: FastifyTypeBox): Promise<void> {
     }
   )
 
+
   await routes.register(userProfileRoutes, { prefix: '/:userId/profiles' })
   await routes.register(userVerificationRoutes, { prefix: '/:userId/email-verifications' })
-  await routes.register(userContestRoutes, { prefix: '/:userId/contests' })
   await routes.register(userSubmissionRoutes, { prefix: '/:userId/submissions' })
+  await routes.register(userInviteRoutes, { prefix: '/:userId/invitations' })
 }
