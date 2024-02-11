@@ -1,4 +1,5 @@
 import { consumeUploadSession, uploadTestcase } from '../services/testcase.services.js'
+import { uploadPolygon } from '../services/polygon.services.js'
 
 import { Type } from '@sinclair/typebox'
 import multipart from '@fastify/multipart'
@@ -13,6 +14,10 @@ export async function testcaseRoutes (routes: FastifyTypeBox): Promise<void> {
     }
   })
 
+  /**
+   * Uploads testcases to session.
+   * Testcases ppassed as request files.
+   */
   routes.post(
     '/:uploadId',
     {
@@ -47,6 +52,38 @@ export async function testcaseRoutes (routes: FastifyTypeBox): Promise<void> {
           throw err
         }
       }
+    }
+  )
+
+  /**
+   * Uploads a zipped Polygon package.
+   * Unzips and parses the package, and update the problem.
+   */
+  routes.post(
+    '/:uploadId/polygon',
+    {
+      schema: {
+        params: Type.Object({ uploadId: Type.String() }),
+        response: {
+          201: Type.Object({ problemId: Type.String() }),
+          400: badRequestSchema,
+          401: unauthorizedSchema,
+          413: Type.Object({ statusCode: Type.Number(), error: Type.String(), message: Type.String() })
+        }
+      }
+    },
+    async (request, reply) => {
+      const { uploadId } = request.params
+      const { domainId, problemId } = await consumeUploadSession(uploadId)
+
+      const archive = await request.file()
+      if (archive === undefined) {
+        throw new BadRequestError('No file found in request')
+      }
+
+      await uploadPolygon(domainId, problemId, archive)
+
+      return await reply.status(201).send({ problemId })
     }
   )
 }

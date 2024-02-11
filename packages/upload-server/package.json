@@ -11,7 +11,8 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "prepack": "tsc --build ."
+    "prepack": "tsc --build .",
+    "dev": "yarn prepack && node dist/src/dev.js"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
