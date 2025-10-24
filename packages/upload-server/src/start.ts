@@ -2,19 +2,30 @@ import { fastify } from 'fastify'
 
 import fastifyHttpErrorsEnhanced from '@chenhongqiao/fastify-http-errors-enhanced'
 import fastifyAuth from '@fastify/auth'
+import fastifyCors from '@fastify/cors'
 
-import { testcaseRoutes } from './routes/testcase.routes.js'
+//import { testcaseRoutes } from './routes/testcase.routes.js'
 import { heartbeatRoutes } from './routes/heartbeat.routes.js'
 
-import { connectMinIO, connectMongoDB, sentry } from '@argoncs/common'
+import { connectCacheRedis, connectMinIO, connectMongoDB, connectRabbitMQ, sentry } from '@argoncs/common'
 
 import fastifySensible from '@fastify/sensible'
+import { polygonRoutes } from './routes/polygon.routes.js'
 import assert from 'assert'
+import fs from 'node:fs/promises'
+
+
+assert(process.env.CERTKEY != null)
+assert(process.env.CERT != null)
 
 const app = fastify({
   logger: {
     enabled: true
-  }
+  },
+  https: {
+    key: await fs.readFile(process.env.CERTKEY),
+    cert: await fs.readFile(process.env.CERT),
+  },
 })
 
 sentry.init({
@@ -25,9 +36,14 @@ sentry.init({
 
 export async function startUploadServer (): Promise<void> {
   assert(process.env.MINIO_URL != null)
-  await connectMinIO(process.env.MINIO_URL)
   assert(process.env.MONGO_URL != null)
+  assert(process.env.RABBITMQ_URL != null)
+  assert(process.env.CACHEREDIS_URL != null)
+
+  await connectMinIO(process.env.MINIO_URL)
   await connectMongoDB(process.env.MONGO_URL)
+  await connectRabbitMQ(process.env.RABBITMQ_URL)
+  await connectCacheRedis(process.env.CACHEREDIS_URL)
 
   await app.register(fastifyHttpErrorsEnhanced, {
     handle404Errors: false,
@@ -41,12 +57,17 @@ export async function startUploadServer (): Promise<void> {
   })
   await app.register(fastifyAuth)
   await app.register(fastifySensible)
+  await app.register(fastifyCors, {
+    origin: [/\.teamscode\.org/, /\.joincpi\.org/, /localhost/, /13.64.130.192/],
+    allowedHeaders: ['Content-Type', 'Set-Cookie'],
+    credentials: true
+  })
 
-  await app.register(testcaseRoutes, { prefix: '/testcases' })
   await app.register(heartbeatRoutes, { prefix: '/heartbeat' })
+  await app.register(polygonRoutes, { prefix: '/polygon' })
 
   try {
-    const port: number = parseInt(process.env.UPLOAD_SERVER_PORT ?? '8001')
+    const port: number = parseInt(process.env.UPLOAD_SERVER_PORT ?? '8880')
     await app.listen({ port, host: '0.0.0.0' })
   } catch (err) {
     sentry.captureException(err)

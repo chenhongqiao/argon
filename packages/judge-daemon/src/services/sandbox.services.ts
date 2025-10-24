@@ -9,6 +9,7 @@ import {
   type SandboxTimeExceeded,
   type SandboxMemoryExceeded
 } from '@argoncs/types'
+//=
 
 import { ConflictError } from 'http-errors-enhanced'
 
@@ -19,6 +20,14 @@ interface SandboxMeta {
   'time-wall'?: number
   exitsig?: number
   message?: string
+}
+
+function metaPath (boxId: number): string {
+  return process.env.BOX_META_DIR + `/meta-${boxId}.txt`;
+}
+
+function boxPath (boxId: number): string {
+  return `/var/local/lib/isolate/${boxId}/box/`;
 }
 
 function parseMeta (metaStr: string): SandboxMeta {
@@ -61,7 +70,7 @@ export async function initSandbox (
 }
 
 export async function destroySandbox ({ boxId }: { boxId: number }): Promise<{ boxId: number }> {
-  await exec(`isolate --box-id=${boxId} --cleanup`)
+  //await exec(`isolate --box-id=${boxId} --cleanup --cg`)
   return { boxId }
 }
 
@@ -82,14 +91,13 @@ interface SandboxSucceeded {
   wallTime: number
 }
 
-export async function runInSandbox (
-  { task, boxId }: { task: SandboxTask, boxId: number }): Promise<
-  SandboxSucceeded | SandboxMemoryExceeded | SandboxSystemError | SandboxTimeExceeded | SandboxRuntimeError
-  > {
-  let command = `isolate --run --cg --box-id=${boxId} --meta=/var/local/lib/isolate/${boxId}/meta.txt`
+export async function runInSandbox ({ task, boxId }: { task: SandboxTask, boxId: number }):
+  Promise<SandboxSucceeded | SandboxMemoryExceeded | SandboxSystemError | SandboxTimeExceeded | SandboxRuntimeError> 
+{
+  let command = `isolate --run --cg --box-id=${boxId} --meta=${metaPath(boxId)}`
 
   if (task.constraints.memory != null) {
-    command += ` --cg-mem=${task.constraints.memory}`
+    command += ` --cg-mem=${task.constraints.memory * 1024}`
   }
   if (task.constraints.time != null) {
     command += ` --time=${task.constraints.time / 1000.0}`
@@ -120,12 +128,39 @@ export async function runInSandbox (
   }
   command += ` -- ${task.command}`
 
+  console.log('constraints: ', task.constraints);
+  console.log('command: ', command);
   try {
     await exec(command)
+    console.log('execution passed')
   } catch (err) {
     try {
-      const meta = (await fs.readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).toString()
+      console.log('execution failed')
+      const meta = (await fs.readFile(metaPath(boxId))).toString()
       const result = parseMeta(meta)
+      console.log('meta: ', result)
+
+      let err;
+      if (task.stderrPath != null) {
+        let fd;
+        try {
+          fd = await fs.open(boxPath(boxId) + 'err.txt');
+          const chunks = [];
+          for await (let chunk of fd.createReadStream({ start: 0, end: 200 }))
+            //@ts-ignore
+            chunks.push(chunk);
+          
+          err = await Buffer.concat(chunks).toString();
+        } catch (e) {
+          err = 'error on reading stderr file: ' + e;
+        } finally {
+          await fd?.close()
+        }
+      } else {
+        err = 'no stderr'
+      }
+
+      console.log('stderr: ', err)
 
       switch (result.status) {
         case 'XX':
@@ -136,7 +171,9 @@ export async function runInSandbox (
         case 'RE':
           return {
             status: SandboxStatus.RuntimeError,
-            message: result.message ?? 'Isolate threw runtime error'
+            message: 
+              (result.message ?? 'Isolate threw runtime error') +
+              (err ?? 'Nothing in stderr')
           }
         case 'CG':
           if (
@@ -176,6 +213,7 @@ export async function runInSandbox (
           }
       }
     } catch (err) {
+      console.log('Meta file does not exist on abnormal termination')
       if (err?.code === 'ENONET') {
         return {
           status: SandboxStatus.SystemError,
@@ -188,7 +226,7 @@ export async function runInSandbox (
   }
 
   try {
-    const meta = (await fs.readFile(`/var/local/lib/isolate/${boxId}/meta.txt`)).toString()
+    const meta = (await fs.readFile(metaPath(boxId))).toString()
     const result = parseMeta(meta)
     if (result.time == null || result['time-wall'] == null || result.memory == null) {
       return {

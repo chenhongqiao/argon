@@ -1,6 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { languageConfigs } from '../../../configs/language.configs.js'
-
+import { languageConfigs } from '@argoncs/common'
 import { SubmissionLang, LanguageConfigSchema } from '@argoncs/types'
 
 import { type FastifyTypeBox } from '../../types.js'
@@ -12,7 +11,7 @@ export async function judgerRoutes (app: FastifyTypeBox): Promise<void> {
       {
         schema: {
           response: {
-            200: Type.Record(Type.Enum(SubmissionLang), LanguageConfigSchema)
+            200: Type.Any() 
           }
         }
       },

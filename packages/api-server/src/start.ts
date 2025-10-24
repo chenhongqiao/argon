@@ -11,16 +11,22 @@ import {
   sentry
 } from '@argoncs/common'
 
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url';
+ 
+
 import assert from 'assert'
 import { fastify } from 'fastify'
 import fastifyCors from '@fastify/cors'
 import fastifyAuth from '@fastify/auth'
 import fastifyCookie from '@fastify/cookie'
 import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUI from '@fastify/swagger-ui'
 import fastifySensible from '@fastify/sensible'
 import fastifyHttpErrorsEnhanced from '@chenhongqiao/fastify-http-errors-enhanced'
-import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import { type FastifyTypeBox } from './types.js'
+import { type TypeBoxTypeProvider  } from '@fastify/type-provider-typebox'
+import { type FastifyTypeBox } from './types.js'/*=*/
 import { v1APIRoutes } from './routes/v1.routes.js'
 
 sentry.init({
@@ -30,9 +36,17 @@ sentry.init({
 })
 
 export async function loadFastify (testing = false): Promise<FastifyTypeBox> {
+
+  assert(process.env.CERTKEY != null)
+  assert(process.env.CERT != null)
+
   const app = fastify({
     logger: !testing,
-    disableRequestLogging: testing // To make testing logs cleaner.
+    disableRequestLogging: testing, // To make testing logs cleaner
+    https: {
+      key: await fs.readFile(process.env.CERTKEY),
+      cert: await fs.readFile(process.env.CERT),
+    },
   }).withTypeProvider<TypeBoxTypeProvider>()
 
   await app.register(fastifyHttpErrorsEnhanced, {
@@ -53,8 +67,16 @@ export async function loadFastify (testing = false): Promise<FastifyTypeBox> {
   await app.register(fastifySensible)
   await app.register(fastifyAuth)
   await app.register(fastifySwagger)
+  await app.register(fastifySwaggerUI, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'full',
+      deepLinking: false
+    },
+  })
   await app.register(fastifyCors, {
-    origin: [/\.teamscode\.org$/, /\.argoncs\.io$/, 'http://localhost:3000'],
+    origin: [/\.teamscode\.org$/, /\.joincpi\.org/, /localhost/, /13.64.130.192/],
+    allowedHeaders: ['Content-Type', 'Set-Cookie'],
     credentials: true
   })
 
@@ -80,13 +102,30 @@ export async function loadFastify (testing = false): Promise<FastifyTypeBox> {
     closeRanklistRedis()
   })
 
+
+  // Development Clients
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  app.get('/admin', async function handler (_, reply) {
+    const fd = await fs.open(path.join(__dirname, '../../src/admin.html'))
+    const stream = fd.createReadStream()
+    reply.type('text/html').send(stream)
+    return reply
+  })
+
+  app.get('/contest', async function handler (_, reply) {
+    const fd = await fs.open(path.join(__dirname, '../../src/contest.html'))
+    const stream = fd.createReadStream()
+    reply.type('text/html').send(stream)
+    return reply
+  })
+
   return app
 }
 
 export async function startAPIServer (): Promise<void> {
   const app = await loadFastify()
   try {
-    const port: number = parseInt(process.env.API_SERVER_PORT ?? '8000')
+    const port: number = parseInt(process.env.API_SERVER_PORT ?? '8443')
     await app.listen({ port, host: '0.0.0.0' })
   } catch (err) {
     sentry.captureException(err)

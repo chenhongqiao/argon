@@ -15,7 +15,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: test
+      MONGO_INITDB_DATABASE: dev 
     entrypoint:
       - bash
       - -c
@@ -23,8 +23,8 @@ services:
         chmod 400 /data/replica.key
         chown 999:999 /data/replica.key
         exec docker-entrypoint.sh $$@
-    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
 
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
   # config = {
   #   "_id" : "rs0",
   #   "members" : [
