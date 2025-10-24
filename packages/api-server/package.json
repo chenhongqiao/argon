@@ -48,7 +48,7 @@
     "fastify-http-errors-enhanced": "^5.0.1",
     "gravatar-url": "^4.0.1",
     "http-errors-enhanced": "^2.0.3",
-    "nanoid": "^5.0.4",
+    "nanoid": "^5.0.9",
     "typia": "^5.4.0"
   }
 }
