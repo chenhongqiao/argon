@@ -44,7 +44,7 @@
     "@sendgrid/mail": "^8.1.0",
     "@sinclair/typebox": "^0.32.12",
     "exponential-backoff": "^3.1.1",
-    "fastify": "^4.25.2",
+    "fastify": "^5.7.3",
     "fastify-http-errors-enhanced": "^5.0.1",
     "gravatar-url": "^4.0.1",
     "http-errors-enhanced": "^2.0.3",
